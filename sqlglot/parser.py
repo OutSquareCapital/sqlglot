@@ -22,7 +22,7 @@ from sqlglot.time import format_time
 from sqlglot.tokens import Token, Tokenizer, TokenType
 from sqlglot.trie import TrieResult, in_trie
 from collections.abc import Sequence
-
+from builtins import type as Type
 if t.TYPE_CHECKING:
     from sqlglot._typing import E
     from sqlglot.dialects.dialect import Dialect, DialectType
@@ -2772,7 +2772,7 @@ class Parser:
 
         return field
 
-    def _parse_property_assignment(self, exp_class: t.Type[E], **kwargs: t.Any) -> E:
+    def _parse_property_assignment(self, exp_class: Type[E], **kwargs: object) -> E:
         self._match(TokenType.EQ)
         self._match(TokenType.ALIAS)
 
@@ -2971,7 +2971,7 @@ class Parser:
     def _parse_log(self, no: bool = False) -> exp.LogProperty:
         return self.expression(exp.LogProperty(no=no))
 
-    def _parse_journal(self, **kwargs) -> exp.JournalProperty:
+    def _parse_journal(self, **kwargs: object) -> exp.JournalProperty:
         return self.expression(exp.JournalProperty(**kwargs))
 
     def _parse_checksum(self) -> exp.ChecksumProperty:
@@ -9766,7 +9766,7 @@ class Parser:
 
         return self.expression(exp.Declare(expressions=expressions, replace=replace))
 
-    def build_cast(self, strict: bool, **kwargs) -> exp.Cast:
+    def build_cast(self, strict: bool, **kwargs: object) -> exp.Cast:
         exp_class = exp.Cast if strict else exp.TryCast
 
         if exp_class == exp.TryCast:

@@ -25,7 +25,7 @@ class AthenaParser(Parser):
         dialect: t.Any = None,
         hive: t.Any = None,
         trino: t.Any = None,
-        **kwargs: t.Any,
+        **kwargs: object,
     ) -> None:
         from sqlglot.dialects import Hive, Trino
 

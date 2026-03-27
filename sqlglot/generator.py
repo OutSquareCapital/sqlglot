@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+
 import logging
 import re
 import typing as t
@@ -15,6 +16,7 @@ from sqlglot.time import format_time
 from sqlglot.tokens import TokenType
 
 if t.TYPE_CHECKING:
+    from collections.abc import Iterable
     from sqlglot._typing import E
     from sqlglot.dialects.dialect import DialectType
 
@@ -1014,7 +1016,7 @@ class Generator:
         this_sql = self.indent(this_sql, level=1, pad=0)
         return f"({self.sep('')}{this_sql}{self.seg(')', sep='')}"
 
-    def no_identify(self, func: t.Callable[..., str], *args, **kwargs) -> str:
+    def no_identify(self, func: t.Callable[..., str], *args: object, **kwargs: object) -> str:
         original = self.identify
         self.identify = False
         result = func(*args, **kwargs)
@@ -4286,7 +4288,7 @@ class Generator:
     def func(
         self,
         name: str,
-        *args: t.Any,
+        *args: object,
         prefix: str = "(",
         suffix: str = ")",
         normalize: bool = True,
@@ -4294,7 +4296,7 @@ class Generator:
         name = self.normalize_func(name) if normalize else name
         return f"{name}{prefix}{self.format_args(*args)}{suffix}"
 
-    def format_args(self, *args: t.Any, sep: str = ", ") -> str:
+    def format_args(self, *args: object, sep: str = ", ") -> str:
         arg_sqls = tuple(
             self.sql(arg) for arg in args if arg is not None and not isinstance(arg, bool)
         )
@@ -4304,7 +4306,7 @@ class Generator:
             )
         return sep.join(arg_sqls)
 
-    def too_wide(self, args: t.Iterable) -> bool:
+    def too_wide(self, args: Iterable) -> bool:
         return sum(len(arg) for arg in args) > self.max_text_width
 
     def format_time(

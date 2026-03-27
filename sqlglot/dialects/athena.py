@@ -47,7 +47,7 @@ class Athena(Dialect):
     - https://docs.aws.amazon.com/athena/latest/ug/dml-queries-functions-operators.html
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: object) -> None:
         super().__init__(**kwargs)
 
         self._hive = Hive(**kwargs)
@@ -94,7 +94,7 @@ class Athena(Dialect):
             "UNLOAD": TokenType.COMMAND,
         }
 
-        def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
+        def __init__(self, *args: object, **kwargs: object) -> None:
             hive = kwargs.pop("hive", None) or Hive()
             trino = kwargs.pop("trino", None) or Trino()
 

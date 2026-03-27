@@ -83,7 +83,7 @@ def lineage(
     scope: t.Optional[Scope] = None,
     trim_selects: bool = True,
     copy: bool = True,
-    **kwargs,
+    **kwargs: object,
 ) -> Node:
     """Build the lineage graph for a column of a SQL query.
 

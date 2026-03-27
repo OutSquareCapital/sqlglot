@@ -318,7 +318,7 @@ class DataType(Expression):
         dialect: DialectType = None,
         udt: bool = False,
         copy: bool = True,
-        **kwargs,
+        **kwargs: object,
     ) -> DataType:
         """
         Constructs a DataType object.

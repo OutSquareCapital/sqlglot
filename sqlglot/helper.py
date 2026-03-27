@@ -263,7 +263,7 @@ def name_sequence(prefix: str) -> t.Callable[[], str]:
     return lambda: f"{prefix}{next(sequence)}"
 
 
-def object_to_dict(obj: t.Any, **kwargs) -> t.Dict:
+def object_to_dict(obj: t.Any, **kwargs: object) -> dict:
     """Returns a dictionary created from an object's attributes."""
     return {
         **{k: v.copy() if hasattr(v, "copy") else copy(v) for k, v in vars(obj).items()},

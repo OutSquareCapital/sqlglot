@@ -351,7 +351,7 @@ class MappingSchema(AbstractMappingSchema, Schema):
 
         return schema
 
-    def copy(self, **kwargs) -> MappingSchema:
+    def copy(self, **kwargs: object) -> MappingSchema:
         return MappingSchema(
             **{  # type: ignore
                 "schema": self.mapping.copy(),
@@ -695,7 +695,7 @@ def normalize_name(
     return Dialect.get_or_raise(dialect).normalize_identifier(identifier)
 
 
-def ensure_schema(schema: Schema | t.Optional[t.Dict], **kwargs: t.Any) -> Schema:
+def ensure_schema(schema: Schema | t.Optional[dict], **kwargs: object) -> Schema:
     if isinstance(schema, Schema):
         return schema
 

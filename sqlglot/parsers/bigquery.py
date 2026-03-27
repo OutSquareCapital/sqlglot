@@ -11,7 +11,7 @@ from sqlglot.dialects.dialect import (
 )
 from sqlglot.helper import seq_get, split_num_words
 from sqlglot.tokens import TokenType
-
+from builtins import type as Type
 if t.TYPE_CHECKING:
     from sqlglot._typing import E
 
@@ -573,7 +573,7 @@ class BigQueryParser(parser.Parser):
 
         return expr
 
-    def _parse_ml(self, expr_type: t.Type[E], **kwargs: t.Any) -> E:
+    def _parse_ml(self, expr_type: Type[E], **kwargs: object) -> E:
         self._match_text_seq("MODEL")
         this = self._parse_table()
 

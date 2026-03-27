@@ -344,7 +344,7 @@ def to_interval(interval: str | Expr) -> Interval:
 
 
 def to_table(
-    sql_path: str | Table, dialect: DialectType = None, copy: bool = True, **kwargs
+    sql_path: str | Table, dialect: DialectType = None, copy: bool = True, **kwargs: object
 ) -> Table:
     """
     Create a table expression from a `[catalog].[schema].[table]` sql path. Catalog and schema are optional.
@@ -383,7 +383,7 @@ def to_column(
     quoted: t.Optional[bool] = None,
     dialect: DialectType = None,
     copy: bool = True,
-    **kwargs,
+    **kwargs: object,
 ) -> Column:
     """
     Create a column from a `[table].[column]` sql path. Table is optional.
@@ -643,7 +643,7 @@ def rename_column(
     )
 
 
-def replace_children(expression: Expr, fun: t.Callable, *args, **kwargs) -> None:
+def replace_children(expression: Expr, fun: t.Callable, *args: object, **kwargs: object) -> None:
     """
     Replace children of an expression with the result of a lambda fun(child) -> exp.
     """
@@ -831,7 +831,7 @@ def replace_tables(
     return expression.transform(_replace_tables, copy=copy)  # type: ignore
 
 
-def replace_placeholders(expression: Expr, *args, **kwargs) -> Expr:
+def replace_placeholders(expression: Expr, *args: object, **kwargs: object) -> Expr:
     """Replace placeholders in an expression.
 
     Args:
@@ -851,7 +851,7 @@ def replace_placeholders(expression: Expr, *args, **kwargs) -> Expr:
         The mapped expression.
     """
 
-    def _replace_placeholders(node: Expr, args, **kwargs) -> Expr:
+    def _replace_placeholders(node: Expr, args: object, **kwargs: object) -> Expr:
         if isinstance(node, Placeholder):
             if node.this:
                 new_name = kwargs.get(node.this)
@@ -913,7 +913,9 @@ def expand(
     return expression.transform(_expand, copy=copy)
 
 
-def func(name: str, *args, copy: bool = True, dialect: DialectType = None, **kwargs) -> Func:
+def func(
+    name: str, *args: object, copy: bool = True, dialect: DialectType = None, **kwargs: object
+) -> Func:
     """
     Returns a Func expression.
 
@@ -1000,7 +1002,7 @@ def case(
 
 
 def array(
-    *expressions: ExpOrStr, copy: bool = True, dialect: DialectType = None, **kwargs
+    *expressions: ExpOrStr, copy: bool = True, dialect: DialectType = None, **kwargs: object
 ) -> Array:
     """
     Returns an array.
@@ -1027,7 +1029,7 @@ def array(
 
 
 def tuple_(
-    *expressions: ExpOrStr, copy: bool = True, dialect: DialectType = None, **kwargs
+    *expressions: ExpOrStr, copy: bool = True, dialect: DialectType = None, **kwargs: object
 ) -> Tuple:
     """
     Returns an tuple.

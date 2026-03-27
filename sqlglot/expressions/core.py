@@ -97,7 +97,7 @@ class Expr:
     _hash: t.Optional[int]
 
     @classmethod
-    def __init_subclass__(cls, **kwargs: t.Any) -> None:
+    def __init_subclass__(cls, **kwargs: object) -> None:
         super().__init_subclass__(**kwargs)
         # When an Expr class is created, its key is automatically set
         # to be the lowercase version of the class' name.

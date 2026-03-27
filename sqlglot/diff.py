@@ -67,9 +67,9 @@ if t.TYPE_CHECKING:
 def diff(
     source: exp.Expr,
     target: exp.Expr,
-    matchings: t.List[t.Tuple[exp.Expr, exp.Expr]] | None = None,
+    matchings: list[tuple[exp.Expr, exp.Expr]] | None = None,
     delta_only: bool = False,
-    **kwargs: t.Any,
+    **kwargs: object,
 ) -> t.List[Edit]:
     """
     Returns the list of changes between the source and the target expressions.

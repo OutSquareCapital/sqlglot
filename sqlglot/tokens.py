@@ -75,7 +75,7 @@ class _TokenizerBase:
     _KEYWORD_TRIE: t.ClassVar[t.Dict]
 
     @classmethod
-    def __init_subclass__(cls, **kwargs: t.Any) -> None:
+    def __init_subclass__(cls, **kwargs: object) -> None:
         super().__init_subclass__(**kwargs)
         cls._QUOTES = _convert_quotes(cls.QUOTES)
         cls._IDENTIFIERS = _convert_quotes(cls.IDENTIFIERS)

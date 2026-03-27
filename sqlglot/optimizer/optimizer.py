@@ -47,7 +47,7 @@ def optimize(
     dialect: DialectType = None,
     rules: Sequence[t.Callable] = RULES,
     sql: t.Optional[str] = None,
-    **kwargs,
+    **kwargs: object,
 ) -> exp.Expr:
     """
     Rewrite a sqlglot AST into an optimized form.
