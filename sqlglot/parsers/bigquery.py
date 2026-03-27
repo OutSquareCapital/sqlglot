@@ -12,6 +12,7 @@ from sqlglot.dialects.dialect import (
 from sqlglot.helper import seq_get, split_num_words
 from sqlglot.tokens import TokenType
 from builtins import type as Type
+
 if t.TYPE_CHECKING:
     from sqlglot._typing import E
 

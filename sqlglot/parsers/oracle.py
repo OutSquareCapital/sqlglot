@@ -8,6 +8,7 @@ from sqlglot.helper import seq_get
 from sqlglot.parser import OPTIONS_TYPE, build_coalesce
 from sqlglot.tokens import TokenType
 from builtins import type as Type
+
 if t.TYPE_CHECKING:
     from sqlglot._typing import E
 
