@@ -14,7 +14,7 @@ from collections import deque
 from copy import deepcopy
 from decimal import Decimal
 from functools import reduce
-from collections.abc import Iterator, Sequence, Collection
+from collections.abc import Callable, Iterator, Sequence, Collection
 from sqlglot.errors import ParseError
 from sqlglot.helper import (
     camel_to_snake_case,
@@ -34,7 +34,7 @@ if t.TYPE_CHECKING:
     from sqlglot.expressions.query import Select
 
     from collections.abc import MutableMapping
-    from typing_extensions import Unpack
+    from typing_extensions import Unpack, Self
 
 logger = logging.getLogger("sqlglot")
 
@@ -1569,10 +1569,10 @@ class Func(Condition):
     """
 
     is_var_len_args: t.ClassVar[bool] = False
-    _sql_names: t.ClassVar[t.List[str]] = []
+    _sql_names: t.ClassVar[list[str]] = []
 
     @classmethod
-    def from_arg_list(cls, args):
+    def from_arg_list(cls, args: Sequence[object]) -> Self:
         if cls.is_var_len_args:
             all_arg_keys = list(cls.arg_types)
             # If this function supports variable length argument treat the last argument as such.
@@ -1587,7 +1587,7 @@ class Func(Condition):
         return cls(**args_dict)
 
     @classmethod
-    def sql_names(cls):
+    def sql_names(cls) -> list[str]:
         if cls is Func:
             raise NotImplementedError(
                 "SQL name is only supported by concrete function implementations"
@@ -1597,13 +1597,13 @@ class Func(Condition):
         return cls._sql_names
 
     @classmethod
-    def sql_name(cls):
+    def sql_name(cls) -> str:
         sql_names = cls.sql_names()
         assert sql_names, f"Expected non-empty 'sql_names' for Func: {cls.__name__}."
         return sql_names[0]
 
     @classmethod
-    def default_parser_mappings(cls):
+    def default_parser_mappings(cls) -> dict[str, Callable[[Sequence[object]], Self]]:
         return {name: cls.from_arg_list for name in cls.sql_names()}
 
 

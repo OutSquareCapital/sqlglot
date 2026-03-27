@@ -21,7 +21,8 @@ from sqlglot.trie import new_trie
 from sqlglot.time import format_time
 from sqlglot.tokens import Token, Tokenizer, TokenType
 from sqlglot.trie import TrieResult, in_trie
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
+from builtins import type as Type
 
 if t.TYPE_CHECKING:
     from sqlglot._typing import E
@@ -40,7 +41,7 @@ OPTIONS_TYPE = dict[str, Sequence[t.Union[Sequence[str], str]]]
 TIME_ZONE_RE: Pattern[str] = re.compile(r":.*?[a-zA-Z\+\-]")
 
 
-def build_var_map(args: list) -> exp.StarMap | exp.VarMap:
+def build_var_map(args: list[exp.Expr]) -> exp.StarMap | exp.VarMap:
     if len(args) == 1 and args[0].is_star:
         return exp.StarMap(this=args[0])
 
@@ -53,13 +54,13 @@ def build_var_map(args: list) -> exp.StarMap | exp.VarMap:
     return exp.VarMap(keys=exp.array(*keys, copy=False), values=exp.array(*values, copy=False))
 
 
-def build_like(args: t.List) -> exp.Escape | exp.Like:
+def build_like(args: list[object]) -> exp.Escape | exp.Like:
     like = exp.Like(this=seq_get(args, 1), expression=seq_get(args, 0))
     return exp.Escape(this=like, expression=seq_get(args, 2)) if len(args) > 2 else like
 
 
 def binary_range_parser(
-    expr_type: t.Type[exp.Expr], reverse_args: bool = False
+    expr_type: Type[exp.Expr], reverse_args: bool = False
 ) -> t.Callable[[Parser, t.Optional[exp.Expr]], t.Optional[exp.Expr]]:
     def _parse_binary_range(self: Parser, this: t.Optional[exp.Expr]) -> t.Optional[exp.Expr]:
         expression = self._parse_bitwise()
@@ -70,7 +71,7 @@ def binary_range_parser(
     return _parse_binary_range
 
 
-def build_logarithm(args: t.List, dialect: Dialect) -> exp.Func:
+def build_logarithm(args: list[object], dialect: Dialect) -> exp.Func:
     # Default argument order is base, expression
     this = seq_get(args, 0)
     expression = seq_get(args, 1)
@@ -83,25 +84,27 @@ def build_logarithm(args: t.List, dialect: Dialect) -> exp.Func:
     return (exp.Ln if dialect.parser_class.LOG_DEFAULTS_TO_LN else exp.Log)(this=this)
 
 
-def build_hex(args: t.List, dialect: Dialect) -> exp.Hex | exp.LowerHex:
+def build_hex(args: list[object], dialect: Dialect) -> exp.Hex | exp.LowerHex:
     arg = seq_get(args, 0)
     return exp.LowerHex(this=arg) if dialect.HEX_LOWERCASE else exp.Hex(this=arg)
 
 
-def build_lower(args: t.List) -> exp.Lower | exp.Hex:
+def build_lower(args: list[object]) -> exp.Lower | exp.Hex:
     # LOWER(HEX(..)) can be simplified to LowerHex to simplify its transpilation
     arg = seq_get(args, 0)
     return exp.LowerHex(this=arg.this) if isinstance(arg, exp.Hex) else exp.Lower(this=arg)
 
 
-def build_upper(args: t.List) -> exp.Upper | exp.Hex:
+def build_upper(args: list[object]) -> exp.Upper | exp.Hex:
     # UPPER(HEX(..)) can be simplified to Hex to simplify its transpilation
     arg = seq_get(args, 0)
     return exp.Hex(this=arg.this) if isinstance(arg, exp.Hex) else exp.Upper(this=arg)
 
 
-def build_extract_json_with_path(expr_type: t.Type[E]) -> t.Callable[[t.List, Dialect], E]:
-    def _builder(args: t.List, dialect: Dialect) -> E:
+def build_extract_json_with_path(
+    expr_type: Type[E],
+) -> t.Callable[[list[t.Optional[exp.Expr]], Dialect], E]:
+    def _builder(args: list[t.Optional[exp.Expr]], dialect: Dialect) -> E:
         expression = expr_type(
             this=seq_get(args, 0), expression=dialect.to_json_path(seq_get(args, 1))
         )
@@ -115,7 +118,7 @@ def build_extract_json_with_path(expr_type: t.Type[E]) -> t.Callable[[t.List, Di
     return _builder
 
 
-def build_mod(args: t.List) -> exp.Mod:
+def build_mod(args: list[object]) -> exp.Mod:
     this = seq_get(args, 0)
     expression = seq_get(args, 1)
 
@@ -126,7 +129,7 @@ def build_mod(args: t.List) -> exp.Mod:
     return exp.Mod(this=this, expression=expression)
 
 
-def build_pad(args: t.List, is_left: bool = True):
+def build_pad(args: list[object], is_left: bool = True):
     return exp.Pad(
         this=seq_get(args, 0),
         expression=seq_get(args, 1),
@@ -136,7 +139,7 @@ def build_pad(args: t.List, is_left: bool = True):
 
 
 def build_array_constructor(
-    exp_class: t.Type[E], args: t.List, bracket_kind: TokenType, dialect: Dialect
+    exp_class: Type[E], args: list[exp.Expr], bracket_kind: TokenType, dialect: Dialect
 ) -> exp.Expr:
     array_exp = exp_class(expressions=args)
 
@@ -147,7 +150,7 @@ def build_array_constructor(
 
 
 def build_convert_timezone(
-    args: t.List, default_source_tz: t.Optional[str] = None
+    args: list[object], default_source_tz: t.Optional[str] = None
 ) -> t.Union[exp.ConvertTimezone, exp.Anonymous]:
     if len(args) == 2:
         source_tz = exp.Literal.string(default_source_tz) if default_source_tz else None
@@ -158,7 +161,7 @@ def build_convert_timezone(
     return exp.ConvertTimezone.from_arg_list(args)
 
 
-def build_trim(args: t.List, is_left: bool = True, reverse_args: bool = False):
+def build_trim(args: list[object], is_left: bool = True, reverse_args: bool = False):
     this, expression = seq_get(args, 0), seq_get(args, 1)
 
     if expression and reverse_args:
@@ -168,12 +171,12 @@ def build_trim(args: t.List, is_left: bool = True, reverse_args: bool = False):
 
 
 def build_coalesce(
-    args: t.List, is_nvl: t.Optional[bool] = None, is_null: t.Optional[bool] = None
+    args: list[object], is_nvl: t.Optional[bool] = None, is_null: t.Optional[bool] = None
 ) -> exp.Coalesce:
     return exp.Coalesce(this=seq_get(args, 0), expressions=args[1:], is_nvl=is_nvl, is_null=is_null)
 
 
-def build_locate_strposition(args: t.List):
+def build_locate_strposition(args: list[object]) -> exp.StrPosition:
     return exp.StrPosition(
         this=seq_get(args, 1),
         substr=seq_get(args, 0),
@@ -181,7 +184,7 @@ def build_locate_strposition(args: t.List):
     )
 
 
-def build_array_append(args: t.List, dialect: Dialect) -> exp.ArrayAppend:
+def build_array_append(args: list[object], dialect: Dialect) -> exp.ArrayAppend:
     """
     Builds ArrayAppend with NULL propagation semantics based on the dialect configuration.
 
@@ -202,7 +205,7 @@ def build_array_append(args: t.List, dialect: Dialect) -> exp.ArrayAppend:
     )
 
 
-def build_array_prepend(args: t.List, dialect: Dialect) -> exp.ArrayPrepend:
+def build_array_prepend(args: list[object], dialect: Dialect) -> exp.ArrayPrepend:
     """
     Builds ArrayPrepend with NULL propagation semantics based on the dialect configuration.
 
@@ -223,7 +226,7 @@ def build_array_prepend(args: t.List, dialect: Dialect) -> exp.ArrayPrepend:
     )
 
 
-def build_array_concat(args: t.List, dialect: Dialect) -> exp.ArrayConcat:
+def build_array_concat(args: list[object], dialect: Dialect) -> exp.ArrayConcat:
     """
     Builds ArrayConcat with NULL propagation semantics based on the dialect configuration.
 
@@ -244,7 +247,7 @@ def build_array_concat(args: t.List, dialect: Dialect) -> exp.ArrayConcat:
     )
 
 
-def build_array_remove(args: t.List, dialect: Dialect) -> exp.ArrayRemove:
+def build_array_remove(args: list[object], dialect: Dialect) -> exp.ArrayRemove:
     """
     Builds ArrayRemove with NULL propagation semantics based on the dialect configuration.
 
@@ -308,7 +311,7 @@ class Parser:
         "_tokens_size",
     )
 
-    FUNCTIONS: t.ClassVar[t.Dict[str, t.Callable]] = {
+    FUNCTIONS: t.ClassVar[dict[str, Callable[..., t.Any]]] = {
         **{name: func.from_arg_list for name, func in exp.FUNCTION_BY_NAME.items()},
         **dict.fromkeys(("COALESCE", "IFNULL", "NVL"), build_coalesce),
         "ARRAY": lambda args, dialect: exp.Array(expressions=args),
@@ -407,7 +410,7 @@ class Parser:
         "VAR_MAP": build_var_map,
     }
 
-    NO_PAREN_FUNCTIONS: t.ClassVar[t.Dict] = {
+    NO_PAREN_FUNCTIONS: t.ClassVar[dict[TokenType, type[exp.Expr]]] = {
         TokenType.CURRENT_DATE: exp.CurrentDate,
         TokenType.CURRENT_DATETIME: exp.CurrentDate,
         TokenType.CURRENT_TIME: exp.CurrentTime,
@@ -416,14 +419,14 @@ class Parser:
         TokenType.CURRENT_ROLE: exp.CurrentRole,
     }
 
-    STRUCT_TYPE_TOKENS: t.ClassVar = {
+    STRUCT_TYPE_TOKENS: t.ClassVar[set[TokenType]] = {
         TokenType.NESTED,
         TokenType.OBJECT,
         TokenType.STRUCT,
         TokenType.UNION,
     }
 
-    NESTED_TYPE_TOKENS: t.ClassVar = {
+    NESTED_TYPE_TOKENS: t.ClassVar[set[TokenType]] = {
         TokenType.ARRAY,
         TokenType.LIST,
         TokenType.LOWCARDINALITY,
@@ -433,19 +436,19 @@ class Parser:
         *STRUCT_TYPE_TOKENS,
     }
 
-    ENUM_TYPE_TOKENS: t.ClassVar = {
+    ENUM_TYPE_TOKENS: t.ClassVar[set[TokenType]] = {
         TokenType.DYNAMIC,
         TokenType.ENUM,
         TokenType.ENUM8,
         TokenType.ENUM16,
     }
 
-    AGGREGATE_TYPE_TOKENS: t.ClassVar = {
+    AGGREGATE_TYPE_TOKENS: t.ClassVar[set[TokenType]] = {
         TokenType.AGGREGATEFUNCTION,
         TokenType.SIMPLEAGGREGATEFUNCTION,
     }
 
-    TYPE_TOKENS: t.ClassVar = {
+    TYPE_TOKENS: t.ClassVar[set[TokenType]] = {
         TokenType.BIT,
         TokenType.BOOLEAN,
         TokenType.TINYINT,
@@ -566,7 +569,7 @@ class Parser:
         *AGGREGATE_TYPE_TOKENS,
     }
 
-    SIGNED_TO_UNSIGNED_TYPE_TOKEN: t.ClassVar = {
+    SIGNED_TO_UNSIGNED_TYPE_TOKEN: t.ClassVar[dict[TokenType, TokenType]] = {
         TokenType.BIGINT: TokenType.UBIGINT,
         TokenType.INT: TokenType.UINT,
         TokenType.MEDIUMINT: TokenType.UMEDIUMINT,
@@ -576,25 +579,25 @@ class Parser:
         TokenType.DOUBLE: TokenType.UDOUBLE,
     }
 
-    SUBQUERY_PREDICATES: t.ClassVar = {
+    SUBQUERY_PREDICATES: t.ClassVar[dict[TokenType, type[exp.Expr]]] = {
         TokenType.ANY: exp.Any,
         TokenType.ALL: exp.All,
         TokenType.EXISTS: exp.Exists,
         TokenType.SOME: exp.Any,
     }
 
-    SUBQUERY_TOKENS: t.ClassVar = {
+    SUBQUERY_TOKENS: t.ClassVar[set[TokenType]] = {
         TokenType.SELECT,
         TokenType.WITH,
         TokenType.FROM,
     }
 
-    RESERVED_TOKENS: t.ClassVar = {
+    RESERVED_TOKENS: t.ClassVar[set[TokenType]] = {
         *Tokenizer.SINGLE_TOKENS.values(),
         TokenType.SELECT,
     } - {TokenType.IDENTIFIER}
 
-    DB_CREATABLES: t.ClassVar = {
+    DB_CREATABLES: t.ClassVar[set[TokenType]] = {
         TokenType.DATABASE,
         TokenType.DICTIONARY,
         TokenType.FILE_FORMAT,
@@ -614,7 +617,7 @@ class Parser:
         TokenType.WAREHOUSE,
     }
 
-    CREATABLES: t.ClassVar = {
+    CREATABLES: t.ClassVar[set[TokenType]] = {
         TokenType.COLUMN,
         TokenType.CONSTRAINT,
         TokenType.FOREIGN_KEY,
@@ -625,14 +628,14 @@ class Parser:
         *DB_CREATABLES,
     }
 
-    TRIGGER_EVENTS: t.ClassVar = {
+    TRIGGER_EVENTS: t.ClassVar[set[TokenType]] = {
         TokenType.INSERT,
         TokenType.UPDATE,
         TokenType.DELETE,
         TokenType.TRUNCATE,
     }
 
-    ALTERABLES: t.ClassVar = {
+    ALTERABLES: t.ClassVar[set[TokenType]] = {
         TokenType.INDEX,
         TokenType.TABLE,
         TokenType.VIEW,
@@ -640,7 +643,7 @@ class Parser:
     }
 
     # Tokens that can represent identifiers
-    ID_VAR_TOKENS: t.ClassVar[t.Set] = {
+    ID_VAR_TOKENS: t.ClassVar[set[TokenType]] = {
         TokenType.ALL,
         TokenType.ANALYZE,
         TokenType.ATTACH,
@@ -746,7 +749,7 @@ class Parser:
         *NO_PAREN_FUNCTIONS,
     } - {TokenType.UNION}
 
-    TABLE_ALIAS_TOKENS: t.ClassVar[t.Set] = ID_VAR_TOKENS - {
+    TABLE_ALIAS_TOKENS: t.ClassVar[set[TokenType]] = ID_VAR_TOKENS - {
         TokenType.ANTI,
         TokenType.ASOF,
         TokenType.FULL,
@@ -758,28 +761,30 @@ class Parser:
         TokenType.WINDOW,
     }
 
-    ALIAS_TOKENS: t.ClassVar = ID_VAR_TOKENS
+    ALIAS_TOKENS: t.ClassVar[set[TokenType]] = ID_VAR_TOKENS
 
-    COLON_PLACEHOLDER_TOKENS: t.ClassVar = ID_VAR_TOKENS
+    COLON_PLACEHOLDER_TOKENS: t.ClassVar[set[TokenType]] = ID_VAR_TOKENS
 
-    ARRAY_CONSTRUCTORS: t.ClassVar = {
+    ARRAY_CONSTRUCTORS: t.ClassVar[dict[str, type[exp.Expr]]] = {
         "ARRAY": exp.Array,
         "LIST": exp.List,
     }
 
-    COMMENT_TABLE_ALIAS_TOKENS: t.ClassVar = TABLE_ALIAS_TOKENS - {TokenType.IS}
+    COMMENT_TABLE_ALIAS_TOKENS: t.ClassVar[set[TokenType]] = TABLE_ALIAS_TOKENS - {TokenType.IS}
 
-    UPDATE_ALIAS_TOKENS: t.ClassVar = TABLE_ALIAS_TOKENS - {TokenType.SET}
+    UPDATE_ALIAS_TOKENS: t.ClassVar[set[TokenType]] = TABLE_ALIAS_TOKENS - {TokenType.SET}
 
-    TRIM_TYPES: t.ClassVar = {"LEADING", "TRAILING", "BOTH"}
+    TRIM_TYPES: t.ClassVar[set[str]] = {"LEADING", "TRAILING", "BOTH"}
 
     # Tokens that indicate a simple column reference
-    IDENTIFIER_TOKENS: t.ClassVar[t.FrozenSet] = frozenset({TokenType.VAR, TokenType.IDENTIFIER})
+    IDENTIFIER_TOKENS: t.ClassVar[frozenset[TokenType]] = frozenset(
+        {TokenType.VAR, TokenType.IDENTIFIER}
+    )
 
-    BRACKETS: t.ClassVar[t.FrozenSet] = frozenset({TokenType.L_BRACKET, TokenType.L_BRACE})
+    BRACKETS: t.ClassVar[frozenset[TokenType]] = frozenset({TokenType.L_BRACKET, TokenType.L_BRACE})
 
     # Postfix tokens that prevent the bare column fast path
-    COLUMN_POSTFIX_TOKENS: t.ClassVar[t.FrozenSet] = frozenset(
+    COLUMN_POSTFIX_TOKENS: t.ClassVar[frozenset[TokenType]] = frozenset(
         {
             TokenType.L_PAREN,
             TokenType.L_BRACKET,
@@ -789,7 +794,7 @@ class Parser:
         }
     )
 
-    TABLE_POSTFIX_TOKENS: t.ClassVar[t.FrozenSet] = frozenset(
+    TABLE_POSTFIX_TOKENS: t.ClassVar[frozenset[TokenType]] = frozenset(
         {
             TokenType.L_PAREN,
             TokenType.L_BRACKET,
@@ -800,7 +805,7 @@ class Parser:
         }
     )
 
-    FUNC_TOKENS: t.ClassVar = {
+    FUNC_TOKENS: t.ClassVar[set[TokenType]] = {
         TokenType.COLLATE,
         TokenType.COMMAND,
         TokenType.CURRENT_DATE,
@@ -852,59 +857,59 @@ class Parser:
         *SUBQUERY_PREDICATES,
     }
 
-    CONJUNCTION: t.ClassVar[t.Dict[TokenType, t.Type[exp.Expr]]] = {
+    CONJUNCTION: t.ClassVar[dict[TokenType, Type[exp.Expr]]] = {
         TokenType.AND: exp.And,
     }
 
-    ASSIGNMENT: t.ClassVar[t.Dict[TokenType, t.Type[exp.Expr]]] = {
+    ASSIGNMENT: t.ClassVar[dict[TokenType, Type[exp.Expr]]] = {
         TokenType.COLON_EQ: exp.PropertyEQ,
     }
 
-    DISJUNCTION: t.ClassVar[t.Dict[TokenType, t.Type[exp.Expr]]] = {
+    DISJUNCTION: t.ClassVar[dict[TokenType, Type[exp.Expr]]] = {
         TokenType.OR: exp.Or,
     }
 
-    EQUALITY: t.ClassVar = {
+    EQUALITY: t.ClassVar[dict[TokenType, Type[exp.Expr]]] = {
         TokenType.EQ: exp.EQ,
         TokenType.NEQ: exp.NEQ,
         TokenType.NULLSAFE_EQ: exp.NullSafeEQ,
     }
 
-    COMPARISON: t.ClassVar = {
+    COMPARISON: t.ClassVar[dict[TokenType, Type[exp.Expr]]] = {
         TokenType.GT: exp.GT,
         TokenType.GTE: exp.GTE,
         TokenType.LT: exp.LT,
         TokenType.LTE: exp.LTE,
     }
 
-    BITWISE: t.ClassVar = {
+    BITWISE: t.ClassVar[dict[TokenType, Type[exp.Expr]]] = {
         TokenType.AMP: exp.BitwiseAnd,
         TokenType.CARET: exp.BitwiseXor,
         TokenType.PIPE: exp.BitwiseOr,
     }
 
-    TERM: t.ClassVar = {
+    TERM: t.ClassVar[dict[TokenType, Type[exp.Expr]]] = {
         TokenType.DASH: exp.Sub,
         TokenType.PLUS: exp.Add,
         TokenType.MOD: exp.Mod,
         TokenType.COLLATE: exp.Collate,
     }
 
-    FACTOR: t.ClassVar = {
+    FACTOR: t.ClassVar[dict[TokenType, Type[exp.Expr]]] = {
         TokenType.DIV: exp.IntDiv,
         TokenType.LR_ARROW: exp.Distance,
         TokenType.SLASH: exp.Div,
         TokenType.STAR: exp.Mul,
     }
 
-    EXPONENT: t.ClassVar[t.Dict[TokenType, t.Type[exp.Expr]]] = {}
+    EXPONENT: t.ClassVar[dict[TokenType, Type[exp.Expr]]] = {}
 
-    TIMES: t.ClassVar = {
+    TIMES: t.ClassVar[set[TokenType]] = {
         TokenType.TIME,
         TokenType.TIMETZ,
     }
 
-    TIMESTAMPS: t.ClassVar = {
+    TIMESTAMPS: t.ClassVar[set[TokenType]] = {
         TokenType.TIMESTAMP,
         TokenType.TIMESTAMPNTZ,
         TokenType.TIMESTAMPTZ,
@@ -912,25 +917,25 @@ class Parser:
         *TIMES,
     }
 
-    SET_OPERATIONS: t.ClassVar = {
+    SET_OPERATIONS: t.ClassVar[set[TokenType]] = {
         TokenType.UNION,
         TokenType.INTERSECT,
         TokenType.EXCEPT,
     }
 
-    JOIN_METHODS: t.ClassVar = {
+    JOIN_METHODS: t.ClassVar[set[TokenType]] = {
         TokenType.ASOF,
         TokenType.NATURAL,
         TokenType.POSITIONAL,
     }
 
-    JOIN_SIDES: t.ClassVar = {
+    JOIN_SIDES: t.ClassVar[set[TokenType]] = {
         TokenType.LEFT,
         TokenType.RIGHT,
         TokenType.FULL,
     }
 
-    JOIN_KINDS: t.ClassVar = {
+    JOIN_KINDS: t.ClassVar[set[TokenType]] = {
         TokenType.ANTI,
         TokenType.CROSS,
         TokenType.INNER,
@@ -939,10 +944,10 @@ class Parser:
         TokenType.STRAIGHT_JOIN,
     }
 
-    JOIN_HINTS: t.ClassVar[t.Set[str]] = set()
+    JOIN_HINTS: t.ClassVar[set[str]] = set()
 
     # Tokens that unambiguously end a table reference on the fast path
-    TABLE_TERMINATORS: t.ClassVar[t.FrozenSet] = frozenset(
+    TABLE_TERMINATORS: t.ClassVar[frozenset[TokenType]] = frozenset(
         {
             TokenType.COMMA,
             TokenType.GROUP_BY,
@@ -962,7 +967,7 @@ class Parser:
         }
     )
 
-    LAMBDAS: t.ClassVar = {
+    LAMBDAS: t.ClassVar[dict[TokenType, Callable[..., t.Any]]] = {
         TokenType.ARROW: lambda self, expressions: self.expression(
             exp.Lambda(
                 this=self._replace_lambda(
@@ -980,11 +985,11 @@ class Parser:
     # Whether lambda args include type annotations, e.g. TRANSFORM(arr, x INT -> x + 1) in Snowflake
     TYPED_LAMBDA_ARGS: t.ClassVar[bool] = False
 
-    LAMBDA_ARG_TERMINATORS: t.ClassVar[t.FrozenSet] = frozenset(
+    LAMBDA_ARG_TERMINATORS: t.ClassVar[frozenset[TokenType]] = frozenset(
         {TokenType.COMMA, TokenType.R_PAREN}
     )
 
-    COLUMN_OPERATORS: t.ClassVar = {
+    COLUMN_OPERATORS: t.ClassVar[dict[TokenType, t.Any]] = {
         TokenType.DOT: None,
         TokenType.DOTCOLON: lambda self, this, to: self.expression(exp.JSONCast(this=this, to=to)),
         TokenType.DCOLON: lambda self, this, to: self.build_cast(
@@ -1016,12 +1021,12 @@ class Parser:
         ),
     }
 
-    CAST_COLUMN_OPERATORS: t.ClassVar = {
+    CAST_COLUMN_OPERATORS: t.ClassVar[set[TokenType]] = {
         TokenType.DOTCOLON,
         TokenType.DCOLON,
     }
 
-    EXPRESSION_PARSERS: t.ClassVar = {
+    EXPRESSION_PARSERS: t.ClassVar[dict[t.Type[exp.Expr], Callable[..., t.Any]]] = {
         exp.Cluster: lambda self: self._parse_sort(exp.Cluster, TokenType.CLUSTER_BY),
         exp.Column: lambda self: self._parse_column(),
         exp.ColumnDef: lambda self: self._parse_column_def(self._parse_column()),
@@ -1057,7 +1062,7 @@ class Parser:
         exp.With: lambda self: self._parse_with(),
     }
 
-    STATEMENT_PARSERS: t.ClassVar = {
+    STATEMENT_PARSERS: t.ClassVar[dict[TokenType, Callable[..., t.Any]]] = {
         TokenType.ALTER: lambda self: self._parse_alter(),
         TokenType.ANALYZE: lambda self: self._parse_analyze(),
         TokenType.BEGIN: lambda self: self._parse_transaction(),
@@ -1089,7 +1094,7 @@ class Parser:
         TokenType.SEMICOLON: lambda self: exp.Semicolon(),
     }
 
-    UNARY_PARSERS: t.ClassVar = {
+    UNARY_PARSERS: t.ClassVar[dict[TokenType, Callable[..., t.Any]]] = {
         TokenType.PLUS: lambda self: self._parse_unary(),  # Unary + is handled as a no-op
         TokenType.NOT: lambda self: self.expression(exp.Not(this=self._parse_equality())),
         TokenType.TILDE: lambda self: self.expression(exp.BitwiseNot(this=self._parse_unary())),
@@ -1098,7 +1103,7 @@ class Parser:
         TokenType.DPIPE_SLASH: lambda self: self.expression(exp.Cbrt(this=self._parse_unary())),
     }
 
-    STRING_PARSERS: t.ClassVar = {
+    STRING_PARSERS: t.ClassVar[dict[TokenType, Callable[..., t.Any]]] = {
         TokenType.HEREDOC_STRING: lambda self, token: self.expression(
             exp.RawString(this=token.text), token
         ),
@@ -1119,7 +1124,7 @@ class Parser:
         ),
     }
 
-    NUMERIC_PARSERS: t.ClassVar = {
+    NUMERIC_PARSERS: t.ClassVar[dict[TokenType, Callable[..., t.Any]]] = {
         TokenType.BIT_STRING: lambda self, token: self.expression(
             exp.BitString(this=token.text), token
         ),
@@ -1140,7 +1145,7 @@ class Parser:
         ),
     }
 
-    PRIMARY_PARSERS: t.ClassVar = {
+    PRIMARY_PARSERS: t.ClassVar[dict[TokenType, Callable[..., t.Any]]] = {
         **STRING_PARSERS,
         **NUMERIC_PARSERS,
         TokenType.INTRODUCER: lambda self, token: self._parse_introducer(token),
@@ -1151,7 +1156,7 @@ class Parser:
         TokenType.STAR: lambda self, _: self._parse_star_ops(),
     }
 
-    PLACEHOLDER_PARSERS: t.ClassVar = {
+    PLACEHOLDER_PARSERS: t.ClassVar[dict[TokenType, Callable[..., t.Any]]] = {
         TokenType.PLACEHOLDER: lambda self: self.expression(exp.Placeholder()),
         TokenType.PARAMETER: lambda self: self._parse_parameter(),
         TokenType.COLON: lambda self: (
@@ -1161,7 +1166,7 @@ class Parser:
         ),
     }
 
-    RANGE_PARSERS: t.ClassVar = {
+    RANGE_PARSERS: t.ClassVar[dict[TokenType, Callable[..., t.Any]]] = {
         TokenType.AT_GT: binary_range_parser(exp.ArrayContainsAll),
         TokenType.BETWEEN: lambda self, this: self._parse_between(this),
         TokenType.GLOB: binary_range_parser(exp.Glob),
@@ -1184,7 +1189,7 @@ class Parser:
         TokenType.AMP_GT: binary_range_parser(exp.ExtendsRight),
     }
 
-    PIPE_SYNTAX_TRANSFORM_PARSERS: t.ClassVar = {
+    PIPE_SYNTAX_TRANSFORM_PARSERS: t.ClassVar[dict[str, Callable[..., t.Any]]] = {
         "AGGREGATE": lambda self, query: self._parse_pipe_syntax_aggregate(query),
         "AS": lambda self, query: self._build_pipe_cte(
             query, [exp.Star()], self._parse_table_alias()
@@ -1201,7 +1206,7 @@ class Parser:
         "WHERE": lambda self, query: query.where(self._parse_where(), copy=False),
     }
 
-    PROPERTY_PARSERS: t.ClassVar[t.Dict[str, t.Callable]] = {
+    PROPERTY_PARSERS: t.ClassVar[dict[str, Callable[..., t.Any]]] = {
         "ALLOWED_VALUES": lambda self: self.expression(
             exp.AllowedValuesProperty(expressions=self._parse_csv(self._parse_primary))
         ),
@@ -1316,7 +1321,7 @@ class Parser:
         "WITH": lambda self: self._parse_with_property(),
     }
 
-    CONSTRAINT_PARSERS: t.ClassVar = {
+    CONSTRAINT_PARSERS: t.ClassVar[dict[str, Callable[..., t.Any]]] = {
         "AUTOINCREMENT": lambda self: self._parse_auto_increment(),
         "AUTO_INCREMENT": lambda self: self._parse_auto_increment(),
         "CASESPECIFIC": lambda self: self.expression(exp.CaseSpecificColumnConstraint(not_=False)),
@@ -1410,7 +1415,7 @@ class Parser:
 
         return self.expression(klass(this=this, expression=expression))
 
-    ALTER_PARSERS: t.ClassVar = {
+    ALTER_PARSERS: t.ClassVar[dict[str, Callable[..., t.Any]]] = {
         "ADD": lambda self: self._parse_alter_table_add(),
         "AS": lambda self: self._parse_select(),
         "ALTER": lambda self: self._parse_alter_table_alter(),
@@ -1424,14 +1429,14 @@ class Parser:
         ),
     }
 
-    ALTER_ALTER_PARSERS: t.ClassVar = {
+    ALTER_ALTER_PARSERS: t.ClassVar[dict[str, Callable[..., t.Any]]] = {
         "DISTKEY": lambda self: self._parse_alter_diststyle(),
         "DISTSTYLE": lambda self: self._parse_alter_diststyle(),
         "SORTKEY": lambda self: self._parse_alter_sortkey(),
         "COMPOUND": lambda self: self._parse_alter_sortkey(compound=True),
     }
 
-    SCHEMA_UNNAMED_CONSTRAINTS: t.ClassVar = {
+    SCHEMA_UNNAMED_CONSTRAINTS: t.ClassVar[set[str]] = {
         "CHECK",
         "EXCLUDE",
         "FOREIGN KEY",
@@ -1443,7 +1448,7 @@ class Parser:
         "TRUNCATE",
     }
 
-    NO_PAREN_FUNCTION_PARSERS: t.ClassVar = {
+    NO_PAREN_FUNCTION_PARSERS: t.ClassVar[dict[str, Callable[..., t.Any]]] = {
         "ANY": lambda self: self.expression(exp.Any(this=self._parse_bitwise())),
         "CASE": lambda self: self._parse_case(),
         "CONNECT_BY_ROOT": lambda self: self.expression(
@@ -1452,16 +1457,21 @@ class Parser:
         "IF": lambda self: self._parse_if(),
     }
 
-    INVALID_FUNC_NAME_TOKENS: t.ClassVar = {
+    INVALID_FUNC_NAME_TOKENS: t.ClassVar[set[TokenType]] = {
         TokenType.IDENTIFIER,
         TokenType.STRING,
     }
 
-    FUNCTIONS_WITH_ALIASED_ARGS: t.ClassVar = {"STRUCT"}
+    FUNCTIONS_WITH_ALIASED_ARGS: t.ClassVar[set[str]] = {"STRUCT"}
 
-    KEY_VALUE_DEFINITIONS: t.ClassVar = (exp.Alias, exp.EQ, exp.PropertyEQ, exp.Slice)
+    KEY_VALUE_DEFINITIONS: t.ClassVar[tuple[type[exp.Expr], ...]] = (
+        exp.Alias,
+        exp.EQ,
+        exp.PropertyEQ,
+        exp.Slice,
+    )
 
-    FUNCTION_PARSERS: t.ClassVar[t.Dict[str, t.Callable]] = {
+    FUNCTION_PARSERS: t.ClassVar[t.Dict[str, Callable[..., t.Any]]] = {
         **{
             name: lambda self: self._parse_max_min_by(exp.ArgMax) for name in exp.ArgMax.sql_names()
         },
@@ -1496,7 +1506,7 @@ class Parser:
         "XMLTABLE": lambda self: self._parse_xml_table(),
     }
 
-    QUERY_MODIFIER_PARSERS: t.ClassVar = {
+    QUERY_MODIFIER_PARSERS: t.ClassVar[dict[TokenType, Callable[..., t.Any]]] = {
         TokenType.MATCH_RECOGNIZE: lambda self: ("match", self._parse_match_recognize()),
         TokenType.PREWHERE: lambda self: ("prewhere", self._parse_prewhere()),
         TokenType.WHERE: lambda self: ("where", self._parse_where()),
@@ -1524,16 +1534,16 @@ class Parser:
         TokenType.CONNECT_BY: lambda self: ("connect", self._parse_connect(skip_start_token=True)),
         TokenType.START_WITH: lambda self: ("connect", self._parse_connect()),
     }
-    QUERY_MODIFIER_TOKENS: t.ClassVar = set(QUERY_MODIFIER_PARSERS)
+    QUERY_MODIFIER_TOKENS: t.ClassVar[set[TokenType]] = set(QUERY_MODIFIER_PARSERS)
 
-    SET_PARSERS: t.ClassVar = {
+    SET_PARSERS: t.ClassVar[dict[str, Callable[..., t.Any]]] = {
         "GLOBAL": lambda self: self._parse_set_item_assignment("GLOBAL"),
         "LOCAL": lambda self: self._parse_set_item_assignment("LOCAL"),
         "SESSION": lambda self: self._parse_set_item_assignment("SESSION"),
         "TRANSACTION": lambda self: self._parse_set_transaction(),
     }
 
-    SHOW_PARSERS: t.ClassVar[t.Dict[str, t.Callable]] = {}
+    SHOW_PARSERS: t.ClassVar[dict[str, Callable[..., t.Any]]] = {}
 
     TYPE_LITERAL_PARSERS: t.ClassVar = {
         exp.DType.JSON: lambda self, this, _: self.expression(exp.ParseJSON(this=this)),
@@ -1541,11 +1551,19 @@ class Parser:
 
     TYPE_CONVERTERS: t.ClassVar[t.Dict[exp.DType, t.Callable[[exp.DataType], exp.DataType]]] = {}
 
-    DDL_SELECT_TOKENS: t.ClassVar = {TokenType.SELECT, TokenType.WITH, TokenType.L_PAREN}
+    DDL_SELECT_TOKENS: t.ClassVar[set[TokenType]] = {
+        TokenType.SELECT,
+        TokenType.WITH,
+        TokenType.L_PAREN,
+    }
 
-    PRE_VOLATILE_TOKENS: t.ClassVar = {TokenType.CREATE, TokenType.REPLACE, TokenType.UNIQUE}
+    PRE_VOLATILE_TOKENS: t.ClassVar[set[TokenType]] = {
+        TokenType.CREATE,
+        TokenType.REPLACE,
+        TokenType.UNIQUE,
+    }
 
-    TRANSACTION_KIND: t.ClassVar = {"DEFERRED", "IMMEDIATE", "EXCLUSIVE"}
+    TRANSACTION_KIND: t.ClassVar[set[str]] = {"DEFERRED", "IMMEDIATE", "EXCLUSIVE"}
     TRANSACTION_CHARACTERISTICS: t.ClassVar[OPTIONS_TYPE] = {
         "ISOLATION": (
             ("LEVEL", "REPEATABLE", "READ"),
@@ -1636,29 +1654,50 @@ class Parser:
         **dict.fromkeys(("GROUP", "TIES"), tuple()),
     }
 
-    INSERT_ALTERNATIVES: t.ClassVar = {"ABORT", "FAIL", "IGNORE", "REPLACE", "ROLLBACK"}
+    INSERT_ALTERNATIVES: t.ClassVar[set[str]] = {"ABORT", "FAIL", "IGNORE", "REPLACE", "ROLLBACK"}
 
-    CLONE_KEYWORDS: t.ClassVar = {"CLONE", "COPY"}
-    HISTORICAL_DATA_PREFIX: t.ClassVar = {"AT", "BEFORE", "END"}
-    HISTORICAL_DATA_KIND: t.ClassVar = {"OFFSET", "STATEMENT", "STREAM", "TIMESTAMP", "VERSION"}
+    CLONE_KEYWORDS: t.ClassVar[set[str]] = {"CLONE", "COPY"}
+    HISTORICAL_DATA_PREFIX: t.ClassVar[set[str]] = {"AT", "BEFORE", "END"}
+    HISTORICAL_DATA_KIND: t.ClassVar[set[str]] = {
+        "OFFSET",
+        "STATEMENT",
+        "STREAM",
+        "TIMESTAMP",
+        "VERSION",
+    }
 
-    OPCLASS_FOLLOW_KEYWORDS: t.ClassVar = {"ASC", "DESC", "NULLS", "WITH"}
+    OPCLASS_FOLLOW_KEYWORDS: t.ClassVar[set[str]] = {"ASC", "DESC", "NULLS", "WITH"}
 
-    OPTYPE_FOLLOW_TOKENS: t.ClassVar = {TokenType.COMMA, TokenType.R_PAREN}
+    OPTYPE_FOLLOW_TOKENS: t.ClassVar[set[TokenType]] = {TokenType.COMMA, TokenType.R_PAREN}
 
-    TABLE_INDEX_HINT_TOKENS: t.ClassVar = {TokenType.FORCE, TokenType.IGNORE, TokenType.USE}
+    TABLE_INDEX_HINT_TOKENS: t.ClassVar[set[TokenType]] = {
+        TokenType.FORCE,
+        TokenType.IGNORE,
+        TokenType.USE,
+    }
 
-    VIEW_ATTRIBUTES: t.ClassVar = {"ENCRYPTION", "SCHEMABINDING", "VIEW_METADATA"}
+    VIEW_ATTRIBUTES: t.ClassVar[set[str]] = {"ENCRYPTION", "SCHEMABINDING", "VIEW_METADATA"}
 
-    WINDOW_ALIAS_TOKENS: t.ClassVar = ID_VAR_TOKENS - {TokenType.RANGE, TokenType.ROWS}
-    WINDOW_BEFORE_PAREN_TOKENS: t.ClassVar = {TokenType.OVER}
+    WINDOW_ALIAS_TOKENS: t.ClassVar[set[TokenType]] = ID_VAR_TOKENS - {
+        TokenType.RANGE,
+        TokenType.ROWS,
+    }
+    WINDOW_BEFORE_PAREN_TOKENS: t.ClassVar[set[TokenType]] = {TokenType.OVER}
     WINDOW_SIDES: t.ClassVar = {"FOLLOWING", "PRECEDING"}
 
-    JSON_KEY_VALUE_SEPARATOR_TOKENS: t.ClassVar = {TokenType.COLON, TokenType.COMMA, TokenType.IS}
+    JSON_KEY_VALUE_SEPARATOR_TOKENS: t.ClassVar[set[TokenType]] = {
+        TokenType.COLON,
+        TokenType.COMMA,
+        TokenType.IS,
+    }
 
-    FETCH_TOKENS: t.ClassVar = ID_VAR_TOKENS - {TokenType.ROW, TokenType.ROWS, TokenType.PERCENT}
+    FETCH_TOKENS: t.ClassVar[set[TokenType]] = ID_VAR_TOKENS - {
+        TokenType.ROW,
+        TokenType.ROWS,
+        TokenType.PERCENT,
+    }
 
-    ADD_CONSTRAINT_TOKENS: t.ClassVar = {
+    ADD_CONSTRAINT_TOKENS: t.ClassVar[set[TokenType]] = {
         TokenType.CONSTRAINT,
         TokenType.FOREIGN_KEY,
         TokenType.INDEX,
@@ -1667,34 +1706,42 @@ class Parser:
         TokenType.UNIQUE,
     }
 
-    DISTINCT_TOKENS: t.ClassVar = {TokenType.DISTINCT}
+    DISTINCT_TOKENS: t.ClassVar[set[TokenType]] = {TokenType.DISTINCT}
 
-    UNNEST_OFFSET_ALIAS_TOKENS: t.ClassVar = TABLE_ALIAS_TOKENS - SET_OPERATIONS
+    UNNEST_OFFSET_ALIAS_TOKENS: t.ClassVar[set[TokenType]] = TABLE_ALIAS_TOKENS - SET_OPERATIONS
 
-    SELECT_START_TOKENS: t.ClassVar = {TokenType.L_PAREN, TokenType.WITH, TokenType.SELECT}
+    SELECT_START_TOKENS: t.ClassVar[set[TokenType]] = {
+        TokenType.L_PAREN,
+        TokenType.WITH,
+        TokenType.SELECT,
+    }
 
-    COPY_INTO_VARLEN_OPTIONS: t.ClassVar = {
+    COPY_INTO_VARLEN_OPTIONS: t.ClassVar[set[str]] = {
         "FILE_FORMAT",
         "COPY_OPTIONS",
         "FORMAT_OPTIONS",
         "CREDENTIAL",
     }
 
-    IS_JSON_PREDICATE_KIND: t.ClassVar = {"VALUE", "SCALAR", "ARRAY", "OBJECT"}
+    IS_JSON_PREDICATE_KIND: t.ClassVar[set[str]] = {"VALUE", "SCALAR", "ARRAY", "OBJECT"}
 
     ODBC_DATETIME_LITERALS: t.ClassVar[t.Dict[str, t.Type[exp.Expr]]] = {}
 
-    ON_CONDITION_TOKENS: t.ClassVar = {"ERROR", "NULL", "TRUE", "FALSE", "EMPTY"}
+    ON_CONDITION_TOKENS: t.ClassVar[set[str]] = {"ERROR", "NULL", "TRUE", "FALSE", "EMPTY"}
 
-    PRIVILEGE_FOLLOW_TOKENS: t.ClassVar = {TokenType.ON, TokenType.COMMA, TokenType.L_PAREN}
+    PRIVILEGE_FOLLOW_TOKENS: t.ClassVar[set[TokenType]] = {
+        TokenType.ON,
+        TokenType.COMMA,
+        TokenType.L_PAREN,
+    }
 
     # The style options for the DESCRIBE statement
-    DESCRIBE_STYLES: t.ClassVar = {"ANALYZE", "EXTENDED", "FORMATTED", "HISTORY"}
+    DESCRIBE_STYLES: t.ClassVar[set[str]] = {"ANALYZE", "EXTENDED", "FORMATTED", "HISTORY"}
 
-    SET_ASSIGNMENT_DELIMITERS: t.ClassVar = {"=", ":=", "TO"}
+    SET_ASSIGNMENT_DELIMITERS: t.ClassVar[set[str]] = {"=", ":=", "TO"}
 
     # The style options for the ANALYZE statement
-    ANALYZE_STYLES: t.ClassVar = {
+    ANALYZE_STYLES: t.ClassVar[set[str]] = {
         "BUFFER_USAGE_LIMIT",
         "FULL",
         "LOCAL",
@@ -1704,7 +1751,7 @@ class Parser:
         "VERBOSE",
     }
 
-    ANALYZE_EXPRESSION_PARSERS: t.ClassVar = {
+    ANALYZE_EXPRESSION_PARSERS: t.ClassVar[t.Dict[str, Callable[..., t.Any]]] = {
         "ALL": lambda self: self._parse_analyze_columns(),
         "COMPUTE": lambda self: self._parse_analyze_statistics(),
         "DELETE": lambda self: self._parse_analyze_delete(),
@@ -1716,106 +1763,111 @@ class Parser:
         "VALIDATE": lambda self: self._parse_analyze_validate(),
     }
 
-    PARTITION_KEYWORDS: t.ClassVar = {"PARTITION", "SUBPARTITION"}
+    PARTITION_KEYWORDS: t.ClassVar[set[str]] = {"PARTITION", "SUBPARTITION"}
 
-    AMBIGUOUS_ALIAS_TOKENS: t.ClassVar = (TokenType.LIMIT, TokenType.OFFSET)
+    AMBIGUOUS_ALIAS_TOKENS: t.ClassVar[tuple[TokenType, ...]] = (TokenType.LIMIT, TokenType.OFFSET)
 
     OPERATION_MODIFIERS: t.ClassVar[t.Set[str]] = set()
 
-    RECURSIVE_CTE_SEARCH_KIND: t.ClassVar = {"BREADTH", "DEPTH", "CYCLE"}
+    RECURSIVE_CTE_SEARCH_KIND: t.ClassVar[set[str]] = {"BREADTH", "DEPTH", "CYCLE"}
 
-    SECURITY_PROPERTY_KEYWORDS: t.ClassVar = {"DEFINER", "INVOKER", "NONE"}
+    SECURITY_PROPERTY_KEYWORDS: t.ClassVar[set[str]] = {"DEFINER", "INVOKER", "NONE"}
 
-    MODIFIABLES: t.ClassVar = (exp.Query, exp.Table, exp.TableFromRows, exp.Values)
+    MODIFIABLES: t.ClassVar[tuple[Type[exp.Expr], ...]] = (
+        exp.Query,
+        exp.Table,
+        exp.TableFromRows,
+        exp.Values,
+    )
 
-    STRICT_CAST: t.ClassVar = True
+    STRICT_CAST: t.ClassVar[bool] = True
 
-    PREFIXED_PIVOT_COLUMNS: t.ClassVar = False
-    IDENTIFY_PIVOT_STRINGS: t.ClassVar = False
+    PREFIXED_PIVOT_COLUMNS: t.ClassVar[bool] = False
+    IDENTIFY_PIVOT_STRINGS: t.ClassVar[bool] = False
 
-    LOG_DEFAULTS_TO_LN: t.ClassVar = False
+    LOG_DEFAULTS_TO_LN: t.ClassVar[bool] = False
 
     # Whether the table sample clause expects CSV syntax
-    TABLESAMPLE_CSV: t.ClassVar = False
+    TABLESAMPLE_CSV: t.ClassVar[bool] = False
 
     # The default method used for table sampling
     DEFAULT_SAMPLING_METHOD: t.ClassVar[t.Optional[str]] = None
 
     # Whether the SET command needs a delimiter (e.g. "=") for assignments
-    SET_REQUIRES_ASSIGNMENT_DELIMITER: t.ClassVar = True
+    SET_REQUIRES_ASSIGNMENT_DELIMITER: t.ClassVar[bool] = True
 
     # Whether the TRIM function expects the characters to trim as its first argument
-    TRIM_PATTERN_FIRST: t.ClassVar = False
+    TRIM_PATTERN_FIRST: t.ClassVar[bool] = False
 
     # Whether string aliases are supported `SELECT COUNT(*) 'count'`
-    STRING_ALIASES: t.ClassVar = False
+    STRING_ALIASES: t.ClassVar[bool] = False
 
     # Whether query modifiers such as LIMIT are attached to the UNION node (vs its right operand)
-    MODIFIERS_ATTACHED_TO_SET_OP: t.ClassVar = True
-    SET_OP_MODIFIERS: t.ClassVar = {"order", "limit", "offset"}
+    MODIFIERS_ATTACHED_TO_SET_OP: t.ClassVar[bool] = True
+    SET_OP_MODIFIERS: t.ClassVar[set[str]] = {"order", "limit", "offset"}
 
     # Whether to parse IF statements that aren't followed by a left parenthesis as commands
-    NO_PAREN_IF_COMMANDS: t.ClassVar = True
+    NO_PAREN_IF_COMMANDS: t.ClassVar[bool] = True
 
     # Whether the -> and ->> operators expect documents of type JSON (e.g. Postgres)
-    JSON_ARROWS_REQUIRE_JSON_TYPE: t.ClassVar = False
+    JSON_ARROWS_REQUIRE_JSON_TYPE: t.ClassVar[bool] = False
 
     # Whether the `:` operator is used to extract a value from a VARIANT column
-    COLON_IS_VARIANT_EXTRACT: t.ClassVar = False
+    COLON_IS_VARIANT_EXTRACT: t.ClassVar[bool] = False
 
     # Whether or not a VALUES keyword needs to be followed by '(' to form a VALUES clause.
     # If this is True and '(' is not found, the keyword will be treated as an identifier
-    VALUES_FOLLOWED_BY_PAREN: t.ClassVar = True
+    VALUES_FOLLOWED_BY_PAREN: t.ClassVar[bool] = True
 
     # Whether implicit unnesting is supported, e.g. SELECT 1 FROM y.z AS z, z.a (Redshift)
-    SUPPORTS_IMPLICIT_UNNEST: t.ClassVar = False
+    SUPPORTS_IMPLICIT_UNNEST: t.ClassVar[bool] = False
 
     # Whether or not interval spans are supported, INTERVAL 1 YEAR TO MONTHS
-    INTERVAL_SPANS: t.ClassVar = True
+    INTERVAL_SPANS: t.ClassVar[bool] = True
 
     # Whether a PARTITION clause can follow a table reference
-    SUPPORTS_PARTITION_SELECTION: t.ClassVar = False
+    SUPPORTS_PARTITION_SELECTION: t.ClassVar[bool] = False
 
     # Whether the `name AS expr` schema/column constraint requires parentheses around `expr`
-    WRAPPED_TRANSFORM_COLUMN_CONSTRAINT: t.ClassVar = True
+    WRAPPED_TRANSFORM_COLUMN_CONSTRAINT: t.ClassVar[bool] = True
 
     # Whether the 'AS' keyword is optional in the CTE definition syntax
-    OPTIONAL_ALIAS_TOKEN_CTE: t.ClassVar = True
+    OPTIONAL_ALIAS_TOKEN_CTE: t.ClassVar[bool] = True
 
     # Whether renaming a column with an ALTER statement requires the presence of the COLUMN keyword
-    ALTER_RENAME_REQUIRES_COLUMN: t.ClassVar = True
+    ALTER_RENAME_REQUIRES_COLUMN: t.ClassVar[bool] = True
 
     # Whether Alter statements are allowed to contain Partition specifications
-    ALTER_TABLE_PARTITIONS: t.ClassVar = False
+    ALTER_TABLE_PARTITIONS: t.ClassVar[bool] = False
 
     # Whether all join types have the same precedence, i.e., they "naturally" produce a left-deep tree.
     # In standard SQL, joins that use the JOIN keyword take higher precedence than comma-joins. That is
     # to say, JOIN operators happen before comma operators. This is not the case in some dialects, such
     # as BigQuery, where all joins have the same precedence.
-    JOINS_HAVE_EQUAL_PRECEDENCE: t.ClassVar = False
+    JOINS_HAVE_EQUAL_PRECEDENCE: t.ClassVar[bool] = False
 
     # Whether TIMESTAMP <literal> can produce a zone-aware timestamp
-    ZONE_AWARE_TIMESTAMP_CONSTRUCTOR: t.ClassVar = False
+    ZONE_AWARE_TIMESTAMP_CONSTRUCTOR: t.ClassVar[bool] = False
 
     # Whether map literals support arbitrary expressions as keys.
     # When True, allows complex keys like arrays or literals: {[1, 2]: 3}, {1: 2} (e.g. DuckDB).
     # When False, keys are typically restricted to identifiers.
-    MAP_KEYS_ARE_ARBITRARY_EXPRESSIONS: t.ClassVar = False
+    MAP_KEYS_ARE_ARBITRARY_EXPRESSIONS: t.ClassVar[bool] = False
 
     # Whether JSON_EXTRACT requires a JSON expression as the first argument, e.g this
     # is true for Snowflake but not for BigQuery which can also process strings
-    JSON_EXTRACT_REQUIRES_JSON_EXPRESSION: t.ClassVar = False
+    JSON_EXTRACT_REQUIRES_JSON_EXPRESSION: t.ClassVar[bool] = False
 
     # Dialects like Databricks support JOINS without join criteria
     # Adding an ON TRUE, makes transpilation semantically correct for other dialects
-    ADD_JOIN_ON_TRUE: t.ClassVar = False
+    ADD_JOIN_ON_TRUE: t.ClassVar[bool] = False
 
     # Whether INTERVAL spans with literal format '\d+ hh:[mm:[ss[.ff]]]'
     # can omit the span unit `DAY TO MINUTE` or `DAY TO SECOND`
-    SUPPORTS_OMITTED_INTERVAL_SPAN_UNIT: t.ClassVar = False
+    SUPPORTS_OMITTED_INTERVAL_SPAN_UNIT: t.ClassVar[bool] = False
 
-    SHOW_TRIE: t.ClassVar[t.Dict] = new_trie(key.split(" ") for key in SHOW_PARSERS)
-    SET_TRIE: t.ClassVar[t.Dict] = new_trie(key.split(" ") for key in SET_PARSERS)
+    SHOW_TRIE: t.ClassVar[dict] = new_trie(key.split(" ") for key in SHOW_PARSERS)
+    SET_TRIE: t.ClassVar[dict] = new_trie(key.split(" ") for key in SET_PARSERS)
 
     def __init__(
         self,
@@ -1967,7 +2019,9 @@ class Parser:
 
         self.errors.append(error)
 
-    def validate_expression(self, expression: E, args: t.Optional[t.List] = None) -> E:
+    def validate_expression(
+        self, expression: E, args: t.Optional[Sequence[t.Optional[exp.Expr]]] = None
+    ) -> E:
         if self.error_level != ErrorLevel.IGNORE:
             for error_message in expression.error_messages(args):
                 self.raise_error(error_message)
@@ -7289,7 +7343,7 @@ class Parser:
         if match and not self._match(TokenType.REFERENCES):
             return None
 
-        expressions: t.Optional[t.List] = None
+        expressions: t.Optional[list[object]] = None
         this = self._parse_table(schema=True)
         options = self._parse_key_constraint_options()
         return self.expression(exp.Reference(this=this, expressions=expressions, options=options))
@@ -7634,7 +7688,7 @@ class Parser:
 
     def _parse_string_agg(self) -> exp.GroupConcat:
         if self._match(TokenType.DISTINCT):
-            args: t.List[t.Optional[exp.Expr]] = [
+            args: list[t.Optional[exp.Expr]] = [
                 self.expression(exp.Distinct(expressions=[self._parse_disjunction()]))
             ]
             if self._match(TokenType.COMMA):
@@ -9437,7 +9491,7 @@ class Parser:
 
     def _parse_grant_revoke_common(
         self,
-    ) -> t.Tuple[t.Optional[t.List], t.Optional[str], t.Optional[exp.Expr]]:
+    ) -> t.Tuple[t.Optional[list[exp.GrantPrivilege]], t.Optional[str], t.Optional[exp.Expr]]:
         privileges = self._parse_csv(self._parse_grant_privilege)
 
         self._match(TokenType.ON)
@@ -9531,7 +9585,7 @@ class Parser:
         )
 
     def _parse_max_min_by(self, expr_type: t.Type[exp.AggFunc]) -> exp.AggFunc:
-        args: t.List[exp.Expr] = []
+        args: list[exp.Expr] = []
 
         if self._match(TokenType.DISTINCT):
             args.append(self.expression(exp.Distinct(expressions=[self._parse_lambda()])))

@@ -29,7 +29,7 @@ from sqlglot.parsers.base import BaseParser
 from sqlglot.time import TIMEZONES, format_time, subsecond_precision
 from sqlglot.tokens import Token, Tokenizer, TokenType
 from sqlglot.trie import new_trie
-from sqlglot.typing import EXPRESSION_METADATA
+from sqlglot.typing import EXPRESSION_METADATA, ExprMetadataType
 
 from importlib.metadata import entry_points
 
@@ -60,6 +60,7 @@ DATETIME_ADD = (exp.DateAdd, exp.TimeAdd, exp.DatetimeAdd, exp.TsOrDsAdd, exp.Ti
 if t.TYPE_CHECKING:
     from sqlglot._typing import B, E, F, GeneratorArgs, ParserArgs
     from typing_extensions import Unpack
+    from sqlglot.expressions.core import ExpOrStr
 
 logger = logging.getLogger("sqlglot")
 
@@ -322,37 +323,37 @@ class _Dialect(type):
 
 
 class Dialect(metaclass=_Dialect):
-    INDEX_OFFSET = 0
+    INDEX_OFFSET: int = 0
     """The base index offset for arrays."""
 
-    WEEK_OFFSET = 0
+    WEEK_OFFSET: int = 0
     """First day of the week in DATE_TRUNC(week). Defaults to 0 (Monday). -1 would be Sunday."""
 
-    UNNEST_COLUMN_ONLY = False
+    UNNEST_COLUMN_ONLY: bool = False
     """Whether `UNNEST` table aliases are treated as column aliases."""
 
-    ALIAS_POST_TABLESAMPLE = False
+    ALIAS_POST_TABLESAMPLE: bool = False
     """Whether the table alias comes after tablesample."""
 
-    TABLESAMPLE_SIZE_IS_PERCENT = False
+    TABLESAMPLE_SIZE_IS_PERCENT: bool = False
     """Whether a size in the table sample clause represents percentage."""
 
-    NORMALIZATION_STRATEGY = NormalizationStrategy.LOWERCASE
+    NORMALIZATION_STRATEGY: NormalizationStrategy = NormalizationStrategy.LOWERCASE
     """Specifies the strategy according to which identifiers should be normalized."""
 
-    IDENTIFIERS_CAN_START_WITH_DIGIT = False
+    IDENTIFIERS_CAN_START_WITH_DIGIT: bool = False
     """Whether an unquoted identifier can start with a digit."""
 
-    DPIPE_IS_STRING_CONCAT = True
+    DPIPE_IS_STRING_CONCAT: bool = True
     """Whether the DPIPE token (`||`) is a string concatenation operator."""
 
-    STRICT_STRING_CONCAT = False
+    STRICT_STRING_CONCAT: bool = False
     """Whether `CONCAT`'s arguments must be strings."""
 
-    SUPPORTS_USER_DEFINED_TYPES = True
+    SUPPORTS_USER_DEFINED_TYPES: bool = True
     """Whether user-defined data types are supported."""
 
-    SUPPORTS_COLUMN_JOIN_MARKS = False
+    SUPPORTS_COLUMN_JOIN_MARKS: bool = False
     """Whether the old-style outer join (+) syntax is supported."""
 
     COPY_PARAMS_ARE_CSV = True
@@ -380,44 +381,46 @@ class Dialect(metaclass=_Dialect):
     Possible values: `True`, `False`, `None` (two arguments are not supported by `LOG`)
     """
 
-    NULL_ORDERING = "nulls_are_small"
+    NULL_ORDERING: t.Literal["nulls_are_small", "nulls_are_large", "nulls_are_last"] = (
+        "nulls_are_small"
+    )
     """
     Default `NULL` ordering method to use if not explicitly set.
     Possible values: `"nulls_are_small"`, `"nulls_are_large"`, `"nulls_are_last"`
     """
 
-    TYPED_DIVISION = False
+    TYPED_DIVISION: bool = False
     """
     Whether the behavior of `a / b` depends on the types of `a` and `b`.
     False means `a / b` is always float division.
     True means `a / b` is integer division if both `a` and `b` are integers.
     """
 
-    SAFE_DIVISION = False
+    SAFE_DIVISION: bool = False
     """Whether division by zero throws an error (`False`) or returns NULL (`True`)."""
 
-    CONCAT_COALESCE = False
+    CONCAT_COALESCE: bool = False
     """A `NULL` arg in `CONCAT` yields `NULL` by default, but in some dialects it yields an empty string."""
 
-    HEX_LOWERCASE = False
+    HEX_LOWERCASE: bool = False
     """Whether the `HEX` function returns a lowercase hexadecimal string."""
 
-    DATE_FORMAT = "'%Y-%m-%d'"
-    DATEINT_FORMAT = "'%Y%m%d'"
-    TIME_FORMAT = "'%Y-%m-%d %H:%M:%S'"
+    DATE_FORMAT: str = "'%Y-%m-%d'"
+    DATEINT_FORMAT: str = "'%Y%m%d'"
+    TIME_FORMAT: str = "'%Y-%m-%d %H:%M:%S'"
 
-    TIME_MAPPING: t.Dict[str, str] = {}
+    TIME_MAPPING: dict[str, str] = {}
     """Associates this dialect's time formats with their equivalent Python `strftime` formats."""
 
     # https://cloud.google.com/bigquery/docs/reference/standard-sql/format-elements#format_model_rules_date_time
     # https://docs.teradata.com/r/Teradata-Database-SQL-Functions-Operators-Exprs-and-Predicates/March-2017/Data-Type-Conversions/Character-to-DATE-Conversion/Forcing-a-FORMAT-on-CAST-for-Converting-Character-to-DATE
-    FORMAT_MAPPING: t.Dict[str, str] = {}
+    FORMAT_MAPPING: dict[str, str] = {}
     """
     Helper which is used for parsing the special syntax `CAST(x AS DATE FORMAT 'yyyy')`.
     If empty, the corresponding trie will be constructed off of `TIME_MAPPING`.
     """
 
-    UNESCAPED_SEQUENCES: t.Dict[str, str] = {}
+    UNESCAPED_SEQUENCES: dict[str, str] = {}
     """Mapping of an escaped sequence (`\\n`) to its unescaped version (`\n`)."""
 
     STRINGS_SUPPORT_ESCAPED_SEQUENCES: bool = False
@@ -426,16 +429,16 @@ class Dialect(metaclass=_Dialect):
     BYTE_STRINGS_SUPPORT_ESCAPED_SEQUENCES: bool = False
     """Whether byte string literals support escape sequences. Set by the metaclass based on the tokenizer's BYTE_STRING_ESCAPES."""
 
-    INVERSE_VECTOR_TYPE_ALIASES: t.Dict[str, str] = {}
+    INVERSE_VECTOR_TYPE_ALIASES: dict[str, str] = {}
     """Mapping of vector type aliases back to their canonical names. Overridden by dialects like SingleStore."""
 
-    PSEUDOCOLUMNS: t.Set[str] = set()
+    PSEUDOCOLUMNS: set[str] = set()
     """
     Columns that are auto-generated by the engine corresponding to this dialect.
     For example, such columns may be excluded from `SELECT *` queries.
     """
 
-    PREFER_CTE_ALIAS_COLUMN = False
+    PREFER_CTE_ALIAS_COLUMN: bool = False
     """
     Some dialects, such as Snowflake, allow you to reference a CTE column alias in the
     HAVING clause of the CTE. This flag will cause the CTE alias columns to override
@@ -458,7 +461,7 @@ class Dialect(metaclass=_Dialect):
     Whether COPY statement parameters are separated by comma or whitespace
     """
 
-    FORCE_EARLY_ALIAS_REF_EXPANSION = False
+    FORCE_EARLY_ALIAS_REF_EXPANSION: bool = False
     """
     Whether alias reference expansion (_expand_alias_refs()) should run before column qualification (_qualify_columns()).
 
@@ -486,13 +489,13 @@ class Dialect(metaclass=_Dialect):
         to "WHERE id = 1 GROUP BY id HAVING id = 1"
     """
 
-    EXPAND_ONLY_GROUP_ALIAS_REF = False
+    EXPAND_ONLY_GROUP_ALIAS_REF: bool = False
     """Whether alias reference expansion before qualification should only happen for the GROUP BY clause."""
 
-    ANNOTATE_ALL_SCOPES = False
+    ANNOTATE_ALL_SCOPES: bool = False
     """Whether to annotate all scopes during optimization. Used by BigQuery for UNNEST support."""
 
-    DISABLES_ALIAS_REF_EXPANSION = False
+    DISABLES_ALIAS_REF_EXPANSION: bool = False
     """
     Whether alias reference expansion is disabled for this dialect.
 
@@ -504,7 +507,7 @@ class Dialect(metaclass=_Dialect):
         SELECT y.foo AS bar, y.foo * 2 AS baz FROM y  -- VALID
     """
 
-    SUPPORTS_ALIAS_REFS_IN_JOIN_CONDITIONS = False
+    SUPPORTS_ALIAS_REFS_IN_JOIN_CONDITIONS: bool = False
     """
     Whether alias references are allowed in JOIN ... ON clauses.
 
@@ -517,12 +520,12 @@ class Dialect(metaclass=_Dialect):
     Reference: https://docs.snowflake.com/en/sql-reference/sql/select#usage-notes
     """
 
-    SUPPORTS_ORDER_BY_ALL = False
+    SUPPORTS_ORDER_BY_ALL: bool = False
     """
     Whether ORDER BY ALL is supported (expands to all the selected columns) as in DuckDB, Spark3/Databricks
     """
 
-    PROJECTION_ALIASES_SHADOW_SOURCE_NAMES = False
+    PROJECTION_ALIASES_SHADOW_SOURCE_NAMES: bool = False
     """
     Whether projection alias names can shadow table/source names in GROUP BY and HAVING clauses.
 
@@ -539,7 +542,7 @@ class Dialect(metaclass=_Dialect):
     with "custom_fields" in GROUP BY/HAVING.
     """
 
-    TABLES_REFERENCEABLE_AS_COLUMNS = False
+    TABLES_REFERENCEABLE_AS_COLUMNS: bool = False
     """
     Whether table names can be referenced as columns (treated as structs).
 
@@ -550,7 +553,7 @@ class Dialect(metaclass=_Dialect):
         SELECT t FROM my_table AS t  -- Returns entire row as a struct
     """
 
-    SUPPORTS_STRUCT_STAR_EXPANSION = False
+    SUPPORTS_STRUCT_STAR_EXPANSION: bool = False
     """
     Whether the dialect supports expanding struct fields using star notation (e.g., struct_col.*).
 
@@ -562,7 +565,7 @@ class Dialect(metaclass=_Dialect):
     This expands to all fields within the struct.
     """
 
-    EXCLUDES_PSEUDOCOLUMNS_FROM_STAR = False
+    EXCLUDES_PSEUDOCOLUMNS_FROM_STAR: bool = False
     """
     Whether pseudocolumns should be excluded from star expansion (SELECT *).
 
@@ -572,7 +575,7 @@ class Dialect(metaclass=_Dialect):
     they must be explicitly selected.
     """
 
-    QUERY_RESULTS_ARE_STRUCTS = False
+    QUERY_RESULTS_ARE_STRUCTS: bool = False
     """
     Whether query results are typed as structs in metadata for type inference.
 
@@ -586,7 +589,7 @@ class Dialect(metaclass=_Dialect):
     This is metadata-only for type inference.
     """
 
-    REQUIRES_PARENTHESIZED_STRUCT_ACCESS = False
+    REQUIRES_PARENTHESIZED_STRUCT_ACCESS: bool = False
     """
     Whether struct field access requires parentheses around the expression.
 
@@ -598,7 +601,7 @@ class Dialect(metaclass=_Dialect):
     Reference: https://docs.risingwave.com/sql/data-types/struct#retrieve-data-in-a-struct
     """
 
-    SUPPORTS_NULL_TYPE = False
+    SUPPORTS_NULL_TYPE: bool = False
     """
     Whether NULL/VOID is supported as a valid data type (not just a value).
 
@@ -607,7 +610,7 @@ class Dialect(metaclass=_Dialect):
         CAST(x AS VOID)     -- Valid type cast
     """
 
-    COALESCE_COMPARISON_NON_STANDARD = False
+    COALESCE_COMPARISON_NON_STANDARD: bool = False
     """
     Whether COALESCE in comparisons has non-standard NULL semantics.
 
@@ -619,51 +622,51 @@ class Dialect(metaclass=_Dialect):
     table NULLs differently in this context.
     """
 
-    HAS_DISTINCT_ARRAY_CONSTRUCTORS = False
+    HAS_DISTINCT_ARRAY_CONSTRUCTORS: bool = False
     """
     Whether the ARRAY constructor is context-sensitive, i.e in Redshift ARRAY[1, 2, 3] != ARRAY(1, 2, 3)
     as the former is of type INT[] vs the latter which is SUPER
     """
 
-    SUPPORTS_FIXED_SIZE_ARRAYS = False
+    SUPPORTS_FIXED_SIZE_ARRAYS: bool = False
     """
     Whether expressions such as x::INT[5] should be parsed as fixed-size array defs/casts e.g.
     in DuckDB. In dialects which don't support fixed size arrays such as Snowflake, this should
     be interpreted as a subscript/index operator.
     """
 
-    STRICT_JSON_PATH_SYNTAX = True
+    STRICT_JSON_PATH_SYNTAX: bool = True
     """Whether failing to parse a JSON path expression using the JSONPath dialect will log a warning."""
 
-    ON_CONDITION_EMPTY_BEFORE_ERROR = True
+    ON_CONDITION_EMPTY_BEFORE_ERROR: bool = True
     """Whether "X ON EMPTY" should come before "X ON ERROR" (for dialects like T-SQL, MySQL, Oracle)."""
 
     ARRAY_AGG_INCLUDES_NULLS: t.Optional[bool] = True
     """Whether ArrayAgg needs to filter NULL values."""
 
-    ARRAY_FUNCS_PROPAGATES_NULLS = False
+    ARRAY_FUNCS_PROPAGATES_NULLS: bool = False
     """Whether Array update functions return NULL when the input array is NULL."""
 
-    PROMOTE_TO_INFERRED_DATETIME_TYPE = False
+    PROMOTE_TO_INFERRED_DATETIME_TYPE: bool = False
     """
     This flag is used in the optimizer's canonicalize rule and determines whether x will be promoted
     to the literal's type in x::DATE < '2020-01-01 12:05:03' (i.e., DATETIME). When false, the literal
     is cast to x's type to match it instead.
     """
 
-    SUPPORTS_VALUES_DEFAULT = True
+    SUPPORTS_VALUES_DEFAULT: bool = True
     """Whether the DEFAULT keyword is supported in the VALUES clause."""
 
-    NUMBERS_CAN_BE_UNDERSCORE_SEPARATED = False
+    NUMBERS_CAN_BE_UNDERSCORE_SEPARATED: bool = False
     """Whether number literals can include underscores for better readability"""
 
     HEX_STRING_IS_INTEGER_TYPE: bool = False
     """Whether hex strings such as x'CC' evaluate to integer or binary/blob type"""
 
-    REGEXP_EXTRACT_DEFAULT_GROUP = 0
+    REGEXP_EXTRACT_DEFAULT_GROUP: int = 0
     """The default value for the capturing group."""
 
-    REGEXP_EXTRACT_POSITION_OVERFLOW_RETURNS_NULL = True
+    REGEXP_EXTRACT_POSITION_OVERFLOW_RETURNS_NULL: bool = True
     """Whether REGEXP_EXTRACT returns NULL when the position arg exceeds the string length."""
 
     SET_OP_DISTINCT_BY_DEFAULT: dict[Type[exp.Expr], t.Optional[bool]] = {
@@ -682,7 +685,7 @@ class Dialect(metaclass=_Dialect):
     equivalent of CREATE SCHEMA is CREATE DATABASE.
     """
 
-    ALTER_TABLE_SUPPORTS_CASCADE = False
+    ALTER_TABLE_SUPPORTS_CASCADE: bool = False
     """
     Hive by default does not update the schema of existing partitions when a column is changed.
     the CASCADE clause is used to indicate that the change should be propagated to all existing partitions.
@@ -690,7 +693,7 @@ class Dialect(metaclass=_Dialect):
     """
 
     # Whether ADD is present for each column added by ALTER TABLE
-    ALTER_TABLE_ADD_REQUIRED_FOR_EACH_COLUMN = True
+    ALTER_TABLE_ADD_REQUIRED_FOR_EACH_COLUMN: bool = True
 
     # Whether the value/LHS of the TRY_CAST(<value> AS <type>) should strictly be a
     # STRING type (Snowflake's case) or can be of any type
@@ -698,12 +701,12 @@ class Dialect(metaclass=_Dialect):
 
     # Whether the double negation can be applied
     # Not safe with MySQL and SQLite due to type coercion (may not return boolean)
-    SAFE_TO_ELIMINATE_DOUBLE_NEGATION = True
+    SAFE_TO_ELIMINATE_DOUBLE_NEGATION: bool = True
 
     # Whether the INITCAP function supports custom delimiter characters as the second argument
     # Default delimiter characters for INITCAP function: whitespace and non-alphanumeric characters
-    INITCAP_SUPPORTS_CUSTOM_DELIMITERS = True
-    INITCAP_DEFAULT_DELIMITER_CHARS = " \t\n\r\f\v!\"#$%&'()*+,\\-./:;<=>?@\\[\\]^_`{|}~"
+    INITCAP_SUPPORTS_CUSTOM_DELIMITERS: bool = True
+    INITCAP_DEFAULT_DELIMITER_CHARS: str = " \t\n\r\f\v!\"#$%&'()*+,\\-./:;<=>?@\\[\\]^_`{|}~"
 
     BYTE_STRING_IS_BYTES_TYPE: bool = False
     """
@@ -715,7 +718,7 @@ class Dialect(metaclass=_Dialect):
     Whether a UUID is considered a string or a UUID type.
     """
 
-    JSON_EXTRACT_SCALAR_SCALAR_ONLY = False
+    JSON_EXTRACT_SCALAR_SCALAR_ONLY: bool = False
     """
     Whether JSON_EXTRACT_SCALAR returns null if a non-scalar value is selected.
     """
@@ -728,26 +731,26 @@ class Dialect(metaclass=_Dialect):
     so we map the ExplodingGenerateSeries expression to "generate_series" string.
     """
 
-    DEFAULT_NULL_TYPE = exp.DType.UNKNOWN
+    DEFAULT_NULL_TYPE: exp.DType = exp.DType.UNKNOWN
     """
     The default type of NULL for producing the correct projection type.
 
     For example, in BigQuery the default type of the NULL value is INT64.
     """
 
-    LEAST_GREATEST_IGNORES_NULLS = True
+    LEAST_GREATEST_IGNORES_NULLS: bool = True
     """
     Whether LEAST/GREATEST functions ignore NULL values, e.g:
     - BigQuery, Snowflake, MySQL, Presto/Trino: LEAST(1, NULL, 2) -> NULL
     - Spark, Postgres, DuckDB, TSQL: LEAST(1, NULL, 2) -> 1
     """
 
-    PRIORITIZE_NON_LITERAL_TYPES = False
+    PRIORITIZE_NON_LITERAL_TYPES: bool = False
     """
     Whether to prioritize non-literal types over literals during type annotation.
     """
 
-    ALIAS_POST_VERSION = True
+    ALIAS_POST_VERSION: bool = True
     """Whether the table alias comes after version (timestamp or iceberg snapshot)."""
 
     # --- Autofilled ---
@@ -771,12 +774,12 @@ class Dialect(metaclass=_Dialect):
     ESCAPED_SEQUENCES: t.Dict[str, str] = {}
 
     # Delimiters for string literals and identifiers
-    QUOTE_START = "'"
-    QUOTE_END = "'"
-    IDENTIFIER_START = '"'
-    IDENTIFIER_END = '"'
+    QUOTE_START: str = "'"
+    QUOTE_END: str = "'"
+    IDENTIFIER_START: str = '"'
+    IDENTIFIER_END: str = '"'
 
-    VALID_INTERVAL_UNITS: t.Set[str] = set()
+    VALID_INTERVAL_UNITS: set[str] = set()
 
     # Delimiters for bit, hex, byte and unicode literals
     BIT_START: t.Optional[str] = None
@@ -788,7 +791,7 @@ class Dialect(metaclass=_Dialect):
     UNICODE_START: t.Optional[str] = None
     UNICODE_END: t.Optional[str] = None
 
-    DATE_PART_MAPPING = {
+    DATE_PART_MAPPING: dict[str, str] = {
         "Y": "YEAR",
         "YY": "YEAR",
         "YYY": "YEAR",
@@ -884,13 +887,13 @@ class Dialect(metaclass=_Dialect):
     }
 
     # Specifies what types a given type can be coerced into
-    COERCES_TO: t.Dict[exp.DType, t.Set[exp.DType]] = {}
+    COERCES_TO: dict[exp.DType, set[exp.DType]] = {}
 
     # Specifies type inference & validation rules for expressions
-    EXPRESSION_METADATA = EXPRESSION_METADATA.copy()
+    EXPRESSION_METADATA: ExprMetadataType = EXPRESSION_METADATA.copy()
 
     # Determines the supported Dialect instance settings
-    SUPPORTED_SETTINGS = {
+    SUPPORTED_SETTINGS: set[str] = {
         "normalization_strategy",
         "version",
     }
@@ -1533,7 +1536,7 @@ def months_between_sql(self: Generator, expression: exp.MonthsBetween) -> str:
 
 def build_formatted_time(
     exp_class: Type[E], dialect: str, default: t.Optional[bool | str] = None
-) -> t.Callable[[list], E]:
+) -> t.Callable[[list[t.Optional[t.Union[str, exp.Expr]]]], E]:
     """Helper used for time expressions.
 
     Args:
@@ -1545,7 +1548,7 @@ def build_formatted_time(
         A callable that can be used to return the appropriately formatted time expression.
     """
 
-    def _builder(args: t.List):
+    def _builder(args: list[t.Optional[t.Union[str, exp.Expr]]]) -> E:
         return exp_class(
             this=seq_get(args, 0),
             format=Dialect[dialect].format_time(
@@ -1595,8 +1598,8 @@ def build_date_delta(
 
 def build_date_delta_with_interval(
     expression_class: Type[E],
-) -> t.Callable[[list], t.Optional[E]]:
-    def _builder(args: list) -> t.Optional[E]:
+) -> t.Callable[[list[ExpOrStr]], t.Optional[E]]:
+    def _builder(args: list[ExpOrStr]) -> t.Optional[E]:
         if len(args) < 2:
             return None
 
@@ -1610,7 +1613,7 @@ def build_date_delta_with_interval(
     return _builder
 
 
-def date_trunc_to_time(args: list) -> exp.DateTrunc | exp.TimestampTrunc:
+def date_trunc_to_time(args: list[object]) -> exp.DateTrunc | exp.TimestampTrunc:
     unit = seq_get(args, 0)
     this = seq_get(args, 1)
 
@@ -1806,7 +1809,7 @@ def regexp_replace_sql(self: Generator, expression: exp.RegexpReplace) -> str:
     )
 
 
-def pivot_column_names(aggregations: t.List[exp.Expr], dialect: DialectType) -> t.List[str]:
+def pivot_column_names(aggregations: list[exp.Expr], dialect: DialectType) -> list[str]:
     names = []
     for agg in aggregations:
         if isinstance(agg, exp.Alias):
@@ -1830,17 +1833,17 @@ def pivot_column_names(aggregations: t.List[exp.Expr], dialect: DialectType) -> 
     return names
 
 
-def binary_from_function(expr_type: Type[B]) -> t.Callable[[list], B]:
+def binary_from_function(expr_type: Type[B]) -> t.Callable[[list[object]], B]:
     return lambda args: expr_type(this=seq_get(args, 0), expression=seq_get(args, 1))
 
 
 # Used to represent DATE_TRUNC in Doris, Postgres and Starrocks dialects
-def build_timestamp_trunc(args: list) -> exp.TimestampTrunc:
+def build_timestamp_trunc(args: list[object]) -> exp.TimestampTrunc:
     return exp.TimestampTrunc(this=seq_get(args, 1), unit=seq_get(args, 0))
 
 
 def build_trunc(
-    args: t.List,
+    args: list[exp.Expr],
     dialect: DialectType,
     date_trunc_unabbreviate: bool = True,
     default_date_trunc_unit: t.Optional[str] = None,
@@ -1895,7 +1898,7 @@ def is_parse_json(expression: exp.Expr) -> bool:
     )
 
 
-def isnull_to_is_null(args: t.List) -> exp.Expr:
+def isnull_to_is_null(args: list[object]) -> exp.Expr:
     return exp.Paren(this=exp.Is(this=seq_get(args, 0), expression=exp.null()))
 
 
@@ -2313,8 +2316,8 @@ def build_like(expr_type: Type[E], not_like: bool = False) -> t.Callable[[list],
     return _builder
 
 
-def build_regexp_extract(expr_type: Type[E]) -> t.Callable[[list, Dialect], E]:
-    def _builder(args: t.List, dialect: Dialect) -> E:
+def build_regexp_extract(expr_type: Type[E]) -> t.Callable[[list[object], Dialect], E]:
+    def _builder(args: list[object], dialect: Dialect) -> E:
         # The "position" argument specifies the index of the string character to start matching from.
         # `null_if_pos_overflow` reflects the dialect's behavior when position is greater than the string
         # length. If true, returns NULL. If false, returns an empty string. `null_if_pos_overflow` is
