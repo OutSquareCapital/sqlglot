@@ -69,8 +69,10 @@ def diff(
     target: exp.Expr,
     matchings: list[tuple[exp.Expr, exp.Expr]] | None = None,
     delta_only: bool = False,
-    **kwargs: object,
-) -> t.List[Edit]:
+    f: float = 0.6,
+    t: float = 0.6,
+    dialect: DialectType = None,
+) -> list[Edit]:
     """
     Returns the list of changes between the source and the target expressions.
 
@@ -87,10 +89,12 @@ def diff(
             Note: expression references in this list must refer to the same node objects that are
             referenced in the source / target trees.
         delta_only: excludes all `Keep` nodes from the diff.
-        kwargs: additional arguments to pass to the ChangeDistiller instance.
+        t (float): argument to pass to the `ChangeDistiller` class. Defaults to 0.6.
+        f (float): argument to pass to the `ChangeDistiller` class. Defaults to 0.6.
+        dialect (DialectType): the dialect to use in the `ChangeDistiller` class. Defaults to None.
 
     Returns:
-        the list of Insert, Remove, Move, Update and Keep objects for each node in the source and the
+        list[Edit]: the list of Insert, Remove, Move, Update and Keep objects for each node in the source and the
         target expression trees. This list represents a sequence of steps needed to transform the source
         expression tree into the target one.
     """
@@ -98,7 +102,7 @@ def diff(
 
     def compute_node_mappings(
         old_nodes: tuple[exp.Expr, ...], new_nodes: tuple[exp.Expr, ...]
-    ) -> t.Dict[int, exp.Expr]:
+    ) -> dict[int, exp.Expr]:
         node_mapping = {}
         for old_node, new_node in zip(reversed(old_nodes), reversed(new_nodes)):
             new_node._hash = hash(new_node)
@@ -133,7 +137,7 @@ def diff(
             for node in chain(reversed(source_nodes), reversed(target_nodes)):
                 node._hash = hash(node)
 
-        edit_script = ChangeDistiller(**kwargs).diff(
+        edit_script = ChangeDistiller(f=f, t=t, dialect=dialect).diff(
             source_copy,
             target_copy,
             matchings=matchings,

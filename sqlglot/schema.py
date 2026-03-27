@@ -353,14 +353,12 @@ class MappingSchema(AbstractMappingSchema, Schema):
 
     def copy(self, **kwargs: object) -> MappingSchema:
         return MappingSchema(
-            **{  # type: ignore
-                "schema": self.mapping.copy(),
-                "visible": self.visible.copy(),
-                "dialect": self.dialect,
-                "normalize": self.normalize,
-                "udf_mapping": self.udf_mapping.copy(),
-                **kwargs,
-            }
+            schema=self.mapping.copy(),
+            visible=self.visible.copy(),
+            dialect=self.dialect,
+            normalize=self.normalize,
+            udf_mapping=self.udf_mapping.copy(),
+            **kwargs,
         )
 
     def add_table(
@@ -695,14 +693,22 @@ def normalize_name(
     return Dialect.get_or_raise(dialect).normalize_identifier(identifier)
 
 
-def ensure_schema(schema: Schema | t.Optional[dict], **kwargs: object) -> Schema:
+def ensure_schema(
+    schema: Schema | t.Optional[dict],
+    visible: dict | None = None,
+    dialect: DialectType = None,
+    normalize: bool = True,
+    udf_mapping: dict | None = None,
+) -> Schema:
     if isinstance(schema, Schema):
         return schema
 
-    return MappingSchema(schema, **kwargs)
+    return MappingSchema(
+        schema, visible=visible, dialect=dialect, normalize=normalize, udf_mapping=udf_mapping
+    )
 
 
-def ensure_column_mapping(mapping: t.Optional[ColumnMapping]) -> t.Dict:
+def ensure_column_mapping(mapping: t.Optional[ColumnMapping]) -> dict:
     if mapping is None:
         return {}
     elif isinstance(mapping, dict):

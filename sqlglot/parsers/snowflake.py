@@ -307,9 +307,11 @@ def _build_try_to_number(args: t.List[exp.Expr]) -> exp.Expr:
     )
 
 
-def _show_parser(*args: object, **kwargs: object) -> t.Callable[[SnowflakeParser], exp.Show]:
+def _show_parser(
+    this: str, terse: bool = False, iceberg: bool = False
+) -> t.Callable[[SnowflakeParser], exp.Show]:
     def _parse(self: SnowflakeParser) -> exp.Show:
-        return self._parse_show_snowflake(*args, **kwargs)
+        return self._parse_show_snowflake(this, terse=terse, iceberg=iceberg)
 
     return _parse
 

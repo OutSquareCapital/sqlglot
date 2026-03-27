@@ -6,6 +6,8 @@ if t.TYPE_CHECKING:
     from collections.abc import Mapping
     import sqlglot
     from sqlglot.dialects.dialect import DialectType
+    from sqlglot.dialects.hive import Hive
+    from sqlglot.dialects.trino import Trino
     from sqlglot.errors import ErrorLevel
 
 B = t.TypeVar("B", bound="sqlglot.exp.Binary")
@@ -43,6 +45,19 @@ class GeneratorNoDialectArgs(t.TypedDict, total=False):
 
 
 class GeneratorArgs(GeneratorNoDialectArgs, _DialectArg, total=False):
+    pass
+
+
+class _AthenaArgs(t.TypedDict, total=False):
+    hive: t.Optional[Hive]
+    trino: t.Optional[Trino]
+
+
+class AthenaParserArgs(ParserNoDialectArgs, _AthenaArgs, total=False):
+    pass
+
+
+class AthenaGeneratorNoDialectArgs(GeneratorNoDialectArgs, _AthenaArgs, total=False):
     pass
 
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 import re
 import typing as t
 
@@ -851,7 +852,7 @@ def replace_placeholders(expression: Expr, *args: object, **kwargs: object) -> E
         The mapped expression.
     """
 
-    def _replace_placeholders(node: Expr, args: object, **kwargs: object) -> Expr:
+    def _replace_placeholders(node: Expr, args: Iterator[object], **kwargs: object) -> Expr:
         if isinstance(node, Placeholder):
             if node.this:
                 new_name = kwargs.get(node.this)
@@ -914,7 +915,11 @@ def expand(
 
 
 def func(
-    name: str, *args: object, copy: bool = True, dialect: DialectType = None, **kwargs: object
+    name: str,
+    *args: t.Optional[ExpOrStr],
+    copy: bool = True,
+    dialect: DialectType = None,
+    **kwargs: ExpOrStr,
 ) -> Func:
     """
     Returns a Func expression.
@@ -947,7 +952,7 @@ def func(
 
     dialect = Dialect.get_or_raise(dialect)
 
-    converted: t.List[Expr] = [maybe_parse(arg, dialect=dialect, copy=copy) for arg in args]
+    converted: list[Expr] = [maybe_parse(arg, dialect=dialect, copy=copy) for arg in args]
     kwargs = {key: maybe_parse(value, dialect=dialect, copy=copy) for key, value in kwargs.items()}
 
     constructor = dialect.parser_class.FUNCTIONS.get(name.upper())
@@ -1002,7 +1007,10 @@ def case(
 
 
 def array(
-    *expressions: ExpOrStr, copy: bool = True, dialect: DialectType = None, **kwargs: object
+    *expressions: ExpOrStr,
+    copy: bool = True,
+    dialect: DialectType = None,
+    **kwargs: Unpack[ParserNoDialectArgs],
 ) -> Array:
     """
     Returns an array.

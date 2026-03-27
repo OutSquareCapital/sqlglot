@@ -44,9 +44,11 @@ def _str_to_date(args: t.List) -> exp.StrToDate | exp.StrToTime:
     return exp.StrToDate(this=this, format=date_format)
 
 
-def _show_parser(*args: object, **kwargs: object) -> t.Callable[[MySQLParser], exp.Show]:
+def _show_parser(
+    this: str, target: bool | str = False, full: bool | None = None, global_: bool | None = None
+) -> t.Callable[[MySQLParser], exp.Show]:
     def _parse(self: MySQLParser) -> exp.Show:
-        return self._parse_show_mysql(*args, **kwargs)
+        return self._parse_show_mysql(this, target=target, full=full, global_=global_)
 
     return _parse
 
