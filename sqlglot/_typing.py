@@ -49,3 +49,10 @@ class GeneratorArgs(GeneratorNoDialectArgs, _DialectArg, total=False):
 class GraphHTMLArgs(t.TypedDict, total=False):
     imports: bool
     options: t.Optional[Mapping[str, object]]
+
+
+class SchemaArgs(t.TypedDict, total=False):
+    visible: t.Optional[dict[str, object]]
+    dialect: DialectType
+    normalize: bool
+    udf_mapping: t.Optional[dict[str, object]]
