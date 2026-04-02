@@ -355,7 +355,7 @@ def cast_as_datetime(value: t.Any) -> t.Optional[datetime.datetime]:
         return None
 
 
-def cast_value(value: t.Any, to: exp.DataType) -> t.Optional[t.Union[datetime.date, datetime.date]]:
+def cast_value(value: t.Any, to: exp.DataType) -> t.Optional[datetime.date | datetime.date]:
     if not value:
         return None
     if to.is_type(exp.DType.DATE):
@@ -365,7 +365,7 @@ def cast_value(value: t.Any, to: exp.DataType) -> t.Optional[t.Union[datetime.da
     return None
 
 
-def extract_date(cast: exp.Expr) -> t.Optional[t.Union[datetime.date, datetime.date]]:
+def extract_date(cast: exp.Expr) -> t.Optional[datetime.date | datetime.date]:
     if isinstance(cast, exp.Cast):
         to = cast.to
     elif isinstance(cast, exp.TsOrDsToDate) and not cast.args.get("format"):

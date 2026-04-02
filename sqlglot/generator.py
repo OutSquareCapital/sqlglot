@@ -28,7 +28,7 @@ UNSUPPORTED_TEMPLATE = "Argument '{}' is not supported for expression '{}' when 
 
 
 def unsupported_args(
-    *args: t.Union[str, tuple[str, str]],
+    *args: str | tuple[str, str],
 ) -> t.Callable[[GeneratorMethod], GeneratorMethod]:
     """
     Decorator that can be used to mark certain args of an `Expr` subclass as unsupported.
@@ -1772,7 +1772,7 @@ class Generator:
                 return self.sql(select)
 
         sqls: list[str] = []
-        stack: list[t.Union[str, exp.Expr]] = [expression]
+        stack: list[str | exp.Expr] = [expression]
 
         while stack:
             node = stack.pop()

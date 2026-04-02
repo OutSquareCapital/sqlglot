@@ -723,7 +723,7 @@ class Dialect(metaclass=_Dialect):
     Whether JSON_EXTRACT_SCALAR returns null if a non-scalar value is selected.
     """
 
-    DEFAULT_FUNCTIONS_COLUMN_NAMES: dict[Type[exp.Func], t.Union[str, tuple[str, ...]]] = {}
+    DEFAULT_FUNCTIONS_COLUMN_NAMES: dict[Type[exp.Func], str | tuple[str, ...]] = {}
     """
     Maps function expressions to their default output column name(s).
 
@@ -930,7 +930,7 @@ class Dialect(metaclass=_Dialect):
                 kwargs = {}
                 for pair in kv_pairs:
                     key = pair[0].strip()
-                    value: t.Union[bool | str | None] = None
+                    value: bool | str | None = None
 
                     if len(pair) == 1:
                         # Default initialize standalone settings to True

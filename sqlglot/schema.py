@@ -735,9 +735,7 @@ def flatten_schema(
     return tables
 
 
-def nested_get(
-    d: dict, *path: tuple[str, str], raise_on_missing: bool = True
-) -> t.Optional[t.Any]:
+def nested_get(d: dict, *path: tuple[str, str], raise_on_missing: bool = True) -> t.Optional[t.Any]:
     """
     Get a value for a nested dictionary.
 

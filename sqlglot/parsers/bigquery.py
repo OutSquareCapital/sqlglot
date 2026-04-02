@@ -337,7 +337,7 @@ class BigQueryParser(parser.Parser):
         "SAFE_ORDINAL": (1, True),
     }
 
-    def _parse_for_in(self) -> t.Union[exp.ForIn, exp.Command]:
+    def _parse_for_in(self) -> exp.ForIn | exp.Command:
         index = self._index
         this = self._parse_range()
         self._match_text_seq("DO")

@@ -80,7 +80,7 @@ def qualify_tables(
         target_alias: t.Optional[str] = None,
         scope: t.Optional[Scope] = None,
         normalize: bool = False,
-        columns: t.Optional[Sequence[t.Union[str, exp.Identifier]]] = None,
+        columns: t.Optional[Sequence[str | exp.Identifier]] = None,
     ) -> None:
         alias = expression.args.get("alias") or exp.TableAlias()
 
@@ -137,7 +137,7 @@ def qualify_tables(
 
                 table_this = source.this
                 table_alias = source.args.get("alias")
-                function_columns: t.Optional[Sequence[t.Union[str, exp.Identifier]]] = None
+                function_columns: t.Optional[Sequence[str | exp.Identifier]] = None
                 if isinstance(table_this, exp.Func):
                     if not table_alias:
                         function_columns = ensure_list(

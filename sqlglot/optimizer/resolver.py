@@ -366,7 +366,7 @@ class Resolver:
         return self._get_column_type_from_scope(source, column) if source else None
 
     def _get_column_type_from_scope(
-        self, source: t.Union[Scope, exp.Table], column: exp.Column
+        self, source: Scope | exp.Table, column: exp.Column
     ) -> t.Optional[exp.DataType]:
         """
         Get a column's type by tracing through scopes/tables to find the base table.

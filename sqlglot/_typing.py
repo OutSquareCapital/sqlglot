@@ -29,12 +29,12 @@ class ParserArgs(ParserNoDialectArgs, _DialectArg, total=False):
 
 
 class GeneratorNoDialectArgs(t.TypedDict, total=False):
-    pretty: t.Optional[t.Union[bool, int]]
-    identify: t.Union[str, bool]
+    pretty: t.Optional[bool | int]
+    identify: str | bool
     normalize: bool
     pad: int
     indent: int
-    normalize_functions: t.Optional[t.Union[str, bool]]
+    normalize_functions: t.Optional[str | bool]
     unsupported_level: ErrorLevel
     max_unsupported: int
     leading_comma: bool

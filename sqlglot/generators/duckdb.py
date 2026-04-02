@@ -875,7 +875,7 @@ def _date_diff_sql(self: DuckDBGenerator, expression: exp.DateDiff | exp.Datetim
 
 
 def _generate_datetime_array_sql(
-    self: DuckDBGenerator, expression: t.Union[exp.GenerateDateArray, exp.GenerateTimestampArray]
+    self: DuckDBGenerator, expression: exp.GenerateDateArray | exp.GenerateTimestampArray
 ) -> str:
     is_generate_date_array = isinstance(expression, exp.GenerateDateArray)
 
@@ -884,7 +884,7 @@ def _generate_datetime_array_sql(
     end = _implicit_datetime_cast(expression.args.get("end"), type=type)
 
     # BQ's GENERATE_DATE_ARRAY & GENERATE_TIMESTAMP_ARRAY are transformed to DuckDB'S GENERATE_SERIES
-    gen_series: t.Union[exp.GenerateSeries, exp.Cast] = exp.GenerateSeries(
+    gen_series: exp.GenerateSeries | exp.Cast = exp.GenerateSeries(
         start=start, end=end, step=expression.args.get("step")
     )
 
@@ -949,7 +949,7 @@ def _prepare_binary_bitwise_args(expression: exp.Binary) -> None:
 
 
 def _day_navigation_sql(
-    self: DuckDBGenerator, expression: t.Union[exp.NextDay, exp.PreviousDay]
+    self: DuckDBGenerator, expression: exp.NextDay | exp.PreviousDay
 ) -> str:
     """
     Transpile Snowflake's NEXT_DAY / PREVIOUS_DAY to DuckDB using date arithmetic.
@@ -1029,7 +1029,7 @@ def _anyvalue_sql(self: DuckDBGenerator, expression: exp.AnyValue) -> str:
 
 def _bitwise_agg_sql(
     self: DuckDBGenerator,
-    expression: t.Union[exp.BitwiseOrAgg, exp.BitwiseAndAgg, exp.BitwiseXorAgg],
+    expression: exp.BitwiseOrAgg | exp.BitwiseAndAgg | exp.BitwiseXorAgg,
 ) -> str:
     """
     DuckDB's bitwise aggregate functions only accept integer types. For other types:
@@ -1310,8 +1310,8 @@ def _regr_val_sql(
 
 
 def _maybe_corr_null_to_false(
-    expression: t.Union[exp.Filter, exp.Window, exp.Corr],
-) -> t.Optional[t.Union[exp.Filter, exp.Window, exp.Corr]]:
+    expression: exp.Filter | exp.Window | exp.Corr,
+) -> t.Optional[exp.Filter | exp.Window | exp.Corr]:
     corr = expression
     while isinstance(corr, (exp.Window, exp.Filter)):
         corr = corr.this
@@ -4194,7 +4194,7 @@ class DuckDBGenerator(generator.Generator):
 
     def _corr_sql(
         self,
-        expression: t.Union[exp.Filter, exp.Window, exp.Corr],
+        expression: exp.Filter | exp.Window | exp.Corr,
     ) -> str:
         if isinstance(expression, exp.Corr) and not expression.args.get("null_on_zero_variance"):
             return self.func("CORR", expression.this, expression.expression)

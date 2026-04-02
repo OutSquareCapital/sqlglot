@@ -907,9 +907,7 @@ def _expand_stars(
         scope_expression.set("expressions", new_selections)
 
 
-def _add_except_columns(
-    expression: exp.Expr, tables, except_columns: dict[int, set[str]]
-) -> None:
+def _add_except_columns(expression: exp.Expr, tables, except_columns: dict[int, set[str]]) -> None:
     except_ = expression.args.get("except_")
 
     if not except_:

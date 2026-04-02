@@ -300,9 +300,7 @@ def unnest_to_explode(
                 raise UnsupportedError("Cannot transpile UNNEST with multiple input arrays")
 
             # Use INLINE(ARRAYS_ZIP(...)) for multiple expressions
-            zip_exprs: list[exp.Expr] = [
-                exp.Anonymous(this="ARRAYS_ZIP", expressions=unnest_exprs)
-            ]
+            zip_exprs: list[exp.Expr] = [exp.Anonymous(this="ARRAYS_ZIP", expressions=unnest_exprs)]
             u.set("expressions", zip_exprs)
             return zip_exprs
         return unnest_exprs

@@ -148,7 +148,7 @@ def build_array_constructor(
 
 def build_convert_timezone(
     args: list, default_source_tz: t.Optional[str] = None
-) -> t.Union[exp.ConvertTimezone, exp.Anonymous]:
+) -> exp.ConvertTimezone | exp.Anonymous:
     if len(args) == 2:
         source_tz = exp.Literal.string(default_source_tz) if default_source_tz else None
         return exp.ConvertTimezone(
@@ -980,9 +980,7 @@ class Parser:
     # Whether lambda args include type annotations, e.g. TRANSFORM(arr, x INT -> x + 1) in Snowflake
     TYPED_LAMBDA_ARGS: t.ClassVar[bool] = False
 
-    LAMBDA_ARG_TERMINATORS: t.ClassVar[frozenset] = frozenset(
-        {TokenType.COMMA, TokenType.R_PAREN}
-    )
+    LAMBDA_ARG_TERMINATORS: t.ClassVar[frozenset] = frozenset({TokenType.COMMA, TokenType.R_PAREN})
 
     COLUMN_OPERATORS: t.ClassVar = {
         TokenType.DOT: None,
@@ -2742,7 +2740,7 @@ class Parser:
 
         return self.expression(exp.Property(this=key, value=value))
 
-    def _parse_stored(self) -> t.Union[exp.FileFormatProperty, exp.StorageHandlerProperty]:
+    def _parse_stored(self) -> exp.FileFormatProperty | exp.StorageHandlerProperty:
         if self._match_text_seq("BY"):
             return self.expression(exp.StorageHandlerProperty(this=self._parse_var_or_string()))
 
@@ -3374,7 +3372,7 @@ class Parser:
             comments=comments,
         )
 
-    def _parse_insert(self) -> t.Union[exp.Insert, exp.MultitableInserts]:
+    def _parse_insert(self) -> exp.Insert | exp.MultitableInserts:
         comments: list[str] = []
         hint = self._parse_hint()
         overwrite = self._match(TokenType.OVERWRITE)
@@ -4865,7 +4863,7 @@ class Parser:
         self._advance()
 
         expressions = self._parse_wrapped_csv(self._parse_equality)
-        offset: t.Union[bool, exp.Expr] = self._match_pair(TokenType.WITH, TokenType.ORDINALITY)
+        offset: bool | exp.Expr = self._match_pair(TokenType.WITH, TokenType.ORDINALITY)
 
         alias = self._parse_table_alias() if with_alias else None
 
@@ -9128,9 +9126,7 @@ class Parser:
         self.raise_error(f"No closing {''.join(tags)} found")
         return None
 
-    def _find_parser(
-        self, parsers: dict[str, t.Callable], trie: dict
-    ) -> t.Optional[t.Callable]:
+    def _find_parser(self, parsers: dict[str, t.Callable], trie: dict) -> t.Optional[t.Callable]:
         if not self._curr:
             return None
 
@@ -9258,7 +9254,7 @@ class Parser:
         self._match(TokenType.L_PAREN)
 
         opts: list[exp.Expr] = []
-        option: t.Optional[t.Union[exp.Expr, list[exp.Expr]]]
+        option: t.Optional[exp.Expr | list[exp.Expr]]
         while self._curr and not self._match(TokenType.R_PAREN):
             if self._match_text_seq("FORMAT_NAME", "="):
                 # The FORMAT_NAME can be set to an identifier for Snowflake and T-SQL
@@ -9557,7 +9553,7 @@ class Parser:
         expressions: list[exp.Expr],
         alias_cte: t.Optional[exp.TableAlias] = None,
     ) -> exp.Select:
-        new_cte: t.Optional[t.Union[str, exp.TableAlias]]
+        new_cte: t.Optional[str | exp.TableAlias]
         if alias_cte:
             new_cte = alias_cte
         else:

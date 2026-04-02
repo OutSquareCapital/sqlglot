@@ -107,7 +107,7 @@ def _coerce_date(l: exp.Expr, unit: t.Optional[exp.Expr]) -> exp.DType:
 
 def swap_args(func: BinaryCoercionFunc) -> BinaryCoercionFunc:
     @functools.wraps(func)
-    def _swapped(l: exp.Expr, r: exp.Expr) -> t.Optional[t.Union[exp.DataType, exp.DType]]:
+    def _swapped(l: exp.Expr, r: exp.Expr) -> t.Optional[exp.DataType | exp.DType]:
         return func(r, l)
 
     return _swapped

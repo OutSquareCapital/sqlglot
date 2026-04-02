@@ -388,7 +388,7 @@ def to_column(
     dialect: DialectType = None,
     copy: bool = True,
     **kwargs: t.Any,
-) -> t.Union[Column, Dot]:
+) -> Column | Dot:
     """
     Create a column from a `[table].[column]` sql path. Table is optional.
     If a column is passed in then that column is returned.

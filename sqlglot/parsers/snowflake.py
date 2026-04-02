@@ -1284,7 +1284,7 @@ RANKING_WINDOW_FUNCTIONS_WITH_FRAME = (
 )
 
 
-def build_object_construct(args: list) -> t.Union[exp.StarMap, exp.Struct]:
+def build_object_construct(args: list) -> exp.StarMap | exp.Struct:
     expression = parser.build_var_map(args)
 
     if isinstance(expression, exp.StarMap):

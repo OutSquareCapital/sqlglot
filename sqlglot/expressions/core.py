@@ -542,7 +542,7 @@ class Expression(Expr):
     def __reduce__(
         self,
     ) -> tuple[
-        t.Callable[[t.Optional[list[dict[str, t.Any]]]], t.Optional[t.Union[Expr, DType]]],
+        t.Callable[[t.Optional[list[dict[str, t.Any]]]], t.Optional[Expr | DType]],
         tuple[list[dict[str, t.Any]]],
     ]:
         from sqlglot.serde import dump, load
@@ -2959,7 +2959,7 @@ def column(
     db: t.Optional[str | Identifier] = None,
     catalog: t.Optional[str | Identifier] = None,
     *,
-    fields: Collection[t.Union[str, Identifier]],
+    fields: Collection[str | Identifier],
     quoted: t.Optional[bool] = None,
     copy: bool = True,
 ) -> Dot:
