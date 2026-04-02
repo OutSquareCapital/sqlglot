@@ -90,7 +90,7 @@ def _ts_or_ds_to_date_sql(self: MySQLGenerator, expression: exp.TsOrDsToDate) ->
 
 
 def _remove_ts_or_ds_to_date(
-    to_sql: t.Optional[t.Callable[[MySQLGenerator, exp.Expr], str]] = None,
+    to_sql: t.Callable[[MySQLGenerator, exp.Expr], str] | None = None,
     args: tuple[str, ...] = ("this",),
 ) -> t.Callable[[MySQLGenerator, exp.Func], str]:
     def func(self: MySQLGenerator, expression: exp.Func) -> str:
@@ -116,7 +116,7 @@ class MySQLGenerator(generator.Generator):
 
     INTERVAL_ALLOWS_PLURAL_FORM = False
     LOCKING_READS_SUPPORTED = True
-    NULL_ORDERING_SUPPORTED: t.Optional[bool] = None
+    NULL_ORDERING_SUPPORTED: bool | None = None
     JOIN_HINTS = False
     TABLE_HINTS = True
     DUPLICATE_KEY_UPDATE_WITH_SET = False
@@ -128,7 +128,7 @@ class MySQLGenerator(generator.Generator):
     JSON_PATH_BRACKETED_KEY_SUPPORTED = False
     JSON_KEY_VALUE_PAIR_SEP = ","
     SUPPORTS_TO_NUMBER = False
-    PARSE_JSON_NAME: t.Optional[str] = None
+    PARSE_JSON_NAME: str | None = None
     PAD_FILL_PATTERN_IS_REQUIRED = True
     WRAP_DERIVED_VALUES = False
     VARCHAR_REQUIRES_SIZE = True
@@ -643,7 +643,7 @@ class MySQLGenerator(generator.Generator):
     def jsonarraycontains_sql(self, expression: exp.JSONArrayContains) -> str:
         return f"{self.sql(expression, 'this')} MEMBER OF({self.sql(expression, 'expression')})"
 
-    def cast_sql(self, expression: exp.Cast, safe_prefix: t.Optional[str] = None) -> str:
+    def cast_sql(self, expression: exp.Cast, safe_prefix: str | None = None) -> str:
         if expression.to.this in self.TIMESTAMP_FUNC_TYPES:
             return self.func("TIMESTAMP", expression.this)
 

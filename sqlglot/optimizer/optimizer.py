@@ -41,12 +41,12 @@ RULES = (
 
 def optimize(
     expression: str | exp.Expr,
-    schema: t.Optional[dict | Schema] = None,
-    db: t.Optional[str | exp.Identifier] = None,
-    catalog: t.Optional[str | exp.Identifier] = None,
+    schema: dict | Schema | None = None,
+    db: str | exp.Identifier | None = None,
+    catalog: str | exp.Identifier | None = None,
     dialect: DialectType = None,
     rules: Sequence[t.Callable] = RULES,
-    sql: t.Optional[str] = None,
+    sql: str | None = None,
     **kwargs,
 ) -> exp.Expr:
     """

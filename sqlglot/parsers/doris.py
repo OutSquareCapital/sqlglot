@@ -55,7 +55,7 @@ class DorisParser(MySQLParser):
 
     def _parse_partition_property(
         self,
-    ) -> t.Optional[exp.Expr] | list[exp.Expr]:
+    ) -> exp.Expr | None | list[exp.Expr]:
         expr = super()._parse_partition_property()
 
         if not expr:
@@ -92,7 +92,7 @@ class DorisParser(MySQLParser):
             exp.PartitionByRangePropertyDynamic(start=start, end=end, every=every)
         )
 
-    def _parse_partition_range_value(self) -> t.Optional[exp.Expr]:
+    def _parse_partition_range_value(self) -> exp.Expr | None:
         expr = super()._parse_partition_range_value()
 
         if isinstance(expr, exp.Partition):

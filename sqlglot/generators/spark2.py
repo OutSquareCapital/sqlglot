@@ -211,7 +211,7 @@ class Spark2Generator(HiveGenerator):
 
         return Generator.struct_sql(self, expression)
 
-    def cast_sql(self, expression: exp.Cast, safe_prefix: t.Optional[str] = None) -> str:
+    def cast_sql(self, expression: exp.Cast, safe_prefix: str | None = None) -> str:
         arg = expression.this
         is_json_extract = isinstance(
             arg, (exp.JSONExtract, exp.JSONExtractScalar)

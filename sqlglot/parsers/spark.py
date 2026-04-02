@@ -110,7 +110,7 @@ class SparkParser(Spark2Parser):
         TokenType.L_BRACE: lambda self: self._parse_query_parameter(),
     }
 
-    def _parse_query_parameter(self) -> t.Optional[exp.Expr]:
+    def _parse_query_parameter(self) -> exp.Expr | None:
         this = self._parse_id_var()
         self._match(TokenType.R_BRACE)
         return self.expression(exp.Placeholder(this=this, widget=True))
@@ -137,7 +137,7 @@ class SparkParser(Spark2Parser):
             return self.expression(exp.ComputedColumnConstraint(this=this.expression))
         return this
 
-    def _parse_pivot_aggregation(self) -> t.Optional[exp.Expr]:
+    def _parse_pivot_aggregation(self) -> exp.Expr | None:
         # Spark 3+ and Databricks support non aggregate functions in PIVOT too, e.g
         # PIVOT (..., 'foo' AS bar FOR col_to_pivot IN (...))
         aggregate_expr = self._parse_function() or self._parse_disjunction()

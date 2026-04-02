@@ -127,7 +127,7 @@ class HiveParser(parser.Parser):
         "CHANGE": lambda self: self._parse_alter_table_change(),
     }
 
-    def _parse_transform(self) -> t.Optional[exp.Transform | exp.QueryTransform]:
+    def _parse_transform(self) -> exp.Transform | exp.QueryTransform | None:
         if not self._match(TokenType.L_PAREN, advance=False):
             self._retreat(self._index - 1)
             return None
@@ -166,7 +166,7 @@ class HiveParser(parser.Parser):
 
     def _parse_quantile_function(self, func: type[F]) -> F:
         if self._match(TokenType.DISTINCT):
-            first_arg: t.Optional[exp.Expr] = self.expression(
+            first_arg: exp.Expr | None = self.expression(
                 exp.Distinct(expressions=[self._parse_lambda()])
             )
         else:
@@ -181,7 +181,7 @@ class HiveParser(parser.Parser):
 
     def _parse_types(
         self, check_func: bool = False, schema: bool = False, allow_identifiers: bool = True
-    ) -> t.Optional[exp.Expr]:
+    ) -> exp.Expr | None:
         """
         Spark (and most likely Hive) treats casts to CHAR(length) and VARCHAR(length) as casts to
         STRING in all contexts except for schema definitions. For example, this is in Spark v3.4.0:
@@ -216,7 +216,7 @@ class HiveParser(parser.Parser):
 
         return this
 
-    def _parse_alter_table_change(self) -> t.Optional[exp.Expr]:
+    def _parse_alter_table_change(self) -> exp.Expr | None:
         self._match(TokenType.COLUMN)
         this = self._parse_field(any_token=True)
 
@@ -239,7 +239,7 @@ class HiveParser(parser.Parser):
 
     def _parse_partition_and_order(
         self,
-    ) -> tuple[list[exp.Expr], t.Optional[exp.Expr]]:
+    ) -> tuple[list[exp.Expr], exp.Expr | None]:
         return (
             (
                 self._parse_csv(self._parse_assignment)

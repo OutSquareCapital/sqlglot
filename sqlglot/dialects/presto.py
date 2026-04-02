@@ -21,7 +21,7 @@ class Presto(Dialect):
     STRICT_STRING_CONCAT = True
     TYPED_DIVISION = True
     TABLESAMPLE_SIZE_IS_PERCENT = True
-    LOG_BASE_FIRST: t.Optional[bool] = None
+    LOG_BASE_FIRST: bool | None = None
     SUPPORTS_VALUES_DEFAULT = False
     LEAST_GREATEST_IGNORES_NULLS = False
 

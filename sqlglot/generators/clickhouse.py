@@ -437,7 +437,7 @@ class ClickHouseGenerator(generator.Generator):
 
         return strtodate_sql
 
-    def cast_sql(self, expression: exp.Cast, safe_prefix: t.Optional[str] = None) -> str:
+    def cast_sql(self, expression: exp.Cast, safe_prefix: str | None = None) -> str:
         this = expression.this
 
         if isinstance(this, exp.StrToDate) and expression.to == exp.DType.DATETIME.into_expr():

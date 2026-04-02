@@ -128,7 +128,7 @@ class ExasolParser(parser.Parser):
         "JSON_EXTRACT": lambda self: self._parse_json_extract(),
     }
 
-    def _parse_column(self) -> t.Optional[exp.Expr]:
+    def _parse_column(self) -> exp.Expr | None:
         column = super()._parse_column()
         if not isinstance(column, exp.Column):
             return column

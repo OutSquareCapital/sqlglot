@@ -52,7 +52,7 @@ class DuckDB(Dialect):
         "%f_nine": "%n",
     }
 
-    def to_json_path(self, path: t.Optional[exp.Expr]) -> t.Optional[exp.Expr]:
+    def to_json_path(self, path: exp.Expr | None) -> exp.Expr | None:
         if isinstance(path, exp.Literal):
             # DuckDB also supports the JSON pointer syntax, where every path starts with a `/`.
             # Additionally, it allows accessing the back of lists using the `[#-i]` syntax.

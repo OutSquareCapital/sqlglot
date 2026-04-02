@@ -407,7 +407,7 @@ def _is_same_type(source: exp.Expr, target: exp.Expr) -> bool:
     return False
 
 
-def _parent_similarity_score(source: t.Optional[exp.Expr], target: t.Optional[exp.Expr]) -> int:
+def _parent_similarity_score(source: exp.Expr | None, target: exp.Expr | None) -> int:
     if source is None or target is None or type(source) is not type(target):
         return 0
 
@@ -424,7 +424,7 @@ def _expression_only_args(expression: exp.Expr) -> Iterator[exp.Expr]:
 
 def _lcs(
     seq_a: Sequence[T], seq_b: Sequence[T], equal: t.Callable[[T, T], bool]
-) -> Sequence[t.Optional[T]]:
+) -> Sequence[T | None]:
     """Calculates the longest common subsequence"""
 
     len_a = len(seq_a)

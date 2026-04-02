@@ -200,7 +200,7 @@ class HiveGenerator(generator.Generator):
     SAFE_JSON_PATH_KEY_RE = re.compile(r"^[_\-a-zA-Z][\-\w]*$")
     SUPPORTS_TO_NUMBER = False
     WITH_PROPERTIES_PREFIX = "TBLPROPERTIES"
-    PARSE_JSON_NAME: t.Optional[str] = None
+    PARSE_JSON_NAME: str | None = None
     PAD_FILL_PATTERN_IS_REQUIRED = True
     SUPPORTS_MEDIAN = False
     ARRAY_SIZE_NAME = "SIZE"

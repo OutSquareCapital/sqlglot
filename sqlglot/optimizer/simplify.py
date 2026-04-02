@@ -91,8 +91,8 @@ def catch(*exceptions):
 
 def annotate_types_on_change(func):
     @wraps(func)
-    def _func(self, expression: exp.Expr, *args, **kwargs) -> t.Optional[exp.Expr]:
-        new_expression: t.Optional[exp.Expr] = func(self, expression, *args, **kwargs)
+    def _func(self, expression: exp.Expr, *args, **kwargs) -> exp.Expr | None:
+        new_expression: exp.Expr | None = func(self, expression, *args, **kwargs)
 
         if new_expression is None:
             return new_expression
@@ -230,7 +230,7 @@ def _is_constant(expression: exp.Expr) -> bool:
     return isinstance(expr, exp.CONSTANTS) or _is_date_literal(expr)
 
 
-def _datetrunc_range(date: datetime.date, unit: str, dialect: Dialect) -> t.Optional[DateRange]:
+def _datetrunc_range(date: datetime.date, unit: str, dialect: Dialect) -> DateRange | None:
     """
     Get the date range for a DATE_TRUNC equality comparison:
 
@@ -249,7 +249,7 @@ def _datetrunc_range(date: datetime.date, unit: str, dialect: Dialect) -> t.Opti
 
 
 def _datetrunc_eq_expression(
-    left: exp.Expr, drange: DateRange, target_type: t.Optional[exp.DataType]
+    left: exp.Expr, drange: DateRange, target_type: exp.DataType | None
 ) -> exp.Expr:
     """Get the logical expression for a date range"""
     return exp.and_(
@@ -264,8 +264,8 @@ def _datetrunc_eq(
     date: datetime.date,
     unit: str,
     dialect: Dialect,
-    target_type: t.Optional[exp.DataType],
-) -> t.Optional[exp.Expr]:
+    target_type: exp.DataType | None,
+) -> exp.Expr | None:
     drange = _datetrunc_range(date, unit, dialect)
     if not drange:
         return None
@@ -278,8 +278,8 @@ def _datetrunc_neq(
     date: datetime.date,
     unit: str,
     dialect: Dialect,
-    target_type: t.Optional[exp.DataType],
-) -> t.Optional[exp.Expr]:
+    target_type: exp.DataType | None,
+) -> exp.Expr | None:
     drange = _datetrunc_range(date, unit, dialect)
     if not drange:
         return None
@@ -333,7 +333,7 @@ def eval_boolean(expression, a, b):
     return None
 
 
-def cast_as_date(value: t.Any) -> t.Optional[datetime.date]:
+def cast_as_date(value: t.Any) -> datetime.date | None:
     if isinstance(value, datetime.datetime):
         return value.date()
     if isinstance(value, datetime.date):
@@ -344,7 +344,7 @@ def cast_as_date(value: t.Any) -> t.Optional[datetime.date]:
         return None
 
 
-def cast_as_datetime(value: t.Any) -> t.Optional[datetime.datetime]:
+def cast_as_datetime(value: t.Any) -> datetime.datetime | None:
     if isinstance(value, datetime.datetime):
         return value
     if isinstance(value, datetime.date):
@@ -355,7 +355,7 @@ def cast_as_datetime(value: t.Any) -> t.Optional[datetime.datetime]:
         return None
 
 
-def cast_value(value: t.Any, to: exp.DataType) -> t.Optional[datetime.date | datetime.date]:
+def cast_value(value: t.Any, to: exp.DataType) -> datetime.date | datetime.date | None:
     if not value:
         return None
     if to.is_type(exp.DType.DATE):
@@ -365,7 +365,7 @@ def cast_value(value: t.Any, to: exp.DataType) -> t.Optional[datetime.date | dat
     return None
 
 
-def extract_date(cast: exp.Expr) -> t.Optional[datetime.date | datetime.date]:
+def extract_date(cast: exp.Expr) -> datetime.date | datetime.date | None:
     if isinstance(cast, exp.Cast):
         to = cast.to
     elif isinstance(cast, exp.TsOrDsToDate) and not cast.args.get("format"):

@@ -227,7 +227,7 @@ class PrestoGenerator(generator.Generator):
     MULTI_ARG_DISTINCT = False
     SUPPORTS_TO_NUMBER = False
     HEX_FUNC = "TO_HEX"
-    PARSE_JSON_NAME: t.Optional[str] = "JSON_PARSE"
+    PARSE_JSON_NAME: str | None = "JSON_PARSE"
     PAD_FILL_PATTERN_IS_REQUIRED = True
     EXCEPT_INTERSECT_SUPPORT_ALL_CLAUSE = False
     SUPPORTS_MEDIAN = False
@@ -571,7 +571,7 @@ class PrestoGenerator(generator.Generator):
         return f"START TRANSACTION{modes}"
 
     def offset_limit_modifiers(
-        self, expression: exp.Expr, fetch: bool, limit: t.Optional[exp.Fetch | exp.Limit]
+        self, expression: exp.Expr, fetch: bool, limit: exp.Fetch | exp.Limit | None
     ) -> list[str]:
         return [
             self.sql(expression, "offset"),

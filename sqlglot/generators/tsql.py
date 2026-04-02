@@ -133,7 +133,7 @@ class TSQLGenerator(generator.Generator):
     COMPUTED_COLUMN_WITH_TYPE = False
     CTE_RECURSIVE_KEYWORD_REQUIRED = False
     ENSURE_BOOLS = True
-    NULL_ORDERING_SUPPORTED: t.Optional[bool] = None
+    NULL_ORDERING_SUPPORTED: bool | None = None
     SUPPORTS_SINGLE_ARG_CONCAT = False
     TABLESAMPLE_SEED_KEYWORD = "REPEATABLE"
     SUPPORTS_SELECT_INTO = True
@@ -141,7 +141,7 @@ class TSQLGenerator(generator.Generator):
     SUPPORTS_TO_NUMBER = False
     SET_OP_MODIFIERS = False
     COPY_PARAMS_EQ_REQUIRED = True
-    PARSE_JSON_NAME: t.Optional[str] = None
+    PARSE_JSON_NAME: str | None = None
     EXCEPT_INTERSECT_SUPPORT_ALL_CLAUSE = False
     ALTER_SET_WRAPPED = True
     ALTER_SET_TYPE = ""

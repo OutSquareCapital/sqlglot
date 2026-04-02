@@ -74,23 +74,23 @@ class Scope:
     _join_hints: list[exp.JoinHint]
     _semi_anti_join_tables: set[str]
     _column_index: set[int]
-    _selected_sources: t.Optional[dict[str, tuple[exp.Selectable, exp.Table | Scope]]]
-    _columns: t.Optional[list[exp.Column]]
-    _external_columns: t.Optional[list[exp.Column]]
-    _local_columns: t.Optional[list[exp.Column]]
-    _pivots: t.Optional[list[exp.Pivot]]
-    _references: t.Optional[list[tuple[str, exp.Selectable]]]
+    _selected_sources: dict[str, tuple[exp.Selectable, exp.Table | Scope]] | None
+    _columns: list[exp.Column] | None
+    _external_columns: list[exp.Column] | None
+    _local_columns: list[exp.Column] | None
+    _pivots: list[exp.Pivot] | None
+    _references: list[tuple[str, exp.Selectable]] | None
 
     def __init__(
         self,
         expression: exp.Expr,
-        sources: t.Optional[dict[str, exp.Table | Scope]] = None,
-        outer_columns: t.Optional[list[str]] = None,
-        parent: t.Optional[Scope] = None,
+        sources: dict[str, exp.Table | Scope] | None = None,
+        outer_columns: list[str] | None = None,
+        parent: Scope | None = None,
         scope_type: ScopeType = ScopeType.ROOT,
-        lateral_sources: t.Optional[dict[str, exp.Table | Scope]] = None,
-        cte_sources: t.Optional[dict[str, exp.Table | Scope]] = None,
-        can_be_correlated: t.Optional[bool] = None,
+        lateral_sources: dict[str, exp.Table | Scope] | None = None,
+        cte_sources: dict[str, exp.Table | Scope] | None = None,
+        can_be_correlated: bool | None = None,
     ) -> None:
         self.expression = expression
         self.sources = sources or {}
@@ -134,10 +134,10 @@ class Scope:
         self,
         expression: exp.Expr,
         scope_type: ScopeType,
-        sources: t.Optional[dict[str, exp.Table | Scope]] = None,
-        cte_sources: t.Optional[dict[str, exp.Table | Scope]] = None,
-        lateral_sources: t.Optional[dict[str, exp.Table | Scope]] = None,
-        outer_columns: t.Optional[list[str]] = None,
+        sources: dict[str, exp.Table | Scope] | None = None,
+        cte_sources: dict[str, exp.Table | Scope] | None = None,
+        lateral_sources: dict[str, exp.Table | Scope] | None = None,
+        outer_columns: list[str] | None = None,
     ) -> Scope:
         """Branch from the current scope to a new, inner scope"""
         return Scope(
@@ -203,10 +203,10 @@ class Scope:
         if not self._collected:
             self._collect()
 
-    def walk(self, prune: t.Optional[t.Callable[[exp.Expr], bool]] = None) -> Iterator[exp.Expr]:
+    def walk(self, prune: t.Callable[[exp.Expr], bool] | None = None) -> Iterator[exp.Expr]:
         return walk_in_scope(self.expression, prune=prune)
 
-    def find(self, *expression_types: Type[E]) -> t.Optional[E]:
+    def find(self, *expression_types: Type[E]) -> E | None:
         return find_in_scope(self.expression, *expression_types)
 
     def find_all(self, *expression_types: Type[E]) -> Iterator[E]:
@@ -531,7 +531,7 @@ class Scope:
         """Determine if this scope is a correlated subquery"""
         return bool(self.can_be_correlated and self.external_columns)
 
-    def rename_source(self, old_name: t.Optional[str], new_name: str) -> None:
+    def rename_source(self, old_name: str | None, new_name: str) -> None:
         """Rename a source in this scope"""
         old_name = old_name or ""
         if old_name in self.sources:
@@ -626,7 +626,7 @@ def traverse_scope(expression: exp.Expr) -> list[Scope]:
     return []
 
 
-def build_scope(expression: exp.Expr) -> t.Optional[Scope]:
+def build_scope(expression: exp.Expr) -> Scope | None:
     """
     Build a scope tree.
 
@@ -685,7 +685,7 @@ def _traverse_select(scope: Scope) -> Iterator[Scope]:
 
 
 def _traverse_union(scope: Scope) -> Iterator[Scope]:
-    prev_scope: t.Optional[Scope] = None
+    prev_scope: Scope | None = None
     union_scope_stack: list[Scope] = [scope]
 
     set_op = scope.expression
@@ -737,7 +737,7 @@ def _traverse_ctes(scope: Scope) -> Iterator[Scope]:
             if isinstance(union, exp.SetOperation):
                 sources[cte_name] = scope.branch(union.this, scope_type=ScopeType.CTE)
 
-        child_scope: t.Optional[Scope] = None
+        child_scope: Scope | None = None
 
         for child_scope in _traverse_scope(
             scope.branch(
@@ -846,7 +846,7 @@ def _traverse_tables(scope: Scope) -> Iterator[Scope]:
             expressions.extend(join.this for join in node.args.get("joins") or [])
             continue
 
-        child_scope: t.Optional[Scope] = None
+        child_scope: Scope | None = None
 
         for child_scope in _traverse_scope(
             scope.branch(
@@ -874,7 +874,7 @@ def _traverse_tables(scope: Scope) -> Iterator[Scope]:
 
 def _traverse_subqueries(scope: Scope) -> Iterator[Scope]:
     for subquery in scope.subqueries:
-        top: t.Optional[Scope] = None
+        top: Scope | None = None
         for child_scope in _traverse_scope(scope.branch(subquery, scope_type=ScopeType.SUBQUERY)):
             yield child_scope
             top = child_scope
@@ -893,7 +893,7 @@ def _traverse_udtfs(scope: Scope) -> Iterator[Scope]:
     sources: dict[str, exp.Table | Scope] = {}
     for expression in udtf_expressions:
         if isinstance(expression, exp.Subquery):
-            top: t.Optional[Scope] = None
+            top: Scope | None = None
             for child_scope in _traverse_scope(
                 scope.branch(
                     expression,
@@ -913,7 +913,7 @@ def _traverse_udtfs(scope: Scope) -> Iterator[Scope]:
 
 def walk_in_scope(
     expression: exp.Expr,
-    prune: t.Optional[t.Callable[[exp.Expr], bool]] = None,
+    prune: t.Callable[[exp.Expr], bool] | None = None,
 ) -> Iterator[exp.Expr]:
     """
     Returns a generator object which visits all nodes in the syntrax tree, stopping at
@@ -984,7 +984,7 @@ def find_all_in_scope(
 def find_in_scope(
     expression: exp.Expr,
     *expression_types: Type[E],
-) -> t.Optional[E]:
+) -> E | None:
     """
     Returns the first node in this scope which matches at least one of the specified types.
 

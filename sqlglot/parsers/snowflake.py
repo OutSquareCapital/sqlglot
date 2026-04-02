@@ -907,7 +907,7 @@ class SnowflakeParser(parser.Parser):
 
         return super()._parse_use()
 
-    def _negate_range(self, this: t.Optional[exp.Expr] = None) -> t.Optional[exp.Expr]:
+    def _negate_range(self, this: exp.Expr | None = None) -> exp.Expr | None:
         if not this:
             return this
 
@@ -926,7 +926,7 @@ class SnowflakeParser(parser.Parser):
     def _parse_tag(self) -> exp.Tags:
         return self.expression(exp.Tags(expressions=self._parse_wrapped_csv(self._parse_property)))
 
-    def _parse_with_constraint(self) -> t.Optional[exp.Expr]:
+    def _parse_with_constraint(self) -> exp.Expr | None:
         if self._prev.token_type != TokenType.WITH:
             self._retreat(self._index - 1)
 
@@ -951,7 +951,7 @@ class SnowflakeParser(parser.Parser):
 
         return None
 
-    def _parse_with_property(self) -> t.Optional[exp.Expr] | list[exp.Expr]:
+    def _parse_with_property(self) -> exp.Expr | None | list[exp.Expr]:
         if self._match(TokenType.TAG):
             return self._parse_tag()
 
@@ -967,7 +967,7 @@ class SnowflakeParser(parser.Parser):
 
     # https://docs.snowflake.com/en/sql-reference/functions/date_part.html
     # https://docs.snowflake.com/en/sql-reference/functions-date-time.html#label-supported-date-time-parts
-    def _parse_date_part(self) -> t.Optional[exp.Expr]:
+    def _parse_date_part(self) -> exp.Expr | None:
         this = self._parse_var() or self._parse_type()
 
         if not this:
@@ -979,7 +979,7 @@ class SnowflakeParser(parser.Parser):
             exp.Extract(this=map_date_part(this, self.dialect), expression=expression)
         )
 
-    def _parse_bracket_key_value(self, is_map: bool = False) -> t.Optional[exp.Expr]:
+    def _parse_bracket_key_value(self, is_map: bool = False) -> exp.Expr | None:
         if is_map:
             # Keys are strings in Snowflake's objects, see also:
             # - https://docs.snowflake.com/en/sql-reference/data-types-semistructured
@@ -988,7 +988,7 @@ class SnowflakeParser(parser.Parser):
 
         return self._parse_slice(self._parse_alias(self._parse_assignment(), explicit=True))
 
-    def _parse_lateral(self) -> t.Optional[exp.Lateral]:
+    def _parse_lateral(self) -> exp.Lateral | None:
         lateral = super()._parse_lateral()
         if not lateral:
             return lateral
@@ -1009,7 +1009,7 @@ class SnowflakeParser(parser.Parser):
         is_db_reference: bool = False,
         wildcard: bool = False,
         fast: bool = False,
-    ) -> t.Optional[exp.Table | exp.Dot]:
+    ) -> exp.Table | exp.Dot | None:
         # https://docs.snowflake.com/en/user-guide/querying-stage
         if self._match(TokenType.STRING, advance=False):
             table = self._parse_string()
@@ -1049,12 +1049,12 @@ class SnowflakeParser(parser.Parser):
         self,
         schema: bool = False,
         joins: bool = False,
-        alias_tokens: t.Optional[Collection[TokenType]] = None,
+        alias_tokens: Collection[TokenType] | None = None,
         parse_bracket: bool = False,
         is_db_reference: bool = False,
         parse_partition: bool = False,
         consume_pipe: bool = False,
-    ) -> t.Optional[exp.Expr]:
+    ) -> exp.Expr | None:
         table = super()._parse_table(
             schema=schema,
             joins=joins,
@@ -1076,8 +1076,8 @@ class SnowflakeParser(parser.Parser):
     def _parse_id_var(
         self,
         any_token: bool = True,
-        tokens: t.Optional[Collection[TokenType]] = None,
-    ) -> t.Optional[exp.Expr]:
+        tokens: Collection[TokenType] | None = None,
+    ) -> exp.Expr | None:
         if self._match_text_seq("IDENTIFIER", "("):
             identifier = (
                 super()._parse_id_var(any_token=any_token, tokens=tokens) or self._parse_string()
@@ -1145,7 +1145,7 @@ class SnowflakeParser(parser.Parser):
             )
         )
 
-    def _parse_get(self) -> t.Optional[exp.Expr]:
+    def _parse_get(self) -> exp.Expr | None:
         start = self._prev
 
         # If we detect GET( then we need to parse a function, not a statement
@@ -1167,7 +1167,7 @@ class SnowflakeParser(parser.Parser):
         self._match(TokenType.EQ)
         return self.expression(exp.LocationProperty(this=self._parse_location_path()))
 
-    def _parse_file_location(self) -> t.Optional[exp.Expr]:
+    def _parse_file_location(self) -> exp.Expr | None:
         # Parse either a subquery or a staged file
         return (
             self._parse_select(table=True, parse_subquery_alias=False)
@@ -1189,7 +1189,7 @@ class SnowflakeParser(parser.Parser):
 
         return exp.var(self._find_sql(start, self._prev))
 
-    def _parse_lambda_arg(self) -> t.Optional[exp.Expr]:
+    def _parse_lambda_arg(self) -> exp.Expr | None:
         this = super()._parse_lambda_arg()
 
         if not this:
@@ -1249,8 +1249,8 @@ class SnowflakeParser(parser.Parser):
         return set
 
     def _parse_window(
-        self, this: t.Optional[exp.Expr], alias: bool = False
-    ) -> t.Optional[exp.Expr]:
+        self, this: exp.Expr | None, alias: bool = False
+    ) -> exp.Expr | None:
         if isinstance(this, exp.NthValue):
             if self._match_text_seq("FROM"):
                 if self._match_texts(("FIRST", "LAST")):

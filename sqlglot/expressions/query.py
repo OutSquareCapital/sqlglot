@@ -50,12 +50,12 @@ def _apply_cte_builder(
     instance: E,
     alias: ExpOrStr,
     as_: ExpOrStr,
-    recursive: t.Optional[bool] = None,
-    materialized: t.Optional[bool] = None,
+    recursive: bool | None = None,
+    materialized: bool | None = None,
     append: bool = True,
     dialect: DialectType = None,
     copy: bool = True,
-    scalar: t.Optional[bool] = None,
+    scalar: bool | None = None,
     **opts: Unpack[ParserNoDialectArgs],
 ) -> E:
     alias_expression = maybe_parse(alias, dialect=dialect, into=TableAlias, **opts)
@@ -118,7 +118,7 @@ class Query(Selectable):
 
     def select(
         self: Q,
-        *expressions: t.Optional[ExpOrStr],
+        *expressions: ExpOrStr | None,
         append: bool = True,
         dialect: DialectType = None,
         copy: bool = True,
@@ -126,7 +126,7 @@ class Query(Selectable):
     ) -> Q:
         raise NotImplementedError("Query objects must implement `select`")
 
-    def subquery(self, alias: t.Optional[ExpOrStr] = None, copy: bool = True) -> Subquery:
+    def subquery(self, alias: ExpOrStr | None = None, copy: bool = True) -> Subquery:
         """
         Returns a `Subquery` that wraps around this query.
 
@@ -223,7 +223,7 @@ class Query(Selectable):
 
     def order_by(
         self: Q,
-        *expressions: t.Optional[ExpOrStr],
+        *expressions: ExpOrStr | None,
         append: bool = True,
         dialect: DialectType = None,
         copy: bool = True,
@@ -263,7 +263,7 @@ class Query(Selectable):
 
     def where(
         self: Q,
-        *expressions: t.Optional[ExpOrStr],
+        *expressions: ExpOrStr | None,
         append: bool = True,
         dialect: DialectType = None,
         copy: bool = True,
@@ -304,12 +304,12 @@ class Query(Selectable):
         self: Q,
         alias: ExpOrStr,
         as_: ExpOrStr,
-        recursive: t.Optional[bool] = None,
-        materialized: t.Optional[bool] = None,
+        recursive: bool | None = None,
+        materialized: bool | None = None,
         append: bool = True,
         dialect: DialectType = None,
         copy: bool = True,
-        scalar: t.Optional[bool] = None,
+        scalar: bool | None = None,
         **opts: Unpack[ParserNoDialectArgs],
     ) -> Q:
         """
@@ -514,7 +514,7 @@ class ColumnDef(Expression):
         return self.args.get("constraints") or []
 
     @property
-    def kind(self) -> t.Optional[DataType]:
+    def kind(self) -> DataType | None:
         return self.args.get("kind")
 
 
@@ -706,7 +706,7 @@ class Join(Expression):
 
     def on(
         self,
-        *expressions: t.Optional[ExpOrStr],
+        *expressions: ExpOrStr | None,
         append: bool = True,
         dialect: DialectType = None,
         copy: bool = True,
@@ -750,7 +750,7 @@ class Join(Expression):
 
     def using(
         self,
-        *expressions: t.Optional[ExpOrStr],
+        *expressions: ExpOrStr | None,
         append: bool = True,
         dialect: DialectType = None,
         copy: bool = True,
@@ -888,8 +888,8 @@ class Tuple(Expression):
     def isin(
         self,
         *expressions: t.Any,
-        query: t.Optional[ExpOrStr] = None,
-        unnest: t.Optional[ExpOrStr] | list[ExpOrStr] | tuple[ExpOrStr, ...] = None,
+        query: ExpOrStr | None = None,
+        unnest: ExpOrStr | None | list[ExpOrStr] | tuple[ExpOrStr, ...] = None,
         copy: bool = True,
         **opts: Unpack[ParserArgs],
     ) -> In:
@@ -1027,7 +1027,7 @@ class SetOperation(Expression, Query):
 
     def select(
         self: S,
-        *expressions: t.Optional[ExpOrStr],
+        *expressions: ExpOrStr | None,
         append: bool = True,
         dialect: DialectType = None,
         copy: bool = True,
@@ -1171,7 +1171,7 @@ class Select(Expression, Query):
 
     def group_by(
         self,
-        *expressions: t.Optional[ExpOrStr],
+        *expressions: ExpOrStr | None,
         append: bool = True,
         dialect: DialectType = None,
         copy: bool = True,
@@ -1215,7 +1215,7 @@ class Select(Expression, Query):
 
     def sort_by(
         self,
-        *expressions: t.Optional[ExpOrStr],
+        *expressions: ExpOrStr | None,
         append: bool = True,
         dialect: DialectType = None,
         copy: bool = True,
@@ -1255,7 +1255,7 @@ class Select(Expression, Query):
 
     def cluster_by(
         self,
-        *expressions: t.Optional[ExpOrStr],
+        *expressions: ExpOrStr | None,
         append: bool = True,
         dialect: DialectType = None,
         copy: bool = True,
@@ -1295,7 +1295,7 @@ class Select(Expression, Query):
 
     def select(
         self,
-        *expressions: t.Optional[ExpOrStr],
+        *expressions: ExpOrStr | None,
         append: bool = True,
         dialect: DialectType = None,
         copy: bool = True,
@@ -1314,7 +1314,7 @@ class Select(Expression, Query):
 
     def lateral(
         self,
-        *expressions: t.Optional[ExpOrStr],
+        *expressions: ExpOrStr | None,
         append: bool = True,
         dialect: DialectType = None,
         copy: bool = True,
@@ -1354,11 +1354,11 @@ class Select(Expression, Query):
     def join(
         self,
         expression: ExpOrStr,
-        on: t.Optional[ExpOrStr | list[ExpOrStr] | tuple[ExpOrStr, ...]] = None,
-        using: t.Optional[ExpOrStr | list[ExpOrStr] | tuple[ExpOrStr, ...]] = None,
+        on: ExpOrStr | list[ExpOrStr] | tuple[ExpOrStr, ...] | None = None,
+        using: ExpOrStr | list[ExpOrStr] | tuple[ExpOrStr, ...] | None = None,
         append: bool = True,
-        join_type: t.Optional[str] = None,
-        join_alias: t.Optional[Identifier | str] = None,
+        join_type: str | None = None,
+        join_alias: Identifier | str | None = None,
         dialect: DialectType = None,
         copy: bool = True,
         **opts: Unpack[ParserNoDialectArgs],
@@ -1451,7 +1451,7 @@ class Select(Expression, Query):
 
     def having(
         self,
-        *expressions: t.Optional[ExpOrStr],
+        *expressions: ExpOrStr | None,
         append: bool = True,
         dialect: DialectType = None,
         copy: bool = True,
@@ -1490,7 +1490,7 @@ class Select(Expression, Query):
 
     def window(
         self,
-        *expressions: t.Optional[ExpOrStr],
+        *expressions: ExpOrStr | None,
         append: bool = True,
         dialect: DialectType = None,
         copy: bool = True,
@@ -1509,7 +1509,7 @@ class Select(Expression, Query):
 
     def qualify(
         self,
-        *expressions: t.Optional[ExpOrStr],
+        *expressions: ExpOrStr | None,
         append: bool = True,
         dialect: DialectType = None,
         copy: bool = True,
@@ -1527,7 +1527,7 @@ class Select(Expression, Query):
         )
 
     def distinct(
-        self, *ons: t.Optional[ExpOrStr], distinct: bool = True, copy: bool = True
+        self, *ons: ExpOrStr | None, distinct: bool = True, copy: bool = True
     ) -> Select:
         """
         Set the OFFSET expression.
@@ -1552,7 +1552,7 @@ class Select(Expression, Query):
     def ctas(
         self,
         table: ExpOrStr,
-        properties: t.Optional[dict] = None,
+        properties: dict | None = None,
         dialect: DialectType = None,
         copy: bool = True,
         **opts: Unpack[ParserNoDialectArgs],
@@ -1684,7 +1684,7 @@ class Subquery(Expression, DerivedTable, Query):
 
     def select(
         self,
-        *expressions: t.Optional[ExpOrStr],
+        *expressions: ExpOrStr | None,
         append: bool = True,
         dialect: DialectType = None,
         copy: bool = True,

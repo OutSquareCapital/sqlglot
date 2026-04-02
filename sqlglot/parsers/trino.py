@@ -40,7 +40,7 @@ class TrinoParser(PrestoParser):
         ),
     }
 
-    def _parse_json_query_quote(self) -> t.Optional[exp.JSONExtractQuote]:
+    def _parse_json_query_quote(self) -> exp.JSONExtractQuote | None:
         if not (self._match_text_seq("KEEP", "QUOTES") or self._match_text_seq("OMIT", "QUOTES")):
             return None
 

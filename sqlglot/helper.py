@@ -64,7 +64,7 @@ def suggest_closest_match_and_fail(
     raise ValueError(f"Unknown {kind} '{word}'.{similar}")
 
 
-def seq_get(seq: Sequence[T], index: int) -> t.Optional[T]:
+def seq_get(seq: Sequence[T], index: int) -> T | None:
     """Returns the value in `seq` at position `index`, or `None` if `index` is out of bounds."""
     try:
         return seq[index]
@@ -273,7 +273,7 @@ def object_to_dict(obj: t.Any, **kwargs) -> dict:
 
 def split_num_words(
     value: str, sep: str, min_num_words: int, fill_from_start: bool = True
-) -> list[t.Optional[str]]:
+) -> list[str | None]:
     """
     Perform a split on a value and return N words as a result with `None` used for words that don't exist.
 
@@ -388,7 +388,7 @@ def to_bool(value: bool) -> bool: ...
 def to_bool(value: str) -> str | bool: ...
 
 
-def to_bool(value: t.Optional[str | bool]) -> t.Optional[str | bool]:
+def to_bool(value: str | bool | None) -> str | bool | None:
     if isinstance(value, bool) or value is None:
         return value
 
@@ -449,7 +449,7 @@ def is_iso_datetime(text: str) -> bool:
 DATE_UNITS = {"day", "week", "month", "quarter", "year", "year_month"}
 
 
-def is_date_unit(expression: t.Optional[Expr]) -> bool:
+def is_date_unit(expression: Expr | None) -> bool:
     return expression is not None and expression.name.lower() in DATE_UNITS
 
 

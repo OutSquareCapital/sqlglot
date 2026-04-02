@@ -257,7 +257,7 @@ def _qualify_unnested_columns(expression: exp.Expr) -> exp.Expr:
         column_source: dict[str, exp.Identifier] = {}
         unnest_to_identifier: dict[exp.Unnest, exp.Identifier] = {}
 
-        unnest_identifier: t.Optional[exp.Identifier] = None
+        unnest_identifier: exp.Identifier | None = None
         orig_expression = expression.copy()
 
         for unnest in unnests:
@@ -729,7 +729,7 @@ class SnowflakeGenerator(generator.Generator):
 
         return rename_func("TIMESTAMP_FROM_PARTS")(self, expression)
 
-    def cast_sql(self, expression: exp.Cast, safe_prefix: t.Optional[str] = None) -> str:
+    def cast_sql(self, expression: exp.Cast, safe_prefix: str | None = None) -> str:
         if expression.is_type(exp.DType.GEOGRAPHY):
             return self.func("TO_GEOGRAPHY", expression.this)
         if expression.is_type(exp.DType.GEOMETRY):

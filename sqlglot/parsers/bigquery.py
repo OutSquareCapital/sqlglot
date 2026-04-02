@@ -98,7 +98,7 @@ def _build_parse_timestamp(args: list) -> exp.StrToTime:
 
 
 def _build_regexp_extract(
-    expr_type: type[E], default_group: t.Optional[exp.Expr] = None
+    expr_type: type[E], default_group: exp.Expr | None = None
 ) -> t.Callable:
     def _builder(args: list, dialect: t.Any) -> E:
         try:
@@ -346,7 +346,7 @@ class BigQueryParser(parser.Parser):
             return self._parse_as_command(self._prev)
         return self.expression(exp.ForIn(this=this, expression=self._parse_statement()))
 
-    def _parse_table_part(self, schema: bool = False) -> t.Optional[exp.Expr]:
+    def _parse_table_part(self, schema: bool = False) -> exp.Expr | None:
         this = super()._parse_table_part(schema=schema) or self._parse_number()
 
         # https://cloud.google.com/bigquery/docs/reference/standard-sql/lexical#table_names
@@ -383,7 +383,7 @@ class BigQueryParser(parser.Parser):
         is_db_reference: bool = False,
         wildcard: bool = False,
         fast: bool = False,
-    ) -> t.Optional[exp.Table | exp.Dot]:
+    ) -> exp.Table | exp.Dot | None:
         table = super()._parse_table_parts(
             schema=schema, is_db_reference=is_db_reference, wildcard=True, fast=fast
         )
@@ -419,7 +419,7 @@ class BigQueryParser(parser.Parser):
                 if part:
                     part.update_positions(table.this)
 
-            this: t.Optional[exp.Expr] = this_id
+            this: exp.Expr | None = this_id
             if rest and this:
                 this = exp.Dot.build([this, *rest])  # type: ignore[list-item]
 
@@ -464,7 +464,7 @@ class BigQueryParser(parser.Parser):
 
         return table
 
-    def _parse_column(self) -> t.Optional[exp.Expr]:
+    def _parse_column(self) -> exp.Expr | None:
         column = super()._parse_column()
         if isinstance(column, exp.Column):
             parts = column.parts
@@ -509,7 +509,7 @@ class BigQueryParser(parser.Parser):
 
         return json_object
 
-    def _parse_bracket(self, this: t.Optional[exp.Expr] = None) -> t.Optional[exp.Expr]:
+    def _parse_bracket(self, this: exp.Expr | None = None) -> exp.Expr | None:
         bracket = super()._parse_bracket(this)
 
         if isinstance(bracket, exp.Array):
@@ -532,7 +532,7 @@ class BigQueryParser(parser.Parser):
 
         return bracket
 
-    def _parse_unnest(self, with_alias: bool = True) -> t.Optional[exp.Unnest]:
+    def _parse_unnest(self, with_alias: bool = True) -> exp.Unnest | None:
         unnest = super()._parse_unnest(with_alias=with_alias)
 
         if not unnest:
@@ -658,14 +658,14 @@ class BigQueryParser(parser.Parser):
             )
         )
 
-    def _parse_column_ops(self, this: t.Optional[exp.Expr]) -> t.Optional[exp.Expr]:
+    def _parse_column_ops(self, this: exp.Expr | None) -> exp.Expr | None:
         func_index = self._index + 1
         this = super()._parse_column_ops(this)
 
         if isinstance(this, exp.Dot) and isinstance(this.expression, exp.Func):
             prefix = this.this.name.upper()
 
-            func: t.Optional[type[exp.Func]] = None
+            func: type[exp.Func] | None = None
             if prefix == "NET":
                 func = exp.NetFunc
             elif prefix == "SAFE":

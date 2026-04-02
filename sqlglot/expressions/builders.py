@@ -118,10 +118,10 @@ def from_(
 
 def update(
     table: str | Table,
-    properties: t.Optional[dict[str, object]] = None,
-    where: t.Optional[ExpOrStr] = None,
-    from_: t.Optional[ExpOrStr] = None,
-    with_: t.Optional[dict[str, ExpOrStr]] = None,
+    properties: dict[str, object] | None = None,
+    where: ExpOrStr | None = None,
+    from_: ExpOrStr | None = None,
+    with_: dict[str, ExpOrStr] | None = None,
     dialect: DialectType = None,
     copy: bool = True,
     **opts: Unpack[ParserNoDialectArgs],
@@ -183,8 +183,8 @@ def update(
 
 def delete(
     table: ExpOrStr,
-    where: t.Optional[ExpOrStr] = None,
-    returning: t.Optional[ExpOrStr] = None,
+    where: ExpOrStr | None = None,
+    returning: ExpOrStr | None = None,
     dialect: DialectType = None,
     **opts: Unpack[ParserNoDialectArgs],
 ) -> Delete:
@@ -215,9 +215,9 @@ def delete(
 def insert(
     expression: ExpOrStr,
     into: str | Table,
-    columns: t.Optional[Sequence[str | Identifier]] = None,
-    overwrite: t.Optional[bool] = None,
-    returning: t.Optional[ExpOrStr] = None,
+    columns: Sequence[str | Identifier] | None = None,
+    overwrite: bool | None = None,
+    returning: ExpOrStr | None = None,
     dialect: DialectType = None,
     copy: bool = True,
     **opts: Unpack[ParserNoDialectArgs],
@@ -261,7 +261,7 @@ def merge(
     into: ExpOrStr,
     using: ExpOrStr,
     on: ExpOrStr,
-    returning: t.Optional[ExpOrStr] = None,
+    returning: ExpOrStr | None = None,
     dialect: DialectType = None,
     copy: bool = True,
     **opts: Unpack[ParserNoDialectArgs],
@@ -384,7 +384,7 @@ def to_table(
 
 def to_column(
     sql_path: str | Column,
-    quoted: t.Optional[bool] = None,
+    quoted: bool | None = None,
     dialect: DialectType = None,
     copy: bool = True,
     **kwargs: t.Any,
@@ -423,7 +423,7 @@ def to_column(
 
 def subquery(
     expression: ExpOrStr,
-    alias: t.Optional[Identifier | str] = None,
+    alias: Identifier | str | None = None,
     dialect: DialectType = None,
     copy: bool = True,
     **opts: Unpack[ParserNoDialectArgs],
@@ -509,10 +509,10 @@ def cast(
 
 def table_(
     table: Identifier | str,
-    db: t.Optional[Identifier | str] = None,
-    catalog: t.Optional[Identifier | str] = None,
-    quoted: t.Optional[bool] = None,
-    alias: t.Optional[Identifier | str] = None,
+    db: Identifier | str | None = None,
+    catalog: Identifier | str | None = None,
+    quoted: bool | None = None,
+    alias: Identifier | str | None = None,
 ) -> Table:
     """Build a Table.
 
@@ -536,8 +536,8 @@ def table_(
 
 def values(
     values: Iterable[tuple[object, ...] | Tuple],
-    alias: t.Optional[str] = None,
-    columns: t.Optional[Iterable[str] | dict[str, DataType]] = None,
+    alias: str | None = None,
+    columns: Iterable[str] | dict[str, DataType] | None = None,
 ) -> Values:
     """Build VALUES statement.
 
@@ -567,7 +567,7 @@ def values(
     )
 
 
-def var(name: t.Optional[ExpOrStr]) -> Var:
+def var(name: ExpOrStr | None) -> Var:
     """Build a SQL variable.
 
     Example:
@@ -621,7 +621,7 @@ def rename_column(
     table_name: str | Table,
     old_column_name: str | Column,
     new_column_name: str | Column,
-    exists: t.Optional[bool] = None,
+    exists: bool | None = None,
     dialect: DialectType = None,
 ) -> Alter:
     """Build ALTER TABLE... RENAME COLUMN... expression
@@ -679,7 +679,7 @@ def replace_children(
 def replace_tree(
     expression: Expr,
     fun: t.Callable[[Expr], Expr],
-    prune: t.Optional[t.Callable[[Expr], bool]] = None,
+    prune: t.Callable[[Expr], bool] | None = None,
 ) -> Expr:
     """
     Replace an entire tree with the result of function calls on each node.
@@ -991,7 +991,7 @@ def func(
 
 
 def case(
-    expression: t.Optional[ExpOrStr] = None,
+    expression: ExpOrStr | None = None,
     copy: bool = True,
     **opts: Unpack[ParserArgs],
 ) -> Case:

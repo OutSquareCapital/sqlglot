@@ -202,7 +202,7 @@ class PostgresParser(parser.Parser):
 
     ARG_MODE_TOKENS: t.ClassVar = {TokenType.IN, TokenType.OUT, TokenType.INOUT, TokenType.VARIADIC}
 
-    def _parse_parameter_mode(self) -> t.Optional[TokenType]:
+    def _parse_parameter_mode(self) -> TokenType | None:
         """
         Parse PostgreSQL function parameter mode (IN, OUT, INOUT, VARIADIC).
 
@@ -268,7 +268,7 @@ class PostgresParser(parser.Parser):
             )
         )
 
-    def _parse_function_parameter(self) -> t.Optional[exp.Expr]:
+    def _parse_function_parameter(self) -> exp.Expr | None:
         param_mode = self._parse_parameter_mode()
 
         if param_mode:
@@ -287,7 +287,7 @@ class PostgresParser(parser.Parser):
 
         return column_def
 
-    def _parse_query_parameter(self) -> t.Optional[exp.Expr]:
+    def _parse_query_parameter(self) -> exp.Expr | None:
         this = (
             self._parse_wrapped(self._parse_id_var)
             if self._match(TokenType.L_PAREN, advance=False)
@@ -306,7 +306,7 @@ class PostgresParser(parser.Parser):
 
         return self.expression(exp.Extract(this=part, expression=value))
 
-    def _parse_unique_key(self) -> t.Optional[exp.Expr]:
+    def _parse_unique_key(self) -> exp.Expr | None:
         return None
 
     def _parse_jsonb_exists(self) -> exp.JSONBExists:
@@ -332,7 +332,7 @@ class PostgresParser(parser.Parser):
 
         return this
 
-    def _parse_user_defined_type(self, identifier: exp.Identifier) -> t.Optional[exp.Expr]:
+    def _parse_user_defined_type(self, identifier: exp.Identifier) -> exp.Expr | None:
         udt_type: exp.Identifier | exp.Dot = identifier
 
         while self._match(TokenType.DOT):

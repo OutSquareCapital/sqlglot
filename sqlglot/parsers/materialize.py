@@ -23,7 +23,7 @@ class MaterializeParser(PostgresParser):
         ),
     }
 
-    def _parse_lambda_arg(self) -> t.Optional[exp.Expr]:
+    def _parse_lambda_arg(self) -> exp.Expr | None:
         return self._parse_field()
 
     def _parse_map(self) -> exp.ToMap:

@@ -53,7 +53,7 @@ def parse(path: str, dialect: DialectType = None) -> exp.JSONPath:
 
     i = 0
 
-    def _curr() -> t.Optional[TokenType]:
+    def _curr() -> TokenType | None:
         return tokens[i].token_type if i < size else None
 
     def _prev() -> Token:
@@ -74,7 +74,7 @@ def parse(path: str, dialect: DialectType = None) -> exp.JSONPath:
     @t.overload
     def _match(
         token_type: TokenType, raise_unmatched: t.Literal[False] = False
-    ) -> t.Optional[Token]:
+    ) -> Token | None:
         pass
 
     def _match(token_type, raise_unmatched=False):
@@ -84,7 +84,7 @@ def parse(path: str, dialect: DialectType = None) -> exp.JSONPath:
             raise ParseError(_error(f"Expected {token_type}"))
         return None
 
-    def _match_set(types: Collection[TokenType]) -> t.Optional[Token]:
+    def _match_set(types: Collection[TokenType]) -> Token | None:
         return _advance() if _curr() in types else None
 
     def _parse_literal() -> t.Any:
@@ -189,7 +189,7 @@ def parse(path: str, dialect: DialectType = None) -> exp.JSONPath:
             recursive = _prev().text == ".."
 
             if _match_set(jsonpath_tokenizer.VAR_TOKENS):
-                value: t.Optional[str | exp.JSONPathWildcard] = _parse_var_text()
+                value: str | exp.JSONPathWildcard | None = _parse_var_text()
             elif _match(TokenType.IDENTIFIER):
                 value = _prev().text
             elif _match(TokenType.STAR):

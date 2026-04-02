@@ -97,7 +97,7 @@ class TeradataGenerator(generator.Generator):
         prefix, suffix = ("(", ")") if expression.this else ("", "")
         return self.func("CURRENT_TIMESTAMP", expression.this, prefix=prefix, suffix=suffix)
 
-    def cast_sql(self, expression: exp.Cast, safe_prefix: t.Optional[str] = None) -> str:
+    def cast_sql(self, expression: exp.Cast, safe_prefix: str | None = None) -> str:
         if expression.to.this == exp.DType.UNKNOWN and expression.args.get("format"):
             # We don't actually want to print the unknown type in CAST(<value> AS FORMAT <format>)
             expression.to.pop()
@@ -110,7 +110,7 @@ class TeradataGenerator(generator.Generator):
     def tablesample_sql(
         self,
         expression: exp.TableSample,
-        tablesample_keyword: t.Optional[str] = None,
+        tablesample_keyword: str | None = None,
     ) -> str:
         return f"{self.sql(expression, 'this')} SAMPLE {self.expressions(expression)}"
 

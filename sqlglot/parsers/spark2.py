@@ -90,7 +90,7 @@ class Spark2Parser(HiveParser):
         "SHUFFLE_REPLICATE_NL": lambda self: self._parse_join_hint("SHUFFLE_REPLICATE_NL"),
     }
 
-    def _parse_drop_column(self) -> t.Optional[exp.Drop | exp.Command]:
+    def _parse_drop_column(self) -> exp.Drop | exp.Command | None:
         return (
             self.expression(exp.Drop(this=self._parse_schema(), kind="COLUMNS"))
             if self._match_text_seq("DROP", "COLUMNS")

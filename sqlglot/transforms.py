@@ -14,7 +14,7 @@ if t.TYPE_CHECKING:
 
 def preprocess(
     transforms: list[t.Callable[[exp.Expr], exp.Expr]],
-    generator: t.Optional[t.Callable[[Generator, exp.Expr], str]] = None,
+    generator: t.Callable[[Generator, exp.Expr], str] | None = None,
 ) -> t.Callable[[Generator, exp.Expr], str]:
     """
     Creates a new transform by chaining a sequence of transformations and converts the resulting

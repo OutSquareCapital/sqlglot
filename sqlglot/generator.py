@@ -34,7 +34,7 @@ def unsupported_args(
     Decorator that can be used to mark certain args of an `Expr` subclass as unsupported.
     It expects a sequence of argument names or pairs of the form (argument_name, diagnostic_msg).
     """
-    diagnostic_by_arg: dict[str, t.Optional[str]] = {}
+    diagnostic_by_arg: dict[str, str | None] = {}
     for arg in args:
         if isinstance(arg, str):
             diagnostic_by_arg[arg] = None
@@ -292,7 +292,7 @@ class Generator:
     # Whether null ordering is supported in order by
     # True: Full Support, None: No support, False: No support for certain cases
     # such as window specifications, aggregate functions etc
-    NULL_ORDERING_SUPPORTED: t.Optional[bool] = True
+    NULL_ORDERING_SUPPORTED: bool | None = True
 
     # Window functions that support NULLS FIRST/LAST
     WINDOW_FUNCS_WITH_NULL_ORDERING: t.ClassVar[tuple[type[exp.Expression], ...]] = ()
@@ -550,7 +550,7 @@ class Generator:
     NORMALIZE_EXTRACT_DATE_PARTS = False
 
     # The name to generate for the JSONPath expression. If `None`, only `this` will be generated
-    PARSE_JSON_NAME: t.Optional[str] = "PARSE_JSON"
+    PARSE_JSON_NAME: str | None = "PARSE_JSON"
 
     # The function name of the exp.ArraySize expression
     ARRAY_SIZE_NAME: str = "ARRAY_LENGTH"
@@ -562,7 +562,7 @@ class Generator:
     # None -> Doesn't support it at all
     # False (DuckDB) -> Has backwards-compatible support, but preferably generated without
     # True (Postgres) -> Explicitly requires it
-    ARRAY_SIZE_DIM_REQUIRED: t.Optional[bool] = None
+    ARRAY_SIZE_DIM_REQUIRED: bool | None = None
 
     # Whether a multi-argument DECODE(...) function is supported. If not, a CASE expression is generated
     SUPPORTS_DECODE_CASE = True
@@ -574,7 +574,7 @@ class Generator:
     SUPPORTS_LIKE_QUANTIFIERS = True
 
     # Prefix which is appended to exp.Table expressions in MATCH AGAINST
-    MATCH_AGAINST_TABLE_PREFIX: t.Optional[str] = None
+    MATCH_AGAINST_TABLE_PREFIX: str | None = None
 
     # Whether to include the VARIABLE keyword for SET assignments
     SET_ASSIGNMENT_REQUIRES_VARIABLE_KEYWORD = False
@@ -835,12 +835,12 @@ class Generator:
 
     def __init__(
         self,
-        pretty: t.Optional[bool | int] = None,
+        pretty: bool | int | None = None,
         identify: str | bool = False,
         normalize: bool = False,
         pad: int = 2,
         indent: int = 2,
-        normalize_functions: t.Optional[str | bool] = None,
+        normalize_functions: str | bool | None = None,
         unsupported_level: ErrorLevel = ErrorLevel.WARN,
         max_unsupported: int = 3,
         leading_comma: bool = False,
@@ -974,8 +974,8 @@ class Generator:
     def maybe_comment(
         self,
         sql: str,
-        expression: t.Optional[exp.Expr] = None,
-        comments: t.Optional[list[str]] = None,
+        expression: exp.Expr | None = None,
+        comments: list[str] | None = None,
         separated: bool = False,
     ) -> str:
         comments = (
@@ -1035,7 +1035,7 @@ class Generator:
         self,
         sql: str,
         level: int = 0,
-        pad: t.Optional[int] = None,
+        pad: int | None = None,
         skip_first: bool = False,
         skip_last: bool = False,
     ) -> str:
@@ -1056,8 +1056,8 @@ class Generator:
 
     def sql(
         self,
-        expression: t.Optional[str | exp.Expr],
-        key: t.Optional[str] = None,
+        expression: str | exp.Expr | None,
+        key: str | None = None,
         comment: bool = True,
     ) -> str:
         if not expression:
@@ -1534,7 +1534,7 @@ class Generator:
         return f"{int(this, 2)}"
 
     def hexstring_sql(
-        self, expression: exp.HexString, binary_function_repr: t.Optional[str] = None
+        self, expression: exp.HexString, binary_function_repr: str | None = None
     ) -> str:
         this = self.sql(expression, "this")
         is_integer_type = expression.args.get("is_integer")
@@ -2129,11 +2129,11 @@ class Generator:
     def withsystemversioningproperty_sql(self, expression: exp.WithSystemVersioningProperty) -> str:
         this = self.sql(expression, "this")
         this = f"HISTORY_TABLE={this}" if this else ""
-        data_consistency: t.Optional[str] = self.sql(expression, "data_consistency")
+        data_consistency: str | None = self.sql(expression, "data_consistency")
         data_consistency = (
             f"DATA_CONSISTENCY_CHECK={data_consistency}" if data_consistency else None
         )
-        retention_period: t.Optional[str] = self.sql(expression, "retention_period")
+        retention_period: str | None = self.sql(expression, "retention_period")
         retention_period = (
             f"HISTORY_RETENTION_PERIOD={retention_period}" if retention_period else None
         )
@@ -2351,7 +2351,7 @@ class Generator:
     def tablesample_sql(
         self,
         expression: exp.TableSample,
-        tablesample_keyword: t.Optional[str] = None,
+        tablesample_keyword: str | None = None,
     ) -> str:
         method = self.sql(expression, "method")
         method = f"{method} " if method and self.TABLESAMPLE_WITH_METHOD else ""
@@ -2789,8 +2789,8 @@ class Generator:
         self,
         text: str,
         escape_backslash: bool = True,
-        delimiter: t.Optional[str] = None,
-        escaped_delimiter: t.Optional[str] = None,
+        delimiter: str | None = None,
+        escaped_delimiter: str | None = None,
         is_byte_string: bool = False,
     ) -> str:
         if is_byte_string:
@@ -3028,7 +3028,7 @@ class Generator:
         return ""
 
     def offset_limit_modifiers(
-        self, expression: exp.Expr, fetch: bool, limit: t.Optional[exp.Fetch | exp.Limit]
+        self, expression: exp.Expr, fetch: bool, limit: exp.Fetch | exp.Limit | None
     ) -> list[str]:
         return [
             self.sql(expression, "offset") if fetch else self.sql(limit),
@@ -3283,7 +3283,7 @@ class Generator:
         return f"{this} BETWEEN{flag} {low} AND {high}"
 
     def bracket_offset_expressions(
-        self, expression: exp.Bracket, index_offset: t.Optional[int] = None
+        self, expression: exp.Bracket, index_offset: int | None = None
     ) -> list[exp.Expr]:
         if expression.args.get("json_access"):
             return expression.expressions
@@ -3729,20 +3729,20 @@ class Generator:
     def add_sql(self, expression: exp.Add) -> str:
         return self.binary(expression, "+")
 
-    def and_sql(self, expression: exp.And, stack: t.Optional[list[str | exp.Expr]] = None) -> str:
+    def and_sql(self, expression: exp.And, stack: list[str | exp.Expr] | None = None) -> str:
         return self.connector_sql(expression, "AND", stack)
 
-    def or_sql(self, expression: exp.Or, stack: t.Optional[list[str | exp.Expr]] = None) -> str:
+    def or_sql(self, expression: exp.Or, stack: list[str | exp.Expr] | None = None) -> str:
         return self.connector_sql(expression, "OR", stack)
 
-    def xor_sql(self, expression: exp.Xor, stack: t.Optional[list[str | exp.Expr]] = None) -> str:
+    def xor_sql(self, expression: exp.Xor, stack: list[str | exp.Expr] | None = None) -> str:
         return self.connector_sql(expression, "XOR", stack)
 
     def connector_sql(
         self,
         expression: exp.Connector,
         op: str,
-        stack: t.Optional[list[str | exp.Expr]] = None,
+        stack: list[str | exp.Expr] | None = None,
     ) -> str:
         if stack is not None:
             if expression.expressions:
@@ -3792,7 +3792,7 @@ class Generator:
     def bitwisexor_sql(self, expression: exp.BitwiseXor) -> str:
         return self.binary(expression, "^")
 
-    def cast_sql(self, expression: exp.Cast, safe_prefix: t.Optional[str] = None) -> str:
+    def cast_sql(self, expression: exp.Cast, safe_prefix: str | None = None) -> str:
         format_sql = self.sql(expression, "format")
         format_sql = f" FORMAT {format_sql}" if format_sql else ""
         to_sql = self.sql(expression, "to")
@@ -4132,7 +4132,7 @@ class Generator:
     def _like_sql(
         self,
         expression: exp.Like | exp.ILike,
-        escape: t.Optional[exp.Escape] = None,
+        escape: exp.Escape | None = None,
     ) -> str:
         this = expression.this
         rhs = expression.expression
@@ -4318,9 +4318,9 @@ class Generator:
     def format_time(
         self,
         expression: exp.Expr,
-        inverse_time_mapping: t.Optional[dict[str, str]] = None,
-        inverse_time_trie: t.Optional[dict] = None,
-    ) -> t.Optional[str]:
+        inverse_time_mapping: dict[str, str] | None = None,
+        inverse_time_trie: dict | None = None,
+    ) -> str | None:
         return format_time(
             self.sql(expression, "format"),
             inverse_time_mapping or self.dialect.INVERSE_TIME_MAPPING,
@@ -4329,9 +4329,9 @@ class Generator:
 
     def expressions(
         self,
-        expression: t.Optional[exp.Expr] = None,
-        key: t.Optional[str] = None,
-        sqls: t.Optional[t.Collection[str | exp.Expr]] = None,
+        expression: exp.Expr | None = None,
+        key: str | None = None,
+        sqls: t.Collection[str | exp.Expr] | None = None,
         flat: bool = False,
         indent: bool = True,
         skip_first: bool = False,
@@ -4874,7 +4874,7 @@ class Generator:
         if not seq_get(to.expressions, 0) and to.this in self.PARAMETERIZABLE_TEXT_TYPES:
             to = exp.DataType.build(to.this, expressions=[exp.Literal.number(30)], nested=False)
 
-        transformed: t.Optional[exp.Expr] = None
+        transformed: exp.Expr | None = None
         cast = exp.Cast if strict else exp.TryCast
 
         # Check whether a conversion with format (T-SQL calls this 'style') is applicable
@@ -5052,9 +5052,9 @@ class Generator:
 
     def datadeletionproperty_sql(self, expression: exp.DataDeletionProperty) -> str:
         on_sql = "ON" if expression.args.get("on") else "OFF"
-        filter_col: t.Optional[str] = self.sql(expression, "filter_column")
+        filter_col: str | None = self.sql(expression, "filter_column")
         filter_col = f"FILTER_COLUMN={filter_col}" if filter_col else None
-        retention_period: t.Optional[str] = self.sql(expression, "retention_period")
+        retention_period: str | None = self.sql(expression, "retention_period")
         retention_period = f"RETENTION_PERIOD={retention_period}" if retention_period else None
 
         if filter_col or retention_period:

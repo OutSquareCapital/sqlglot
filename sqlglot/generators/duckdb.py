@@ -108,7 +108,7 @@ _SEQ_SIGNED: exp.Expr = exp.maybe_parse(
 
 def _apply_base64_alphabet_replacements(
     result: exp.Expr,
-    alphabet: t.Optional[exp.Expr],
+    alphabet: exp.Expr | None,
     reverse: bool = False,
 ) -> exp.Expr:
     """
@@ -210,7 +210,7 @@ def _last_day_sql(self: DuckDBGenerator, expression: exp.LastDay) -> str:
     return self.function_fallback_sql(expression)
 
 
-def _is_nanosecond_unit(unit: t.Optional[exp.Expr]) -> bool:
+def _is_nanosecond_unit(unit: exp.Expr | None) -> bool:
     return isinstance(unit, (exp.Var, exp.Literal)) and unit.name.upper() == "NANOSECOND"
 
 
@@ -768,8 +768,8 @@ def _arrow_json_extract_sql(self: DuckDBGenerator, expression: JSON_EXTRACT_TYPE
 
 
 def _implicit_datetime_cast(
-    arg: t.Optional[exp.Expr], type: exp.DType = exp.DType.DATE
-) -> t.Optional[exp.Expr]:
+    arg: exp.Expr | None, type: exp.DType = exp.DType.DATE
+) -> exp.Expr | None:
     if isinstance(arg, exp.Literal) and arg.is_string:
         ts = arg.name
         if type == exp.DType.DATE and ":" in ts:
@@ -780,7 +780,7 @@ def _implicit_datetime_cast(
     return arg
 
 
-def _week_unit_to_dow(unit: t.Optional[exp.Expr]) -> t.Optional[int]:
+def _week_unit_to_dow(unit: exp.Expr | None) -> int | None:
     """
     Compute the Monday-based day shift to align DATE_DIFF('WEEK', ...) coming
     from other dialects, e.g BigQuery's WEEK(<day>) or ISOWEEK unit parts.
@@ -904,13 +904,13 @@ def _json_extract_value_array_sql(
     return self.sql(exp.cast(json_extract, to=exp.DataType.build(data_type)))
 
 
-def _cast_to_varchar(arg: t.Optional[exp.Expr]) -> t.Optional[exp.Expr]:
+def _cast_to_varchar(arg: exp.Expr | None) -> exp.Expr | None:
     if arg and arg.type and not arg.is_type(*exp.DataType.TEXT_TYPES, exp.DType.UNKNOWN):
         return exp.cast(arg, exp.DType.VARCHAR)
     return arg
 
 
-def _cast_to_boolean(arg: t.Optional[exp.Expr]) -> t.Optional[exp.Expr]:
+def _cast_to_boolean(arg: exp.Expr | None) -> exp.Expr | None:
     if arg and not arg.is_type(exp.DType.BOOLEAN):
         return exp.cast(arg, exp.DType.BOOLEAN)
     return arg
@@ -948,9 +948,7 @@ def _prepare_binary_bitwise_args(expression: exp.Binary) -> None:
         expression.set("expression", _cast_to_bit(expression.expression))
 
 
-def _day_navigation_sql(
-    self: DuckDBGenerator, expression: exp.NextDay | exp.PreviousDay
-) -> str:
+def _day_navigation_sql(self: DuckDBGenerator, expression: exp.NextDay | exp.PreviousDay) -> str:
     """
     Transpile Snowflake's NEXT_DAY / PREVIOUS_DAY to DuckDB using date arithmetic.
 
@@ -1079,7 +1077,7 @@ def _literal_sql_with_ws_chr(self: DuckDBGenerator, literal: str) -> str:
 
 
 def _escape_regex_metachars(
-    self: DuckDBGenerator, delimiters: t.Optional[exp.Expr], delimiters_sql: str
+    self: DuckDBGenerator, delimiters: exp.Expr | None, delimiters_sql: str
 ) -> str:
     r"""
     Escapes regex metacharacters \ - ^ [ ] for use in character classes regex expressions.
@@ -1311,7 +1309,7 @@ def _regr_val_sql(
 
 def _maybe_corr_null_to_false(
     expression: exp.Filter | exp.Window | exp.Corr,
-) -> t.Optional[exp.Filter | exp.Window | exp.Corr]:
+) -> exp.Filter | exp.Window | exp.Corr | None:
     corr = expression
     while isinstance(corr, (exp.Window, exp.Filter)):
         corr = corr.this
@@ -1354,7 +1352,7 @@ def _date_from_parts_sql(self, expression: exp.DateFromParts) -> str:
     return self.func("MAKE_DATE", year_expr, month_expr, day_expr)
 
 
-def _round_arg(arg: exp.Expr, round_input: t.Optional[bool] = None) -> exp.Expr:
+def _round_arg(arg: exp.Expr, round_input: bool | None = None) -> exp.Expr:
     if round_input:
         return exp.func("ROUND", arg, exp.Literal.number(0))
     return arg
@@ -1479,7 +1477,7 @@ class DuckDBGenerator(generator.Generator):
     COPY_HAS_INTO_KEYWORD = False
     STAR_EXCEPT = "EXCLUDE"
     PAD_FILL_PATTERN_IS_REQUIRED = True
-    ARRAY_SIZE_DIM_REQUIRED: t.Optional[bool] = False
+    ARRAY_SIZE_DIM_REQUIRED: bool | None = False
     NORMALIZE_EXTRACT_DATE_PARTS = True
     SUPPORTS_LIKE_QUANTIFIERS = False
     SET_ASSIGNMENT_REQUIRES_VARIABLE_KEYWORD = True
@@ -2817,7 +2815,7 @@ class DuckDBGenerator(generator.Generator):
     def tablesample_sql(
         self,
         expression: exp.TableSample,
-        tablesample_keyword: t.Optional[str] = None,
+        tablesample_keyword: str | None = None,
     ) -> str:
         if not isinstance(expression.parent, exp.Select):
             # This sample clause only applies to a single source, not the entire resulting relation
@@ -2963,8 +2961,8 @@ class DuckDBGenerator(generator.Generator):
         return self.func("CHR", arg)
 
     def _validate_regexp_flags(
-        self, flags: t.Optional[exp.Expr], supported_flags: str
-    ) -> t.Optional[str]:
+        self, flags: exp.Expr | None, supported_flags: str
+    ) -> str | None:
         """
         Validate and filter regexp flags for DuckDB compatibility.
 
@@ -3954,7 +3952,7 @@ class DuckDBGenerator(generator.Generator):
         return self.function_fallback_sql(expression)
 
     def hexstring_sql(
-        self, expression: exp.HexString, binary_function_repr: t.Optional[str] = None
+        self, expression: exp.HexString, binary_function_repr: str | None = None
     ) -> str:
         # UNHEX('FF') correctly produces blob \xFF in DuckDB
         return super().hexstring_sql(expression, binary_function_repr="UNHEX")

@@ -71,7 +71,7 @@ class _TokenizerBase:
     _BYTE_STRING_ESCAPES: t.ClassVar[set[str]]
     _ESCAPE_FOLLOW_CHARS: t.ClassVar[set[str]]
     _IDENTIFIER_ESCAPES: t.ClassVar[set[str]]
-    _COMMENTS: t.ClassVar[dict[str, t.Optional[str]]]
+    _COMMENTS: t.ClassVar[dict[str, str | None]]
     _KEYWORD_TRIE: t.ClassVar[dict[str, object]]
 
     @classmethod
@@ -186,7 +186,7 @@ class Tokenizer(_TokenizerBase):
     TOKENS_PRECEDING_HINT = {TokenType.SELECT, TokenType.INSERT, TokenType.UPDATE, TokenType.DELETE}
 
     # Autofilled
-    _COMMENTS: t.ClassVar[dict[str, t.Optional[str]]] = {}
+    _COMMENTS: t.ClassVar[dict[str, str | None]] = {}
     _FORMAT_STRINGS: t.ClassVar[dict[str, tuple[str, TokenType]]] = {}
     _IDENTIFIERS: t.ClassVar[dict[str, str]] = {}
     _IDENTIFIER_ESCAPES: t.ClassVar[set[str]] = set()

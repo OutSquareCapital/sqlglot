@@ -47,9 +47,9 @@ BIGINT_EXTRACT_DATE_PARTS = {
 
 def annotate_types(
     expression: E,
-    schema: t.Optional[dict | Schema] = None,
-    expression_metadata: t.Optional[ExprMetadataType] = None,
-    coerces_to: t.Optional[dict[exp.DType, set[exp.DType]]] = None,
+    schema: dict | Schema | None = None,
+    expression_metadata: ExprMetadataType | None = None,
+    coerces_to: dict[exp.DType, set[exp.DType]] | None = None,
     dialect: DialectType = None,
     overwrite_types: bool = True,
 ) -> E:
@@ -85,7 +85,7 @@ def annotate_types(
     ).annotate(expression)
 
 
-def _coerce_date_literal(l: exp.Expr, unit: t.Optional[exp.Expr]) -> exp.DType:
+def _coerce_date_literal(l: exp.Expr, unit: exp.Expr | None) -> exp.DType:
     date_text = l.name
     is_iso_date_ = is_iso_date(date_text)
 
@@ -99,7 +99,7 @@ def _coerce_date_literal(l: exp.Expr, unit: t.Optional[exp.Expr]) -> exp.DType:
     return exp.DType.UNKNOWN
 
 
-def _coerce_date(l: exp.Expr, unit: t.Optional[exp.Expr]) -> exp.DType:
+def _coerce_date(l: exp.Expr, unit: exp.Expr | None) -> exp.DType:
     if not is_date_unit(unit):
         return exp.DType.DATETIME
     return l.type.this if l.type else exp.DType.UNKNOWN
@@ -107,7 +107,7 @@ def _coerce_date(l: exp.Expr, unit: t.Optional[exp.Expr]) -> exp.DType:
 
 def swap_args(func: BinaryCoercionFunc) -> BinaryCoercionFunc:
     @functools.wraps(func)
-    def _swapped(l: exp.Expr, r: exp.Expr) -> t.Optional[exp.DataType | exp.DType]:
+    def _swapped(l: exp.Expr, r: exp.Expr) -> exp.DataType | exp.DType | None:
         return func(r, l)
 
     return _swapped
@@ -197,9 +197,9 @@ class TypeAnnotator:
     def __init__(
         self,
         schema: Schema,
-        expression_metadata: t.Optional[ExprMetadataType] = None,
-        coerces_to: t.Optional[dict[exp.DType, set[exp.DType]]] = None,
-        binary_coercions: t.Optional[BinaryCoercions] = None,
+        expression_metadata: ExprMetadataType | None = None,
+        coerces_to: dict[exp.DType, set[exp.DType]] | None = None,
+        binary_coercions: BinaryCoercions | None = None,
         overwrite_types: bool = True,
     ) -> None:
         self.schema = schema
@@ -238,7 +238,7 @@ class TypeAnnotator:
     # TODO (mypyc): should be expression: E -> E but mypyc resolves the TypeVar
     # to the isinstance-narrowed type, causing runtime type check failures.
     def _set_type(
-        self, expression: exp.Expr, target_type: t.Optional[exp.DataType | exp.DType]
+        self, expression: exp.Expr, target_type: exp.DataType | exp.DType | None
     ) -> exp.Expr:
         prev_type = expression.type
         expression_id = id(expression)
@@ -386,7 +386,7 @@ class TypeAnnotator:
     def _annotate_expression(
         self,
         expression: exp.Expr,
-        scope: t.Optional[Scope] = None,
+        scope: Scope | None = None,
     ) -> None:
         stack = [(expression, False)]
 
@@ -406,7 +406,7 @@ class TypeAnnotator:
 
             if scope and isinstance(expr, exp.Column) and expr.table:
                 source = None
-                source_scope: t.Optional[Scope] = scope
+                source_scope: Scope | None = scope
                 while source_scope and not source:
                     source = source_scope.sources.get(expr.table)
                     if not source:
@@ -810,9 +810,9 @@ class TypeAnnotator:
 
     def _annotate_struct_value(
         self, expression: exp.Expr
-    ) -> t.Optional[exp.DataType] | exp.ColumnDef:
+    ) -> exp.DataType | None | exp.ColumnDef:
         # Case: STRUCT(key AS value)
-        this: t.Optional[exp.Expr] = None
+        this: exp.Expr | None = None
         kind = expression.type
 
         if alias := expression.args.get("alias"):

@@ -23,7 +23,7 @@ def qualify_columns(
     schema: dict | Schema,
     expand_alias_refs: bool = True,
     expand_stars: bool = True,
-    infer_schema: t.Optional[bool] = None,
+    infer_schema: bool | None = None,
     allow_partial_qualification: bool = False,
     dialect: DialectType = None,
 ) -> exp.Expr:
@@ -114,7 +114,7 @@ def qualify_columns(
     return expression
 
 
-def validate_qualify_columns(expression: E, sql: t.Optional[str] = None) -> E:
+def validate_qualify_columns(expression: E, sql: str | None = None) -> E:
     """Raise an `OptimizeError` if any columns aren't qualified"""
     all_unqualified_columns = []
     for scope in traverse_scope(expression):
@@ -330,7 +330,7 @@ def _expand_alias_refs(
     replaced = False
 
     def replace_columns(
-        node: t.Optional[exp.Expr], resolve_table: bool = False, literal_index: bool = False
+        node: exp.Expr | None, resolve_table: bool = False, literal_index: bool = False
     ) -> None:
         nonlocal replaced
         is_group_by = isinstance(node, exp.Group)
@@ -402,7 +402,7 @@ def _expand_alias_refs(
         if isinstance(projection, exp.Alias):
             alias_to_expression[projection.alias] = (projection.this, i + 1)
 
-    parent_scope: t.Optional[Scope] = scope
+    parent_scope: Scope | None = scope
     on_right_sub_tree = False
     while parent_scope and not parent_scope.is_cte:
         if parent_scope := parent_scope.parent:

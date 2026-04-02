@@ -15,7 +15,7 @@ from sqlglot.tokens import TokenType
 
 
 def cast_to_time6(
-    expression: t.Optional[exp.Expr], time_type: exp.DType = exp.DType.TIME
+    expression: exp.Expr | None, time_type: exp.DType = exp.DType.TIME
 ) -> exp.Cast:
     return exp.Cast(
         this=expression,

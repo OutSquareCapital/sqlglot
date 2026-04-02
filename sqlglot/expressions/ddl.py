@@ -56,7 +56,7 @@ class Create(Expression, DDL):
     }
 
     @property
-    def kind(self) -> t.Optional[str]:
+    def kind(self) -> str | None:
         kind = self.args.get("kind")
         return kind and kind.upper()
 
@@ -345,7 +345,7 @@ class Drop(Expression):
     }
 
     @property
-    def kind(self) -> t.Optional[str]:
+    def kind(self) -> str | None:
         kind = self.args.get("kind")
         return kind and kind.upper()
 
@@ -382,7 +382,7 @@ class Alter(Expression):
     }
 
     @property
-    def kind(self) -> t.Optional[str]:
+    def kind(self) -> str | None:
         kind = self.args.get("kind")
         return kind and kind.upper()
 

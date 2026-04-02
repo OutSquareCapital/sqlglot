@@ -70,12 +70,12 @@ def _generate_as_hive(expression: exp.Expr) -> bool:
 
 
 def _generator_kwargs(
-    pretty: t.Optional[bool | int],
+    pretty: bool | int | None,
     identify: str | bool,
     normalize: bool,
     pad: int,
     indent: int,
-    normalize_functions: t.Optional[str | bool],
+    normalize_functions: str | bool | None,
     unsupported_level: t.Any,
     max_unsupported: int,
     leading_comma: bool,
@@ -132,12 +132,12 @@ class AthenaGenerator(generator.Generator):
 
     def __init__(
         self,
-        pretty: t.Optional[bool | int] = None,
+        pretty: bool | int | None = None,
         identify: str | bool = False,
         normalize: bool = False,
         pad: int = 2,
         indent: int = 2,
-        normalize_functions: t.Optional[str | bool] = None,
+        normalize_functions: str | bool | None = None,
         unsupported_level: t.Any = None,
         max_unsupported: int = 3,
         leading_comma: bool = False,

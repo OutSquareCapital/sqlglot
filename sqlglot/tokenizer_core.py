@@ -506,7 +506,7 @@ class Token:
         col: int = 1,
         start: int = 0,
         end: int = 0,
-        comments: t.Optional[list[str]] = None,
+        comments: list[str] | None = None,
     ) -> None:
         self.token_type = token_type
         self.text = text
@@ -579,7 +579,7 @@ class TokenizerCore:
         quotes: dict[str, str],
         format_strings: dict[str, tuple[str, TokenType]],
         identifiers: dict[str, str],
-        comments: dict[str, t.Optional[str]],
+        comments: dict[str, str | None],
         string_escapes: set[str],
         byte_string_escapes: set[str],
         identifier_escapes: set[str],
@@ -757,7 +757,7 @@ class TokenizerCore:
     def _text(self) -> str:
         return self.sql[self._start : self._current]
 
-    def _add(self, token_type: TokenType, text: t.Optional[str] = None) -> None:
+    def _add(self, token_type: TokenType, text: str | None = None) -> None:
         self._prev_token_line = self._line
 
         if self._comments and token_type == TokenType.SEMICOLON and self.tokens:
@@ -932,7 +932,7 @@ class TokenizerCore:
         is_underscore_separated: bool = False
         number_text: str = ""
         numeric_literal: str = ""
-        numeric_type: t.Optional[TokenType] = None
+        numeric_type: TokenType | None = None
 
         while True:
             if self._peek in _DIGIT_CHARS:
@@ -1118,7 +1118,7 @@ class TokenizerCore:
     def _extract_string(
         self,
         delimiter: str,
-        escapes: t.Optional[set[str]] = None,
+        escapes: set[str] | None = None,
         raw_string: bool = False,
         raise_unmatched: bool = True,
     ) -> str:
