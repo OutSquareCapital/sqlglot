@@ -1,5 +1,3 @@
-import typing as t
-
 from sqlglot import TokenType
 from sqlglot.dialects.mysql import MySQL
 from sqlglot.generators.singlestore import SingleStoreGenerator

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import typing as t
 
 from sqlglot import exp, parser
 from sqlglot.parsers.presto import PrestoParser

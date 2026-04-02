@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import sys
-import typing as t
 
 import sqlglot
 from sqlglot.helper import to_bool

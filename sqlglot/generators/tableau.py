@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import typing as t
 
 from sqlglot import exp, generator, transforms
 from sqlglot.dialects.dialect import rename_func, strposition_sql as _strposition_sql

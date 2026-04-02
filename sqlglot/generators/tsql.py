@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import typing as t
 from functools import reduce
 
 from sqlglot import exp, generator, transforms

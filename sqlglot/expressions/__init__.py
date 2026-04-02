@@ -11,8 +11,6 @@ SQL expressions, such as `sqlglot.expressions.select`.
 ----
 """
 
-import typing as t
-
 from sqlglot.expressions.core import *  # noqa: F401,F403
 from sqlglot.expressions.datatypes import *  # noqa: F401,F403
 from sqlglot.expressions.constraints import *  # noqa: F401,F403
