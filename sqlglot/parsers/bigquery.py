@@ -16,18 +16,18 @@ if t.TYPE_CHECKING:
     from sqlglot._typing import E
 
 
-def _build_contains_substring(args: t.List) -> exp.Contains:
+def _build_contains_substring(args: list) -> exp.Contains:
     this = exp.Lower(this=seq_get(args, 0))
     expr = exp.Lower(this=seq_get(args, 1))
     return exp.Contains(this=this, expression=expr, json_scope=seq_get(args, 2))
 
 
-def _build_date(args: t.List) -> exp.Date | exp.DateFromParts:
+def _build_date(args: list) -> exp.Date | exp.DateFromParts:
     expr_type = exp.DateFromParts if len(args) == 3 else exp.Date
     return expr_type.from_arg_list(args)
 
 
-def build_date_diff(args: t.List) -> exp.Expr:
+def build_date_diff(args: list) -> exp.Expr:
     expr = exp.DateDiff(
         this=seq_get(args, 0),
         expression=seq_get(args, 1),
@@ -42,7 +42,7 @@ def build_date_diff(args: t.List) -> exp.Expr:
     return expr
 
 
-def _build_datetime(args: t.List) -> exp.Func:
+def _build_datetime(args: list) -> exp.Func:
     if len(args) == 1:
         return exp.TsOrDsToDatetime.from_arg_list(args)
     if len(args) == 2:
@@ -51,9 +51,9 @@ def _build_datetime(args: t.List) -> exp.Func:
 
 
 def _build_extract_json_with_default_path(
-    expr_type: t.Type[E],
+    expr_type: type[E],
 ) -> t.Callable:
-    def _builder(args: t.List, dialect: t.Any) -> E:
+    def _builder(args: list, dialect: t.Any) -> E:
         if len(args) == 1:
             args.append(exp.Literal.string("$"))
         return parser.build_extract_json_with_path(expr_type)(args, dialect)
@@ -61,8 +61,8 @@ def _build_extract_json_with_default_path(
     return _builder
 
 
-def _build_format_time(expr_type: t.Type[exp.Expr]) -> t.Callable[[t.List], exp.TimeToStr]:
-    def _builder(args: t.List) -> exp.TimeToStr:
+def _build_format_time(expr_type: type[exp.Expr]) -> t.Callable[[list], exp.TimeToStr]:
+    def _builder(args: list) -> exp.TimeToStr:
         formatted_time = build_formatted_time(exp.TimeToStr, "bigquery")(
             [expr_type(this=seq_get(args, 1)), seq_get(args, 0)]
         )
@@ -72,7 +72,7 @@ def _build_format_time(expr_type: t.Type[exp.Expr]) -> t.Callable[[t.List], exp.
     return _builder
 
 
-def _build_json_strip_nulls(args: t.List) -> exp.JSONStripNulls:
+def _build_json_strip_nulls(args: list) -> exp.JSONStripNulls:
     expression = exp.JSONStripNulls(this=seq_get(args, 0))
     for arg in args[1:]:
         if isinstance(arg, exp.Kwarg):
@@ -82,7 +82,7 @@ def _build_json_strip_nulls(args: t.List) -> exp.JSONStripNulls:
     return expression
 
 
-def _build_levenshtein(args: t.List) -> exp.Levenshtein:
+def _build_levenshtein(args: list) -> exp.Levenshtein:
     max_dist = seq_get(args, 2)
     return exp.Levenshtein(
         this=seq_get(args, 0),
@@ -91,16 +91,16 @@ def _build_levenshtein(args: t.List) -> exp.Levenshtein:
     )
 
 
-def _build_parse_timestamp(args: t.List) -> exp.StrToTime:
+def _build_parse_timestamp(args: list) -> exp.StrToTime:
     this = build_formatted_time(exp.StrToTime, "bigquery")([seq_get(args, 1), seq_get(args, 0)])
     this.set("zone", seq_get(args, 2))
     return this
 
 
 def _build_regexp_extract(
-    expr_type: t.Type[E], default_group: t.Optional[exp.Expr] = None
+    expr_type: type[E], default_group: t.Optional[exp.Expr] = None
 ) -> t.Callable:
-    def _builder(args: t.List, dialect: t.Any) -> E:
+    def _builder(args: list, dialect: t.Any) -> E:
         try:
             group = re.compile(args[1].name).groups == 1
         except re.error:
@@ -122,7 +122,7 @@ def _build_regexp_extract(
     return _builder
 
 
-def _build_time(args: t.List) -> exp.Func:
+def _build_time(args: list) -> exp.Func:
     if len(args) == 1:
         return exp.TsOrDsToTime(this=args[0])
     if len(args) == 2:
@@ -130,13 +130,13 @@ def _build_time(args: t.List) -> exp.Func:
     return exp.TimeFromParts.from_arg_list(args)
 
 
-def _build_timestamp(args: t.List) -> exp.Timestamp:
+def _build_timestamp(args: list) -> exp.Timestamp:
     timestamp = exp.Timestamp.from_arg_list(args)
     timestamp.set("with_tz", True)
     return timestamp
 
 
-def _build_to_hex(args: t.List) -> exp.Hex | exp.MD5:
+def _build_to_hex(args: list) -> exp.Hex | exp.MD5:
     arg = seq_get(args, 0)
     return exp.MD5(this=arg.this) if isinstance(arg, exp.MD5Digest) else exp.LowerHex(this=arg)
 
@@ -178,7 +178,7 @@ class BigQueryParser(parser.Parser):
         TokenType.GRANT,
     } - {TokenType.ASC, TokenType.DESC}
 
-    FUNCTIONS: t.ClassVar[t.Dict[str, t.Callable]] = {
+    FUNCTIONS: t.ClassVar[dict[str, t.Callable]] = {
         **{k: v for k, v in parser.Parser.FUNCTIONS.items() if k != "SEARCH"},
         "APPROX_TOP_COUNT": exp.ApproxTopK.from_arg_list,
         "BIT_AND": exp.BitwiseAndAgg.from_arg_list,
@@ -573,7 +573,7 @@ class BigQueryParser(parser.Parser):
 
         return expr
 
-    def _parse_ml(self, expr_type: t.Type[E], **kwargs: t.Any) -> E:
+    def _parse_ml(self, expr_type: type[E], **kwargs: t.Any) -> E:
         self._match_text_seq("MODEL")
         this = self._parse_table()
 
@@ -665,7 +665,7 @@ class BigQueryParser(parser.Parser):
         if isinstance(this, exp.Dot) and isinstance(this.expression, exp.Func):
             prefix = this.this.name.upper()
 
-            func: t.Optional[t.Type[exp.Func]] = None
+            func: t.Optional[type[exp.Func]] = None
             if prefix == "NET":
                 func = exp.NetFunc
             elif prefix == "SAFE":

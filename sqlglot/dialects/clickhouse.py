@@ -37,13 +37,13 @@ class ClickHouse(Dialect):
 
     CREATABLE_KIND_MAPPING = {"DATABASE": "SCHEMA"}
 
-    SET_OP_DISTINCT_BY_DEFAULT: t.Dict[t.Type[exp.Expr], t.Optional[bool]] = {
+    SET_OP_DISTINCT_BY_DEFAULT: dict[type[exp.Expr], t.Optional[bool]] = {
         exp.Except: False,
         exp.Intersect: False,
         exp.Union: None,
     }
 
-    def generate_values_aliases(self, expression: exp.Values) -> t.List[exp.Identifier]:
+    def generate_values_aliases(self, expression: exp.Values) -> list[exp.Identifier]:
         # Clickhouse allows VALUES to have an embedded structure e.g:
         # VALUES('person String, place String', ('Noah', 'Paris'), ...)
         # In this case, we don't want to qualify the columns

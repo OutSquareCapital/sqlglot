@@ -147,7 +147,7 @@ def to_node(
     source_name: t.Optional[str] = None,
     reference_node_name: t.Optional[str] = None,
     trim_selects: bool = True,
-    _cache: t.Optional[t.Dict[t.Tuple, Node]] = None,
+    _cache: t.Optional[dict[tuple, Node]] = None,
 ) -> Node:
     cache_key = (column, id(scope), scope_name, source_name, reference_node_name)
 

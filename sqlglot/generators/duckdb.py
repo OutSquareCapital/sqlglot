@@ -611,7 +611,7 @@ def _struct_sql(self: DuckDBGenerator, expression: exp.Struct) -> str:
         if isinstance(ancestor_cast, exp.Cast) and ancestor_cast.to.is_type(exp.DType.MAP):
             return "MAP()"
 
-    args: t.List[str] = []
+    args: list[str] = []
 
     # BigQuery allows inline construction such as "STRUCT<a STRING, b INTEGER>('str', 1)" which is
     # canonicalized to "ROW('str', 1) AS STRUCT(a TEXT, b INT)" in DuckDB
@@ -1065,7 +1065,7 @@ def _literal_sql_with_ws_chr(self: DuckDBGenerator, literal: str) -> str:
     if not any(ch in WS_CONTROL_CHARS_TO_DUCK for ch in literal):
         return self.sql(exp.Literal.string(literal))
 
-    sql_segments: t.List[str] = []
+    sql_segments: list[str] = []
     for is_ws_control, group in groupby(literal, key=lambda ch: ch in WS_CONTROL_CHARS_TO_DUCK):
         if is_ws_control:
             for ch in group:
@@ -1470,7 +1470,7 @@ class DuckDBGenerator(generator.Generator):
     MULTI_ARG_DISTINCT = False
     CAN_IMPLEMENT_ARRAY_ANY = True
     SUPPORTS_TO_NUMBER = False
-    SELECT_KINDS: t.Tuple[str, ...] = ()
+    SELECT_KINDS: tuple[str, ...] = ()
     SUPPORTS_DECODE_CASE = False
     SUPPORTS_DROP_ALTER_ICEBERG_PROPERTY = False
 
@@ -1892,7 +1892,7 @@ class DuckDBGenerator(generator.Generator):
 
     # Mappings for EXTRACT/DATE_PART transpilation
     # Maps Snowflake specifiers unsupported in DuckDB to strftime format codes
-    EXTRACT_STRFTIME_MAPPINGS: t.Dict[str, t.Tuple[str, str]] = {
+    EXTRACT_STRFTIME_MAPPINGS: dict[str, tuple[str, str]] = {
         "WEEKISO": ("%V", "INTEGER"),
         "YEAROFWEEK": ("%G", "INTEGER"),
         "YEAROFWEEKISO": ("%G", "INTEGER"),
@@ -1900,7 +1900,7 @@ class DuckDBGenerator(generator.Generator):
     }
 
     # Maps epoch-based specifiers to DuckDB epoch functions
-    EXTRACT_EPOCH_MAPPINGS: t.Dict[str, str] = {
+    EXTRACT_EPOCH_MAPPINGS: dict[str, str] = {
         "EPOCH_SECOND": "EPOCH",
         "EPOCH_MILLISECOND": "EPOCH_MS",
         "EPOCH_MICROSECOND": "EPOCH_US",

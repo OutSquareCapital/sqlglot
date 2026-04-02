@@ -12,9 +12,9 @@ if t.TYPE_CHECKING:
 
 
 def build_with_ignore_nulls(
-    exp_class: t.Type[exp.Expr],
-) -> t.Callable[[t.List[exp.Expr]], exp.Expr]:
-    def _parse(args: t.List[exp.Expr]) -> exp.Expr:
+    exp_class: type[exp.Expr],
+) -> t.Callable[[list[exp.Expr]], exp.Expr]:
+    def _parse(args: list[exp.Expr]) -> exp.Expr:
         this = exp_class(this=seq_get(args, 0))
         if seq_get(args, 1) == exp.true():
             return exp.IgnoreNulls(this=this)
@@ -23,13 +23,13 @@ def build_with_ignore_nulls(
     return _parse
 
 
-def _build_to_date(args: t.List) -> exp.TsOrDsToDate:
+def _build_to_date(args: list) -> exp.TsOrDsToDate:
     expr = build_formatted_time(exp.TsOrDsToDate, "hive")(args)
     expr.set("safe", True)
     return expr
 
 
-def _build_date_add(args: t.List) -> exp.TsOrDsAdd:
+def _build_date_add(args: list) -> exp.TsOrDsAdd:
     expression = seq_get(args, 1)
     if expression:
         expression = expression * -1
@@ -164,7 +164,7 @@ class HiveParser(parser.Parser):
             )
         )
 
-    def _parse_quantile_function(self, func: t.Type[F]) -> F:
+    def _parse_quantile_function(self, func: type[F]) -> F:
         if self._match(TokenType.DISTINCT):
             first_arg: t.Optional[exp.Expr] = self.expression(
                 exp.Distinct(expressions=[self._parse_lambda()])
@@ -239,7 +239,7 @@ class HiveParser(parser.Parser):
 
     def _parse_partition_and_order(
         self,
-    ) -> t.Tuple[t.List[exp.Expr], t.Optional[exp.Expr]]:
+    ) -> tuple[list[exp.Expr], t.Optional[exp.Expr]]:
         return (
             (
                 self._parse_csv(self._parse_assignment)

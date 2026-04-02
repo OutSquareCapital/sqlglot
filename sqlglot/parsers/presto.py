@@ -14,7 +14,7 @@ from sqlglot.helper import seq_get
 from sqlglot.tokens import TokenType
 
 
-def _build_approx_percentile(args: t.List) -> exp.Expr:
+def _build_approx_percentile(args: list) -> exp.Expr:
     if len(args) == 4:
         return exp.ApproxQuantile(
             this=seq_get(args, 0),
@@ -29,7 +29,7 @@ def _build_approx_percentile(args: t.List) -> exp.Expr:
     return exp.ApproxQuantile.from_arg_list(args)
 
 
-def _build_from_unixtime(args: t.List) -> exp.Expr:
+def _build_from_unixtime(args: list) -> exp.Expr:
     if len(args) == 3:
         return exp.UnixToTime(
             this=seq_get(args, 0),
@@ -42,7 +42,7 @@ def _build_from_unixtime(args: t.List) -> exp.Expr:
     return exp.UnixToTime.from_arg_list(args)
 
 
-def _build_to_char(args: t.List) -> exp.TimeToStr:
+def _build_to_char(args: list) -> exp.TimeToStr:
     fmt = seq_get(args, 1)
     if isinstance(fmt, exp.Literal):
         # We uppercase this to match Teradata's format mapping keys

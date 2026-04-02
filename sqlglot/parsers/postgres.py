@@ -15,7 +15,7 @@ from sqlglot.parser import binary_range_parser
 from sqlglot.tokens import TokenType
 
 
-def _build_generate_series(args: t.List) -> exp.ExplodingGenerateSeries:
+def _build_generate_series(args: list) -> exp.ExplodingGenerateSeries:
     # The goal is to convert step values like '1 day' or INTERVAL '1 day' into INTERVAL '1' day
     # Note: postgres allows calls with just two arguments -- the "step" argument defaults to 1
     step = seq_get(args, 2)
@@ -28,7 +28,7 @@ def _build_generate_series(args: t.List) -> exp.ExplodingGenerateSeries:
     return exp.ExplodingGenerateSeries.from_arg_list(args)
 
 
-def _build_to_timestamp(args: t.List) -> exp.UnixToTime | exp.StrToTime:
+def _build_to_timestamp(args: list) -> exp.UnixToTime | exp.StrToTime:
     # TO_TIMESTAMP accepts either a single double argument or (text, text)
     if len(args) == 1:
         # https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE
@@ -38,7 +38,7 @@ def _build_to_timestamp(args: t.List) -> exp.UnixToTime | exp.StrToTime:
     return build_formatted_time(exp.StrToTime, "postgres")(args)
 
 
-def _build_regexp_replace(args: t.List, dialect: DialectType = None) -> exp.RegexpReplace:
+def _build_regexp_replace(args: list, dialect: DialectType = None) -> exp.RegexpReplace:
     # The signature of REGEXP_REPLACE is:
     # regexp_replace(source, pattern, replacement [, start [, N ]] [, flags ])
     #
@@ -63,7 +63,7 @@ def _build_regexp_replace(args: t.List, dialect: DialectType = None) -> exp.Rege
     return regexp_replace
 
 
-def _build_levenshtein_less_equal(args: t.List) -> exp.Levenshtein:
+def _build_levenshtein_less_equal(args: list) -> exp.Levenshtein:
     # Postgres has two signatures for levenshtein_less_equal function, but in both cases
     # max_dist is the last argument
     # levenshtein_less_equal(source, target, ins_cost, del_cost, sub_cost, max_d)

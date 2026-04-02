@@ -208,7 +208,7 @@ def amend_exploded_column_table(expression: exp.Expr) -> exp.Expr:
 
 
 class PrestoGenerator(generator.Generator):
-    SELECT_KINDS: t.Tuple[str, ...] = ()
+    SELECT_KINDS: tuple[str, ...] = ()
     SUPPORTS_DECODE_CASE = False
 
     AFTER_HAVING_MODIFIER_TRANSFORMS = generator.AFTER_HAVING_MODIFIER_TRANSFORMS
@@ -536,8 +536,8 @@ class PrestoGenerator(generator.Generator):
 
             annotate_types(expression, dialect=self.dialect)
 
-        values: t.List[str] = []
-        schema: t.List[str] = []
+        values: list[str] = []
+        schema: list[str] = []
         unknown_type = False
 
         for e in expression.expressions:
@@ -572,7 +572,7 @@ class PrestoGenerator(generator.Generator):
 
     def offset_limit_modifiers(
         self, expression: exp.Expr, fetch: bool, limit: t.Optional[exp.Fetch | exp.Limit]
-    ) -> t.List[str]:
+    ) -> list[str]:
         return [
             self.sql(expression, "offset"),
             self.sql(limit),

@@ -18,7 +18,7 @@ from sqlglot.schema import ensure_schema
 if t.TYPE_CHECKING:
     from sqlglot.dialects.dialect import DialectType
 
-    DateRange = t.Tuple[datetime.date, datetime.date]
+    DateRange = tuple[datetime.date, datetime.date]
     DateTruncBinaryTransform = t.Callable[
         [exp.Expr, datetime.date, str, Dialect, exp.DataType], t.Optional[exp.Expr]
     ]
@@ -511,7 +511,7 @@ class Simplifier:
         exp.Is,
     )
 
-    INVERSE_COMPARISONS: t.ClassVar[t.Dict[t.Type[exp.Expr], t.Type[exp.Expr]]] = {
+    INVERSE_COMPARISONS: t.ClassVar[dict[type[exp.Expr], type[exp.Expr]]] = {
         exp.LT: exp.GT,
         exp.GT: exp.LT,
         exp.LTE: exp.GTE,
@@ -521,14 +521,14 @@ class Simplifier:
     NONDETERMINISTIC: t.ClassVar = (exp.Rand, exp.Randn)
     AND_OR: t.ClassVar = (exp.And, exp.Or)
 
-    INVERSE_DATE_OPS: t.ClassVar[t.Dict[t.Type[exp.Expr], t.Type[exp.Expr]]] = {
+    INVERSE_DATE_OPS: t.ClassVar[dict[type[exp.Expr], type[exp.Expr]]] = {
         exp.DateAdd: exp.Sub,
         exp.DateSub: exp.Add,
         exp.DatetimeAdd: exp.Sub,
         exp.DatetimeSub: exp.Add,
     }
 
-    INVERSE_OPS: t.ClassVar[t.Dict[t.Type[exp.Expr], t.Type[exp.Expr]]] = {
+    INVERSE_OPS: t.ClassVar[dict[type[exp.Expr], type[exp.Expr]]] = {
         **INVERSE_DATE_OPS,
         exp.Add: exp.Sub,
         exp.Sub: exp.Add,
@@ -538,7 +538,7 @@ class Simplifier:
 
     CONCATS: t.ClassVar = (exp.Concat, exp.DPipe)
 
-    DATETRUNC_BINARY_COMPARISONS: t.ClassVar[t.Dict[t.Type[exp.Expr], DateTruncBinaryTransform]] = {
+    DATETRUNC_BINARY_COMPARISONS: t.ClassVar[dict[type[exp.Expr], DateTruncBinaryTransform]] = {
         exp.LT: lambda l, dt, u, d, t: (
             l
             < date_literal(

@@ -182,7 +182,7 @@ def parse(path: str, dialect: DialectType = None) -> exp.JSONPath:
     # We canonicalize the JSON path AST so that it always starts with a
     # "root" element, so paths like "field" will be generated as "$.field"
     _match(TokenType.DOLLAR)
-    expressions: t.List[exp.JSONPathPart] = [exp.JSONPathRoot()]
+    expressions: list[exp.JSONPathPart] = [exp.JSONPathRoot()]
 
     while _curr():
         if _match(TokenType.DOT) or _match(TokenType.COLON):
@@ -217,7 +217,7 @@ def parse(path: str, dialect: DialectType = None) -> exp.JSONPath:
     return exp.JSONPath(expressions=expressions)
 
 
-JSON_PATH_PART_TRANSFORMS: t.Dict[t.Type[exp.Expr], t.Callable[..., str]] = {
+JSON_PATH_PART_TRANSFORMS: dict[type[exp.Expr], t.Callable[..., str]] = {
     exp.JSONPathFilter: lambda _, e: f"?{e.this}",
     exp.JSONPathKey: lambda self, e: self._jsonpathkey_sql(e),
     exp.JSONPathRecursive: lambda _, e: f"..{e.this or ''}",

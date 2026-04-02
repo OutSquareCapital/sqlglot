@@ -28,13 +28,13 @@ UNSUPPORTED_TEMPLATE = "Argument '{}' is not supported for expression '{}' when 
 
 
 def unsupported_args(
-    *args: t.Union[str, t.Tuple[str, str]],
+    *args: t.Union[str, tuple[str, str]],
 ) -> t.Callable[[GeneratorMethod], GeneratorMethod]:
     """
     Decorator that can be used to mark certain args of an `Expr` subclass as unsupported.
     It expects a sequence of argument names or pairs of the form (argument_name, diagnostic_msg).
     """
-    diagnostic_by_arg: t.Dict[str, t.Optional[str]] = {}
+    diagnostic_by_arg: dict[str, t.Optional[str]] = {}
     for arg in args:
         if isinstance(arg, str):
             diagnostic_by_arg[arg] = None
@@ -61,7 +61,7 @@ def unsupported_args(
     return decorator
 
 
-AFTER_HAVING_MODIFIER_TRANSFORMS: t.Dict[str, t.Any] = {
+AFTER_HAVING_MODIFIER_TRANSFORMS: dict[str, t.Any] = {
     "windows": lambda self, e: (
         self.seg("WINDOW ") + self.expressions(e, key="windows", flat=True)
         if e.args.get("windows")
@@ -71,13 +71,13 @@ AFTER_HAVING_MODIFIER_TRANSFORMS: t.Dict[str, t.Any] = {
 }
 
 
-_DISPATCH_CACHE: t.Dict[t.Type[Generator], t.Dict[t.Type[exp.Expr], t.Callable[..., str]]] = {}
+_DISPATCH_CACHE: dict[type[Generator], dict[type[exp.Expr], t.Callable[..., str]]] = {}
 
 
 def _build_dispatch(
-    cls: t.Type[Generator],
-) -> t.Dict[t.Type[exp.Expr], t.Callable[..., str]]:
-    dispatch: t.Dict[t.Type[exp.Expr], t.Callable[..., str]] = dict(cls.TRANSFORMS)
+    cls: type[Generator],
+) -> dict[type[exp.Expr], t.Callable[..., str]]:
+    dispatch: dict[type[exp.Expr], t.Callable[..., str]] = dict(cls.TRANSFORMS)
 
     for attr_name in dir(cls):
         if not attr_name.endswith("_sql") or attr_name.startswith("_"):
@@ -131,7 +131,7 @@ class Generator:
             Default: True
     """
 
-    TRANSFORMS: t.ClassVar[t.Dict[t.Type[exp.Expr], t.Callable[..., str]]] = {
+    TRANSFORMS: t.ClassVar[dict[type[exp.Expr], t.Callable[..., str]]] = {
         **JSON_PATH_PART_TRANSFORMS,
         exp.Adjacent: lambda self, e: self.binary(e, "-|-"),
         exp.AllowedValuesProperty: lambda self, e: (
@@ -295,7 +295,7 @@ class Generator:
     NULL_ORDERING_SUPPORTED: t.Optional[bool] = True
 
     # Window functions that support NULLS FIRST/LAST
-    WINDOW_FUNCS_WITH_NULL_ORDERING: t.ClassVar[t.Tuple[t.Type[exp.Expression], ...]] = ()
+    WINDOW_FUNCS_WITH_NULL_ORDERING: t.ClassVar[tuple[type[exp.Expression], ...]] = ()
 
     # Whether ignore nulls is inside the agg or outside.
     # FIRST(x IGNORE NULLS) OVER vs FIRST (x) IGNORE NULLS OVER
@@ -381,7 +381,7 @@ class Generator:
     NVL2_SUPPORTED = True
 
     # https://cloud.google.com/bigquery/docs/reference/standard-sql/query-syntax
-    SELECT_KINDS: t.Tuple[str, ...] = ("STRUCT", "VALUE")
+    SELECT_KINDS: tuple[str, ...] = ("STRUCT", "VALUE")
 
     # Whether VALUES statements can be used as derived tables.
     # MySQL 5 and Redshift do not allow this, so when False, it will convert
@@ -632,14 +632,14 @@ class Generator:
         **AFTER_HAVING_MODIFIER_TRANSFORMS,
     }
 
-    TOKEN_MAPPING: t.ClassVar[t.Dict[TokenType, str]] = {}
+    TOKEN_MAPPING: t.ClassVar[dict[TokenType, str]] = {}
 
     STRUCT_DELIMITER: t.ClassVar = ("<", ">")
 
     PARAMETER_TOKEN = "@"
     NAMED_PLACEHOLDER_TOKEN = ":"
 
-    EXPRESSION_PRECEDES_PROPERTIES_CREATABLES: t.ClassVar[t.Set[str]] = set()
+    EXPRESSION_PRECEDES_PROPERTIES_CREATABLES: t.ClassVar[set[str]] = set()
 
     PROPERTIES_LOCATION: t.ClassVar = {
         exp.AllowedValuesProperty: exp.Properties.Location.POST_SCHEMA,
@@ -756,10 +756,10 @@ class Generator:
     }
 
     # Keywords that can't be used as unquoted identifier names
-    RESERVED_KEYWORDS: t.ClassVar[t.Set[str]] = set()
+    RESERVED_KEYWORDS: t.ClassVar[set[str]] = set()
 
     # Exprs whose comments are separated from them for better formatting
-    WITH_SEPARATED_COMMENTS: t.ClassVar[t.Tuple[t.Type[exp.Expr], ...]] = (
+    WITH_SEPARATED_COMMENTS: t.ClassVar[tuple[type[exp.Expr], ...]] = (
         exp.Command,
         exp.Create,
         exp.Describe,
@@ -780,13 +780,13 @@ class Generator:
     )
 
     # Exprs that should not have their comments generated in maybe_comment
-    EXCLUDE_COMMENTS: t.ClassVar[t.Tuple[t.Type[exp.Expr], ...]] = (
+    EXCLUDE_COMMENTS: t.ClassVar[tuple[type[exp.Expr], ...]] = (
         exp.Binary,
         exp.SetOperation,
     )
 
     # Exprs that can remain unwrapped when appearing in the context of an INTERVAL
-    UNWRAPPED_INTERVAL_VALUES: t.ClassVar[t.Tuple[t.Type[exp.Expr], ...]] = (
+    UNWRAPPED_INTERVAL_VALUES: t.ClassVar[tuple[type[exp.Expr], ...]] = (
         exp.Column,
         exp.Literal,
         exp.Neg,
@@ -801,9 +801,9 @@ class Generator:
     }
 
     # Exprs that need to have all CTEs under them bubbled up to them
-    EXPRESSIONS_WITHOUT_NESTED_CTES: t.ClassVar[t.Set[t.Type[exp.Expr]]] = set()
+    EXPRESSIONS_WITHOUT_NESTED_CTES: t.ClassVar[set[type[exp.Expr]]] = set()
 
-    RESPECT_IGNORE_NULLS_UNSUPPORTED_EXPRESSIONS: t.ClassVar[t.Tuple[t.Type[exp.Expr], ...]] = ()
+    RESPECT_IGNORE_NULLS_UNSUPPORTED_EXPRESSIONS: t.ClassVar[tuple[type[exp.Expr], ...]] = ()
 
     SAFE_JSON_PATH_KEY_RE: t.ClassVar = exp.SAFE_IDENTIFIER_RE
 
@@ -868,7 +868,7 @@ class Generator:
             self.dialect.NORMALIZE_FUNCTIONS if normalize_functions is None else normalize_functions
         )
 
-        self.unsupported_messages: t.List[str] = []
+        self.unsupported_messages: list[str] = []
         self._escaped_quote_end: str = (
             self.dialect.tokenizer_class.STRING_ESCAPES[0] + self.dialect.QUOTE_END
         )
@@ -975,7 +975,7 @@ class Generator:
         self,
         sql: str,
         expression: t.Optional[exp.Expr] = None,
-        comments: t.Optional[t.List[str]] = None,
+        comments: t.Optional[list[str]] = None,
         separated: bool = False,
     ) -> str:
         comments = (
@@ -1262,7 +1262,7 @@ class Generator:
 
         return ""
 
-    def createable_sql(self, expression: exp.Create, locations: t.DefaultDict) -> str:
+    def createable_sql(self, expression: exp.Create, locations: defaultdict) -> str:
         return self.sql(expression, "this")
 
     def create_sql(self, expression: exp.Create) -> str:
@@ -1771,8 +1771,8 @@ class Generator:
                     select = select.order_by(order.pop(), copy=False)
                 return self.sql(select)
 
-        sqls: t.List[str] = []
-        stack: t.List[t.Union[str, exp.Expr]] = [expression]
+        sqls: list[str] = []
+        stack: list[t.Union[str, exp.Expr]] = [expression]
 
         while stack:
             node = stack.pop()
@@ -1953,7 +1953,7 @@ class Generator:
     def with_properties(self, properties: exp.Properties) -> str:
         return self.properties(properties, prefix=self.seg(self.WITH_PROPERTIES_PREFIX, sep=""))
 
-    def locate_properties(self, properties: exp.Properties) -> t.DefaultDict:
+    def locate_properties(self, properties: exp.Properties) -> defaultdict:
         properties_locs = defaultdict(list)
         for p in properties.expressions:
             p_loc = self.PROPERTIES_LOCATION[p.__class__]
@@ -2429,7 +2429,7 @@ class Generator:
     def tuple_sql(self, expression: exp.Tuple) -> str:
         return f"({self.expressions(expression, dynamic=True, new_line=True, skip_first=True, skip_last=True)})"
 
-    def _update_from_joins_sql(self, expression: exp.Update) -> t.Tuple[str, str]:
+    def _update_from_joins_sql(self, expression: exp.Update) -> tuple[str, str]:
         """
         Returns (join_sql, from_sql) for UPDATE statements.
         - join_sql: placed after UPDATE table, before SET
@@ -2499,7 +2499,7 @@ class Generator:
         alias_node = expression.args.get("alias")
         column_names = alias_node and alias_node.columns
 
-        selects: t.List[exp.Query] = []
+        selects: list[exp.Query] = []
 
         for i, tup in enumerate(expression.expressions):
             row = tup.expressions
@@ -3029,13 +3029,13 @@ class Generator:
 
     def offset_limit_modifiers(
         self, expression: exp.Expr, fetch: bool, limit: t.Optional[exp.Fetch | exp.Limit]
-    ) -> t.List[str]:
+    ) -> list[str]:
         return [
             self.sql(expression, "offset") if fetch else self.sql(limit),
             self.sql(limit) if fetch else self.sql(expression, "offset"),
         ]
 
-    def after_limit_modifiers(self, expression: exp.Expr) -> t.List[str]:
+    def after_limit_modifiers(self, expression: exp.Expr) -> list[str]:
         locks = self.expressions(expression, key="locks", sep=" ")
         locks = f" {locks}" if locks else ""
         return [locks, self.sql(expression, "sample")]
@@ -3284,7 +3284,7 @@ class Generator:
 
     def bracket_offset_expressions(
         self, expression: exp.Bracket, index_offset: t.Optional[int] = None
-    ) -> t.List[exp.Expr]:
+    ) -> list[exp.Expr]:
         if expression.args.get("json_access"):
             return expression.expressions
 
@@ -3372,7 +3372,7 @@ class Generator:
 
         return self.func(func_name, expression.this, expression.expression)
 
-    def convert_concat_args(self, expression: exp.Func) -> t.List[exp.Expr]:
+    def convert_concat_args(self, expression: exp.Func) -> list[exp.Expr]:
         args = expression.expressions
         if isinstance(expression, exp.ConcatWs):
             args = args[1:]  # Skip the delimiter
@@ -3729,20 +3729,20 @@ class Generator:
     def add_sql(self, expression: exp.Add) -> str:
         return self.binary(expression, "+")
 
-    def and_sql(self, expression: exp.And, stack: t.Optional[t.List[str | exp.Expr]] = None) -> str:
+    def and_sql(self, expression: exp.And, stack: t.Optional[list[str | exp.Expr]] = None) -> str:
         return self.connector_sql(expression, "AND", stack)
 
-    def or_sql(self, expression: exp.Or, stack: t.Optional[t.List[str | exp.Expr]] = None) -> str:
+    def or_sql(self, expression: exp.Or, stack: t.Optional[list[str | exp.Expr]] = None) -> str:
         return self.connector_sql(expression, "OR", stack)
 
-    def xor_sql(self, expression: exp.Xor, stack: t.Optional[t.List[str | exp.Expr]] = None) -> str:
+    def xor_sql(self, expression: exp.Xor, stack: t.Optional[list[str | exp.Expr]] = None) -> str:
         return self.connector_sql(expression, "XOR", stack)
 
     def connector_sql(
         self,
         expression: exp.Connector,
         op: str,
-        stack: t.Optional[t.List[str | exp.Expr]] = None,
+        stack: t.Optional[list[str | exp.Expr]] = None,
     ) -> str:
         if stack is not None:
             if expression.expressions:
@@ -3757,7 +3757,7 @@ class Generator:
             return op
 
         stack = [expression]
-        sqls: t.List[str] = []
+        sqls: list[str] = []
         ops = set()
 
         while stack:
@@ -4138,7 +4138,7 @@ class Generator:
         rhs = expression.expression
 
         if isinstance(expression, exp.Like):
-            exp_class: t.Type[exp.Like | exp.ILike] = exp.Like
+            exp_class: type[exp.Like | exp.ILike] = exp.Like
             op = "LIKE"
         else:
             exp_class = exp.ILike
@@ -4245,8 +4245,8 @@ class Generator:
         return f"USE{kind}{this}"
 
     def binary(self, expression: exp.Binary, op: str) -> str:
-        sqls: t.List[str] = []
-        stack: t.List[None | str | exp.Expr] = [expression]
+        sqls: list[str] = []
+        stack: list[None | str | exp.Expr] = [expression]
         binary_type = type(expression)
 
         while stack:
@@ -4318,8 +4318,8 @@ class Generator:
     def format_time(
         self,
         expression: exp.Expr,
-        inverse_time_mapping: t.Optional[t.Dict[str, str]] = None,
-        inverse_time_trie: t.Optional[t.Dict] = None,
+        inverse_time_mapping: t.Optional[dict[str, str]] = None,
+        inverse_time_trie: t.Optional[dict] = None,
     ) -> t.Optional[str]:
         return format_time(
             self.sql(expression, "format"),

@@ -94,7 +94,7 @@ class StarRocksParser(MySQLParser):
 
     def _parse_partition_property(
         self,
-    ) -> t.Optional[exp.Expr] | t.List[exp.Expr]:
+    ) -> t.Optional[exp.Expr] | list[exp.Expr]:
         expr = super()._parse_partition_property()
 
         if not expr:

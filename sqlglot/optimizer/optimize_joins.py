@@ -101,12 +101,12 @@ def normalize(expression):
     return expression
 
 
-def other_table_names(join: exp.Join) -> t.Set[str]:
+def other_table_names(join: exp.Join) -> set[str]:
     on = join.args.get("on")
     return exp.column_table_names(on, join.alias_or_name) if on else set()
 
 
-def _is_reorderable(joins: t.List[exp.Join]) -> bool:
+def _is_reorderable(joins: list[exp.Join]) -> bool:
     """
     Checks if joins can be reordered without changing query semantics.
 

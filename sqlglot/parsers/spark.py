@@ -11,7 +11,7 @@ from sqlglot.parsers.spark2 import Spark2Parser, build_as_cast
 from sqlglot.tokens import TokenType
 
 
-def _build_datediff(args: t.List) -> exp.Expr:
+def _build_datediff(args: list) -> exp.Expr:
     """
     Although Spark docs don't mention the "unit" argument, Spark3 added support for
     it at some point. Databricks also supports this variant (see below).
@@ -37,7 +37,7 @@ def _build_datediff(args: t.List) -> exp.Expr:
     )
 
 
-def _build_dateadd(args: t.List) -> exp.Expr:
+def _build_dateadd(args: list) -> exp.Expr:
     expression = seq_get(args, 1)
 
     if len(args) == 2:

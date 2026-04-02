@@ -19,6 +19,7 @@ from sqlglot.dialects.dialect import (
 from sqlglot.helper import seq_get
 from sqlglot.parsers.tsql import OPTIONS_THAT_REQUIRE_EQUAL
 from sqlglot.time import format_time
+from collections import defaultdict
 
 DATE_PART_UNMAPPING = {
     "WEEKISO": "ISO_WEEK",
@@ -116,7 +117,7 @@ def _timestrtotime_sql(self: TSQLGenerator, expression: exp.TimeStrToTime):
 
 
 class TSQLGenerator(generator.Generator):
-    SELECT_KINDS: t.Tuple[str, ...] = ()
+    SELECT_KINDS: tuple[str, ...] = ()
     TRY_SUPPORTED = False
     SUPPORTS_UESCAPE = False
     SUPPORTS_DECODE_CASE = False
@@ -380,7 +381,7 @@ class TSQLGenerator(generator.Generator):
             return self.binary(expression, "=")
         return self.binary(expression, "IS")
 
-    def createable_sql(self, expression: exp.Create, locations: t.DefaultDict) -> str:
+    def createable_sql(self, expression: exp.Create, locations: defaultdict) -> str:
         sql = self.sql(expression, "this")
         properties = expression.args.get("properties")
 

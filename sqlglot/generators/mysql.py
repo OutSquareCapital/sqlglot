@@ -24,6 +24,7 @@ from sqlglot.dialects.dialect import (
     timestrtotime_sql,
 )
 from sqlglot.generator import unsupported_args
+from collections import defaultdict
 
 
 def _date_trunc_sql(self: MySQLGenerator, expression: exp.DateTrunc) -> str:
@@ -90,7 +91,7 @@ def _ts_or_ds_to_date_sql(self: MySQLGenerator, expression: exp.TsOrDsToDate) ->
 
 def _remove_ts_or_ds_to_date(
     to_sql: t.Optional[t.Callable[[MySQLGenerator, exp.Expr], str]] = None,
-    args: t.Tuple[str, ...] = ("this",),
+    args: tuple[str, ...] = ("this",),
 ) -> t.Callable[[MySQLGenerator, exp.Func], str]:
     def func(self: MySQLGenerator, expression: exp.Func) -> str:
         for arg_key in args:
@@ -106,7 +107,7 @@ def _remove_ts_or_ds_to_date(
 
 
 class MySQLGenerator(generator.Generator):
-    SELECT_KINDS: t.Tuple[str, ...] = ()
+    SELECT_KINDS: tuple[str, ...] = ()
     TRY_SUPPORTED = False
     SUPPORTS_UESCAPE = False
     SUPPORTS_DECODE_CASE = False
@@ -587,7 +588,7 @@ class MySQLGenerator(generator.Generator):
 
     SQL_SECURITY_VIEW_LOCATION = exp.Properties.Location.POST_CREATE
 
-    def locate_properties(self, properties: exp.Properties) -> t.DefaultDict:
+    def locate_properties(self, properties: exp.Properties) -> defaultdict:
         locations = super().locate_properties(properties)
 
         # MySQL puts SQL SECURITY before VIEW but after the schema for functions/procedures

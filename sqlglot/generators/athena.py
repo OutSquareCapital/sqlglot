@@ -81,8 +81,8 @@ def _generator_kwargs(
     leading_comma: bool,
     max_text_width: int,
     comments: bool,
-) -> t.Dict[str, t.Any]:
-    kwargs: t.Dict[str, t.Any] = {
+) -> dict[str, t.Any]:
+    kwargs: dict[str, t.Any] = {
         "pretty": pretty,
         "identify": identify,
         "normalize": normalize,
@@ -123,7 +123,7 @@ class AthenaTrinoGenerator(TrinoGenerator):
 
 
 class AthenaGenerator(generator.Generator):
-    SELECT_KINDS: t.Tuple[str, ...] = ()
+    SELECT_KINDS: tuple[str, ...] = ()
     SUPPORTS_DECODE_CASE = False
 
     AFTER_HAVING_MODIFIER_TRANSFORMS = generator.AFTER_HAVING_MODIFIER_TRANSFORMS

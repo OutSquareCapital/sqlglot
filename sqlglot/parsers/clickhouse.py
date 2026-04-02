@@ -66,7 +66,7 @@ def _build_split_by_char(args: list) -> exp.Split | exp.Anonymous:
     return exp.Anonymous(this="splitByChar", expressions=args)
 
 
-def _build_split(exp_class: Type[E]) -> t.Callable[[t.List], E]:
+def _build_split(exp_class: Type[E]) -> t.Callable[[list], E]:
     return lambda args: exp_class(
         this=seq_get(args, 1), expression=seq_get(args, 0), limit=seq_get(args, 2)
     )
@@ -207,7 +207,7 @@ AGG_FUNCTIONS = {
 
 # Sorted longest-first so that compound suffixes (e.g. "SimpleState") are matched
 # before their sub-suffixes (e.g. "State") when resolving multi-combinator functions.
-AGG_FUNCTIONS_SUFFIXES: t.List[str] = sorted(
+AGG_FUNCTIONS_SUFFIXES: list[str] = sorted(
     [
         "If",
         "Array",
@@ -340,7 +340,7 @@ class ClickHouseParser(parser.Parser):
         # repeatedly strip and queue suffixes (checking longer suffixes first, see comment on
         # AGG_FUNCTIONS_SUFFIXES_SORTED). This loop only runs for 2 or more suffixes,
         # as AGG_FUNC_MAPPING memoizes all 0- and 1-suffix
-        accumulated_suffixes: t.Deque[str] = deque()
+        accumulated_suffixes: deque[str] = deque()
         while (parts := AGG_FUNC_MAPPING.get(name)) is None:
             for suffix in AGG_FUNCTIONS_SUFFIXES:
                 if name.endswith(suffix) and len(name) != len(suffix):
@@ -644,7 +644,7 @@ class ClickHouseParser(parser.Parser):
 
     def _parse_join_parts(
         self,
-    ) -> t.Tuple[t.Optional[Token], t.Optional[Token], t.Optional[Token]]:
+    ) -> tuple[t.Optional[Token], t.Optional[Token], t.Optional[Token]]:
         is_global = self._prev if self._match(TokenType.GLOBAL) else None
 
         kind_pre = self._prev if self._match_set(self.JOIN_KINDS) else None
@@ -672,7 +672,7 @@ class ClickHouseParser(parser.Parser):
 
     def _parse_function(
         self,
-        functions: t.Optional[t.Dict[str, t.Callable]] = None,
+        functions: t.Optional[dict[str, t.Callable]] = None,
         anonymous: bool = False,
         optional_parens: bool = True,
         any_token: bool = False,
@@ -718,7 +718,7 @@ class ClickHouseParser(parser.Parser):
 
         return expr
 
-    def _parse_func_params(self, this: t.Optional[exp.Func] = None) -> t.Optional[t.List[exp.Expr]]:
+    def _parse_func_params(self, this: t.Optional[exp.Func] = None) -> t.Optional[list[exp.Expr]]:
         if self._match_pair(TokenType.R_PAREN, TokenType.L_PAREN):
             return self._parse_csv(self._parse_lambda)
 
@@ -736,7 +736,7 @@ class ClickHouseParser(parser.Parser):
             return self.expression(exp.Quantile(this=params[0], quantile=this))
         return self.expression(exp.Quantile(this=this, quantile=exp.Literal.number(0.5)))
 
-    def _parse_wrapped_id_vars(self, optional: bool = False) -> t.List[exp.Expr]:
+    def _parse_wrapped_id_vars(self, optional: bool = False) -> list[exp.Expr]:
         return super()._parse_wrapped_id_vars(optional=True)
 
     def _parse_column_def(
@@ -791,7 +791,7 @@ class ClickHouseParser(parser.Parser):
 
         if self._match_text_seq("ID"):
             # Corresponds to the PARTITION ID <string_value> syntax
-            expressions: t.List[exp.Expr] = [
+            expressions: list[exp.Expr] = [
                 self.expression(exp.PartitionId(this=self._parse_string()))
             ]
         else:

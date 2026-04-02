@@ -12,7 +12,7 @@ def _select_all(table: exp.Expr) -> t.Optional[exp.Select]:
     return exp.select("*").from_(table, copy=False) if table else None
 
 
-def _resolve_projection(s: exp.Expr, projections: t.Dict[str, exp.Expr]) -> exp.Expr:
+def _resolve_projection(s: exp.Expr, projections: dict[str, exp.Expr]) -> exp.Expr:
     if isinstance(s, exp.Column) and s.name in projections:
         return projections[s.name].copy()
     return s

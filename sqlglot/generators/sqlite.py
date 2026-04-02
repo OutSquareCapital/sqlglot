@@ -74,7 +74,7 @@ def _generated_to_auto_increment(expression: exp.Expr) -> exp.Expr:
 
 
 class SQLiteGenerator(generator.Generator):
-    SELECT_KINDS: t.Tuple[str, ...] = ()
+    SELECT_KINDS: tuple[str, ...] = ()
     TRY_SUPPORTED = False
     SUPPORTS_UESCAPE = False
     SUPPORTS_DECODE_CASE = False

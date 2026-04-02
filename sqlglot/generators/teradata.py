@@ -10,6 +10,7 @@ from sqlglot.dialects.dialect import (
     strposition_sql,
     to_number_with_nls_param,
 )
+from collections import defaultdict
 
 
 def _date_add_sql(
@@ -36,7 +37,7 @@ def _date_add_sql(
 
 
 class TeradataGenerator(generator.Generator):
-    SELECT_KINDS: t.Tuple[str, ...] = ()
+    SELECT_KINDS: tuple[str, ...] = ()
     TRY_SUPPORTED = False
     SUPPORTS_UESCAPE = False
     SUPPORTS_DECODE_CASE = False
@@ -144,7 +145,7 @@ class TeradataGenerator(generator.Generator):
 
         return f"{locking_clause} {query_sql}"
 
-    def createable_sql(self, expression: exp.Create, locations: t.DefaultDict) -> str:
+    def createable_sql(self, expression: exp.Create, locations: defaultdict) -> str:
         kind = self.sql(expression, "kind").upper()
         if kind == "TABLE" and locations.get(exp.Properties.Location.POST_NAME):
             this_name = self.sql(expression.this, "this")

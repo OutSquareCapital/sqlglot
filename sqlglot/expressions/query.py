@@ -78,15 +78,15 @@ def _apply_cte_builder(
 @trait
 class Selectable(Expr):
     @property
-    def selects(self) -> t.List[Expr]:
+    def selects(self) -> list[Expr]:
         raise NotImplementedError("Subclasses must implement selects")
 
     @property
-    def named_selects(self) -> t.List[str]:
+    def named_selects(self) -> list[str]:
         return _named_selects(self)
 
 
-def _named_selects(self: Expr) -> t.List[str]:
+def _named_selects(self: Expr) -> list[str]:
     selectable = t.cast(Selectable, self)
     return [select.output_name for select in selectable.selects]
 
@@ -94,7 +94,7 @@ def _named_selects(self: Expr) -> t.List[str]:
 @trait
 class DerivedTable(Selectable):
     @property
-    def selects(self) -> t.List[Expr]:
+    def selects(self) -> list[Expr]:
         this = self.this
         return this.selects if isinstance(this, Query) else []
 
@@ -102,7 +102,7 @@ class DerivedTable(Selectable):
 @trait
 class UDTF(DerivedTable):
     @property
-    def selects(self) -> t.List[Expr]:
+    def selects(self) -> list[Expr]:
         alias = self.args.get("alias")
         return alias.columns if alias else []
 
@@ -112,7 +112,7 @@ class Query(Selectable):
     """Trait for any SELECT/UNION/etc. query expression."""
 
     @property
-    def ctes(self) -> t.List[CTE]:
+    def ctes(self) -> list[CTE]:
         with_ = self.args.get("with_")
         return with_.expressions if with_ else []
 
@@ -468,7 +468,7 @@ class TableAlias(Expression):
     arg_types = {"this": False, "columns": False}
 
     @property
-    def columns(self) -> t.List[t.Any]:
+    def columns(self) -> list[t.Any]:
         return self.args.get("columns") or []
 
 
@@ -510,7 +510,7 @@ class ColumnDef(Expression):
     }
 
     @property
-    def constraints(self) -> t.List[ColumnConstraint]:
+    def constraints(self) -> list[ColumnConstraint]:
         return self.args.get("constraints") or []
 
     @property
@@ -973,17 +973,17 @@ class Table(Expression, Selectable):
         return self.text("catalog")
 
     @property
-    def selects(self) -> t.List[Expr]:
+    def selects(self) -> list[Expr]:
         return []
 
     @property
-    def named_selects(self) -> t.List[str]:
+    def named_selects(self) -> list[str]:
         return []
 
     @property
-    def parts(self) -> t.List[Expr]:
+    def parts(self) -> list[Expr]:
         """Return the parts of a table in order catalog, db, table."""
-        parts: t.List[Expr] = []
+        parts: list[Expr] = []
 
         for arg in ("catalog", "db", "this"):
             part = self.args.get(arg)
@@ -1041,7 +1041,7 @@ class SetOperation(Expression, Query):
         return this
 
     @property
-    def named_selects(self) -> t.List[str]:
+    def named_selects(self) -> list[str]:
         expr: Expr = self
         while isinstance(expr, SetOperation):
             expr = expr.this.unnest()
@@ -1052,7 +1052,7 @@ class SetOperation(Expression, Query):
         return self.this.is_star or self.expression.is_star
 
     @property
-    def selects(self) -> t.List[Expr]:
+    def selects(self) -> list[Expr]:
         expr: Expr = self
         while isinstance(expr, SetOperation):
             expr = expr.this.unnest()
@@ -1641,7 +1641,7 @@ class Select(Expression, Query):
         return inst
 
     @property
-    def named_selects(self) -> t.List[str]:
+    def named_selects(self) -> list[str]:
         selects = []
 
         for e in self.expressions:
@@ -1656,7 +1656,7 @@ class Select(Expression, Query):
         return any(expression.is_star for expression in self.expressions)
 
     @property
-    def selects(self) -> t.List[Expr]:
+    def selects(self) -> list[Expr]:
         return self.expressions
 
 
@@ -1761,7 +1761,7 @@ class Pivot(Expression):
         return bool(self.args.get("unpivot"))
 
     @property
-    def fields(self) -> t.List[Expr]:
+    def fields(self) -> list[Expr]:
         return self.args.get("fields", [])
 
 

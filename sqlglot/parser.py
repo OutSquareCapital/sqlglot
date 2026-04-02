@@ -53,13 +53,13 @@ def build_var_map(args: list) -> exp.StarMap | exp.VarMap:
     return exp.VarMap(keys=exp.array(*keys, copy=False), values=exp.array(*values, copy=False))
 
 
-def build_like(args: t.List) -> exp.Escape | exp.Like:
+def build_like(args: list) -> exp.Escape | exp.Like:
     like = exp.Like(this=seq_get(args, 1), expression=seq_get(args, 0))
     return exp.Escape(this=like, expression=seq_get(args, 2)) if len(args) > 2 else like
 
 
 def binary_range_parser(
-    expr_type: t.Type[exp.Expr], reverse_args: bool = False
+    expr_type: type[exp.Expr], reverse_args: bool = False
 ) -> t.Callable[[Parser, t.Optional[exp.Expr]], t.Optional[exp.Expr]]:
     def _parse_binary_range(self: Parser, this: t.Optional[exp.Expr]) -> t.Optional[exp.Expr]:
         expression = self._parse_bitwise()
@@ -70,7 +70,7 @@ def binary_range_parser(
     return _parse_binary_range
 
 
-def build_logarithm(args: t.List, dialect: Dialect) -> exp.Func:
+def build_logarithm(args: list, dialect: Dialect) -> exp.Func:
     # Default argument order is base, expression
     this = seq_get(args, 0)
     expression = seq_get(args, 1)
@@ -83,25 +83,25 @@ def build_logarithm(args: t.List, dialect: Dialect) -> exp.Func:
     return (exp.Ln if dialect.parser_class.LOG_DEFAULTS_TO_LN else exp.Log)(this=this)
 
 
-def build_hex(args: t.List, dialect: Dialect) -> exp.Hex | exp.LowerHex:
+def build_hex(args: list, dialect: Dialect) -> exp.Hex | exp.LowerHex:
     arg = seq_get(args, 0)
     return exp.LowerHex(this=arg) if dialect.HEX_LOWERCASE else exp.Hex(this=arg)
 
 
-def build_lower(args: t.List) -> exp.Lower | exp.Hex:
+def build_lower(args: list) -> exp.Lower | exp.Hex:
     # LOWER(HEX(..)) can be simplified to LowerHex to simplify its transpilation
     arg = seq_get(args, 0)
     return exp.LowerHex(this=arg.this) if isinstance(arg, exp.Hex) else exp.Lower(this=arg)
 
 
-def build_upper(args: t.List) -> exp.Upper | exp.Hex:
+def build_upper(args: list) -> exp.Upper | exp.Hex:
     # UPPER(HEX(..)) can be simplified to Hex to simplify its transpilation
     arg = seq_get(args, 0)
     return exp.Hex(this=arg.this) if isinstance(arg, exp.Hex) else exp.Upper(this=arg)
 
 
-def build_extract_json_with_path(expr_type: t.Type[E]) -> t.Callable[[t.List, Dialect], E]:
-    def _builder(args: t.List, dialect: Dialect) -> E:
+def build_extract_json_with_path(expr_type: type[E]) -> t.Callable[[list, Dialect], E]:
+    def _builder(args: list, dialect: Dialect) -> E:
         expression = expr_type(
             this=seq_get(args, 0), expression=dialect.to_json_path(seq_get(args, 1))
         )
@@ -115,7 +115,7 @@ def build_extract_json_with_path(expr_type: t.Type[E]) -> t.Callable[[t.List, Di
     return _builder
 
 
-def build_mod(args: t.List) -> exp.Mod:
+def build_mod(args: list) -> exp.Mod:
     this = seq_get(args, 0)
     expression = seq_get(args, 1)
 
@@ -126,7 +126,7 @@ def build_mod(args: t.List) -> exp.Mod:
     return exp.Mod(this=this, expression=expression)
 
 
-def build_pad(args: t.List, is_left: bool = True):
+def build_pad(args: list, is_left: bool = True):
     return exp.Pad(
         this=seq_get(args, 0),
         expression=seq_get(args, 1),
@@ -136,7 +136,7 @@ def build_pad(args: t.List, is_left: bool = True):
 
 
 def build_array_constructor(
-    exp_class: t.Type[E], args: t.List, bracket_kind: TokenType, dialect: Dialect
+    exp_class: type[E], args: list, bracket_kind: TokenType, dialect: Dialect
 ) -> exp.Expr:
     array_exp = exp_class(expressions=args)
 
@@ -147,7 +147,7 @@ def build_array_constructor(
 
 
 def build_convert_timezone(
-    args: t.List, default_source_tz: t.Optional[str] = None
+    args: list, default_source_tz: t.Optional[str] = None
 ) -> t.Union[exp.ConvertTimezone, exp.Anonymous]:
     if len(args) == 2:
         source_tz = exp.Literal.string(default_source_tz) if default_source_tz else None
@@ -158,7 +158,7 @@ def build_convert_timezone(
     return exp.ConvertTimezone.from_arg_list(args)
 
 
-def build_trim(args: t.List, is_left: bool = True, reverse_args: bool = False):
+def build_trim(args: list, is_left: bool = True, reverse_args: bool = False):
     this, expression = seq_get(args, 0), seq_get(args, 1)
 
     if expression and reverse_args:
@@ -168,12 +168,12 @@ def build_trim(args: t.List, is_left: bool = True, reverse_args: bool = False):
 
 
 def build_coalesce(
-    args: t.List, is_nvl: t.Optional[bool] = None, is_null: t.Optional[bool] = None
+    args: list, is_nvl: t.Optional[bool] = None, is_null: t.Optional[bool] = None
 ) -> exp.Coalesce:
     return exp.Coalesce(this=seq_get(args, 0), expressions=args[1:], is_nvl=is_nvl, is_null=is_null)
 
 
-def build_locate_strposition(args: t.List):
+def build_locate_strposition(args: list):
     return exp.StrPosition(
         this=seq_get(args, 1),
         substr=seq_get(args, 0),
@@ -181,7 +181,7 @@ def build_locate_strposition(args: t.List):
     )
 
 
-def build_array_append(args: t.List, dialect: Dialect) -> exp.ArrayAppend:
+def build_array_append(args: list, dialect: Dialect) -> exp.ArrayAppend:
     """
     Builds ArrayAppend with NULL propagation semantics based on the dialect configuration.
 
@@ -202,7 +202,7 @@ def build_array_append(args: t.List, dialect: Dialect) -> exp.ArrayAppend:
     )
 
 
-def build_array_prepend(args: t.List, dialect: Dialect) -> exp.ArrayPrepend:
+def build_array_prepend(args: list, dialect: Dialect) -> exp.ArrayPrepend:
     """
     Builds ArrayPrepend with NULL propagation semantics based on the dialect configuration.
 
@@ -223,7 +223,7 @@ def build_array_prepend(args: t.List, dialect: Dialect) -> exp.ArrayPrepend:
     )
 
 
-def build_array_concat(args: t.List, dialect: Dialect) -> exp.ArrayConcat:
+def build_array_concat(args: list, dialect: Dialect) -> exp.ArrayConcat:
     """
     Builds ArrayConcat with NULL propagation semantics based on the dialect configuration.
 
@@ -244,7 +244,7 @@ def build_array_concat(args: t.List, dialect: Dialect) -> exp.ArrayConcat:
     )
 
 
-def build_array_remove(args: t.List, dialect: Dialect) -> exp.ArrayRemove:
+def build_array_remove(args: list, dialect: Dialect) -> exp.ArrayRemove:
     """
     Builds ArrayRemove with NULL propagation semantics based on the dialect configuration.
 
@@ -308,7 +308,7 @@ class Parser:
         "_tokens_size",
     )
 
-    FUNCTIONS: t.ClassVar[t.Dict[str, t.Callable]] = {
+    FUNCTIONS: t.ClassVar[dict[str, t.Callable]] = {
         **{name: func.from_arg_list for name, func in exp.FUNCTION_BY_NAME.items()},
         **dict.fromkeys(("COALESCE", "IFNULL", "NVL"), build_coalesce),
         "ARRAY": lambda args, dialect: exp.Array(expressions=args),
@@ -407,7 +407,7 @@ class Parser:
         "VAR_MAP": build_var_map,
     }
 
-    NO_PAREN_FUNCTIONS: t.ClassVar[t.Dict] = {
+    NO_PAREN_FUNCTIONS: t.ClassVar[dict] = {
         TokenType.CURRENT_DATE: exp.CurrentDate,
         TokenType.CURRENT_DATETIME: exp.CurrentDate,
         TokenType.CURRENT_TIME: exp.CurrentTime,
@@ -640,7 +640,7 @@ class Parser:
     }
 
     # Tokens that can represent identifiers
-    ID_VAR_TOKENS: t.ClassVar[t.Set] = {
+    ID_VAR_TOKENS: t.ClassVar[set] = {
         TokenType.ALL,
         TokenType.ANALYZE,
         TokenType.ATTACH,
@@ -746,7 +746,7 @@ class Parser:
         *NO_PAREN_FUNCTIONS,
     } - {TokenType.UNION}
 
-    TABLE_ALIAS_TOKENS: t.ClassVar[t.Set] = ID_VAR_TOKENS - {
+    TABLE_ALIAS_TOKENS: t.ClassVar[set] = ID_VAR_TOKENS - {
         TokenType.ANTI,
         TokenType.ASOF,
         TokenType.FULL,
@@ -774,12 +774,12 @@ class Parser:
     TRIM_TYPES: t.ClassVar = {"LEADING", "TRAILING", "BOTH"}
 
     # Tokens that indicate a simple column reference
-    IDENTIFIER_TOKENS: t.ClassVar[t.FrozenSet] = frozenset({TokenType.VAR, TokenType.IDENTIFIER})
+    IDENTIFIER_TOKENS: t.ClassVar[frozenset] = frozenset({TokenType.VAR, TokenType.IDENTIFIER})
 
-    BRACKETS: t.ClassVar[t.FrozenSet] = frozenset({TokenType.L_BRACKET, TokenType.L_BRACE})
+    BRACKETS: t.ClassVar[frozenset] = frozenset({TokenType.L_BRACKET, TokenType.L_BRACE})
 
     # Postfix tokens that prevent the bare column fast path
-    COLUMN_POSTFIX_TOKENS: t.ClassVar[t.FrozenSet] = frozenset(
+    COLUMN_POSTFIX_TOKENS: t.ClassVar[frozenset] = frozenset(
         {
             TokenType.L_PAREN,
             TokenType.L_BRACKET,
@@ -789,7 +789,7 @@ class Parser:
         }
     )
 
-    TABLE_POSTFIX_TOKENS: t.ClassVar[t.FrozenSet] = frozenset(
+    TABLE_POSTFIX_TOKENS: t.ClassVar[frozenset] = frozenset(
         {
             TokenType.L_PAREN,
             TokenType.L_BRACKET,
@@ -852,15 +852,15 @@ class Parser:
         *SUBQUERY_PREDICATES,
     }
 
-    CONJUNCTION: t.ClassVar[t.Dict[TokenType, t.Type[exp.Expr]]] = {
+    CONJUNCTION: t.ClassVar[dict[TokenType, type[exp.Expr]]] = {
         TokenType.AND: exp.And,
     }
 
-    ASSIGNMENT: t.ClassVar[t.Dict[TokenType, t.Type[exp.Expr]]] = {
+    ASSIGNMENT: t.ClassVar[dict[TokenType, type[exp.Expr]]] = {
         TokenType.COLON_EQ: exp.PropertyEQ,
     }
 
-    DISJUNCTION: t.ClassVar[t.Dict[TokenType, t.Type[exp.Expr]]] = {
+    DISJUNCTION: t.ClassVar[dict[TokenType, type[exp.Expr]]] = {
         TokenType.OR: exp.Or,
     }
 
@@ -897,7 +897,7 @@ class Parser:
         TokenType.STAR: exp.Mul,
     }
 
-    EXPONENT: t.ClassVar[t.Dict[TokenType, t.Type[exp.Expr]]] = {}
+    EXPONENT: t.ClassVar[dict[TokenType, type[exp.Expr]]] = {}
 
     TIMES: t.ClassVar = {
         TokenType.TIME,
@@ -939,10 +939,10 @@ class Parser:
         TokenType.STRAIGHT_JOIN,
     }
 
-    JOIN_HINTS: t.ClassVar[t.Set[str]] = set()
+    JOIN_HINTS: t.ClassVar[set[str]] = set()
 
     # Tokens that unambiguously end a table reference on the fast path
-    TABLE_TERMINATORS: t.ClassVar[t.FrozenSet] = frozenset(
+    TABLE_TERMINATORS: t.ClassVar[frozenset] = frozenset(
         {
             TokenType.COMMA,
             TokenType.GROUP_BY,
@@ -980,7 +980,7 @@ class Parser:
     # Whether lambda args include type annotations, e.g. TRANSFORM(arr, x INT -> x + 1) in Snowflake
     TYPED_LAMBDA_ARGS: t.ClassVar[bool] = False
 
-    LAMBDA_ARG_TERMINATORS: t.ClassVar[t.FrozenSet] = frozenset(
+    LAMBDA_ARG_TERMINATORS: t.ClassVar[frozenset] = frozenset(
         {TokenType.COMMA, TokenType.R_PAREN}
     )
 
@@ -1201,7 +1201,7 @@ class Parser:
         "WHERE": lambda self, query: query.where(self._parse_where(), copy=False),
     }
 
-    PROPERTY_PARSERS: t.ClassVar[t.Dict[str, t.Callable]] = {
+    PROPERTY_PARSERS: t.ClassVar[dict[str, t.Callable]] = {
         "ALLOWED_VALUES": lambda self: self.expression(
             exp.AllowedValuesProperty(expressions=self._parse_csv(self._parse_primary))
         ),
@@ -1461,7 +1461,7 @@ class Parser:
 
     KEY_VALUE_DEFINITIONS: t.ClassVar = (exp.Alias, exp.EQ, exp.PropertyEQ, exp.Slice)
 
-    FUNCTION_PARSERS: t.ClassVar[t.Dict[str, t.Callable]] = {
+    FUNCTION_PARSERS: t.ClassVar[dict[str, t.Callable]] = {
         **{
             name: lambda self: self._parse_max_min_by(exp.ArgMax) for name in exp.ArgMax.sql_names()
         },
@@ -1533,13 +1533,13 @@ class Parser:
         "TRANSACTION": lambda self: self._parse_set_transaction(),
     }
 
-    SHOW_PARSERS: t.ClassVar[t.Dict[str, t.Callable]] = {}
+    SHOW_PARSERS: t.ClassVar[dict[str, t.Callable]] = {}
 
     TYPE_LITERAL_PARSERS: t.ClassVar = {
         exp.DType.JSON: lambda self, this, _: self.expression(exp.ParseJSON(this=this)),
     }
 
-    TYPE_CONVERTERS: t.ClassVar[t.Dict[exp.DType, t.Callable[[exp.DataType], exp.DataType]]] = {}
+    TYPE_CONVERTERS: t.ClassVar[dict[exp.DType, t.Callable[[exp.DataType], exp.DataType]]] = {}
 
     DDL_SELECT_TOKENS: t.ClassVar = {TokenType.SELECT, TokenType.WITH, TokenType.L_PAREN}
 
@@ -1682,7 +1682,7 @@ class Parser:
 
     IS_JSON_PREDICATE_KIND: t.ClassVar = {"VALUE", "SCALAR", "ARRAY", "OBJECT"}
 
-    ODBC_DATETIME_LITERALS: t.ClassVar[t.Dict[str, t.Type[exp.Expr]]] = {}
+    ODBC_DATETIME_LITERALS: t.ClassVar[dict[str, type[exp.Expr]]] = {}
 
     ON_CONDITION_TOKENS: t.ClassVar = {"ERROR", "NULL", "TRUE", "FALSE", "EMPTY"}
 
@@ -1720,7 +1720,7 @@ class Parser:
 
     AMBIGUOUS_ALIAS_TOKENS: t.ClassVar = (TokenType.LIMIT, TokenType.OFFSET)
 
-    OPERATION_MODIFIERS: t.ClassVar[t.Set[str]] = set()
+    OPERATION_MODIFIERS: t.ClassVar[set[str]] = set()
 
     RECURSIVE_CTE_SEARCH_KIND: t.ClassVar = {"BREADTH", "DEPTH", "CYCLE"}
 
@@ -1814,8 +1814,8 @@ class Parser:
     # can omit the span unit `DAY TO MINUTE` or `DAY TO SECOND`
     SUPPORTS_OMITTED_INTERVAL_SPAN_UNIT: t.ClassVar = False
 
-    SHOW_TRIE: t.ClassVar[t.Dict] = new_trie(key.split(" ") for key in SHOW_PARSERS)
-    SET_TRIE: t.ClassVar[t.Dict] = new_trie(key.split(" ") for key in SET_PARSERS)
+    SHOW_TRIE: t.ClassVar[dict] = new_trie(key.split(" ") for key in SHOW_PARSERS)
+    SET_TRIE: t.ClassVar[dict] = new_trie(key.split(" ") for key in SET_PARSERS)
 
     def __init__(
         self,
@@ -1829,16 +1829,16 @@ class Parser:
         self.max_errors: int = max_errors
         self.dialect: t.Any = _resolve_dialect(dialect)
         self.sql: str = ""
-        self.errors: t.List[ParseError] = []
-        self._tokens: t.List[Token] = []
+        self.errors: list[ParseError] = []
+        self._tokens: list[Token] = []
         self._tokens_size: i64 = 0
         self._index: i64 = 0
         self._curr: Token = SENTINEL_NONE
         self._next: Token = SENTINEL_NONE
         self._prev: Token = SENTINEL_NONE
-        self._prev_comments: t.List[str] = []
+        self._prev_comments: list[str] = []
         self._pipe_cte_counter: int = 0
-        self._chunks: t.List[t.List[Token]] = []
+        self._chunks: list[list[Token]] = []
         self._chunk_index: i64 = 0
 
     def reset(self) -> None:
@@ -1967,7 +1967,7 @@ class Parser:
 
         self.errors.append(error)
 
-    def validate_expression(self, expression: E, args: t.Optional[t.List] = None) -> E:
+    def validate_expression(self, expression: E, args: t.Optional[list] = None) -> E:
         if self.error_level != ErrorLevel.IGNORE:
             for error_message in expression.error_messages(args):
                 self.raise_error(error_message)
@@ -1990,7 +1990,7 @@ class Parser:
 
         return this
 
-    def parse(self, raw_tokens: t.List[Token], sql: str) -> t.List[t.Optional[exp.Expr]]:
+    def parse(self, raw_tokens: list[Token], sql: str) -> list[t.Optional[exp.Expr]]:
         """
         Parses a list of tokens and returns a list of syntax trees, one tree
         per parsed SQL statement.
@@ -2009,9 +2009,9 @@ class Parser:
     def parse_into(
         self,
         expression_types: exp.IntoType,
-        raw_tokens: t.List[Token],
+        raw_tokens: list[Token],
         sql: t.Optional[str] = None,
-    ) -> t.List[t.Optional[exp.Expr]]:
+    ) -> list[t.Optional[exp.Expr]]:
         """
         Parses a list of tokens into a given Expr type. If a collection of Expr
         types is given instead, this method will try to parse the token list into each one
@@ -2027,7 +2027,7 @@ class Parser:
         """
         errors = []
         for expression_type in ensure_list(expression_types):
-            parser = self.EXPRESSION_PARSERS.get(t.cast(t.Type[exp.Expr], expression_type))
+            parser = self.EXPRESSION_PARSERS.get(t.cast(type[exp.Expr], expression_type))
             if not parser:
                 raise TypeError(f"No parser registered for {expression_type}")
 
@@ -2057,7 +2057,7 @@ class Parser:
         self,
         instance: E,
         token: t.Optional[Token] = None,
-        comments: t.Optional[t.List[str]] = None,
+        comments: t.Optional[list[str]] = None,
     ) -> E:
         if token:
             instance.update_positions(token)
@@ -2070,7 +2070,7 @@ class Parser:
         self,
         parse_method: t.Callable[[Parser], t.Optional[exp.Expr]],
         sep_first_statement: bool = True,
-    ) -> t.List[t.Optional[exp.Expr]]:
+    ) -> list[t.Optional[exp.Expr]]:
         expressions = []
 
         # Chunkification binds if/while statements with the first statement of the body
@@ -2101,14 +2101,14 @@ class Parser:
     def _parse(
         self,
         parse_method: t.Callable[[Parser], t.Optional[exp.Expr]],
-        raw_tokens: t.List[Token],
+        raw_tokens: list[Token],
         sql: t.Optional[str] = None,
-    ) -> t.List[t.Optional[exp.Expr]]:
+    ) -> list[t.Optional[exp.Expr]]:
         self.reset()
         self.sql = sql or ""
 
         total = len(raw_tokens)
-        chunks: t.List[t.List[Token]] = [[]]
+        chunks: list[list[Token]] = [[]]
 
         for i, token in enumerate(raw_tokens):
             if token.token_type == TokenType.SEMICOLON:
@@ -2590,7 +2590,7 @@ class Parser:
         seq.set("options", options if options else None)
         return None if self._index == index else seq
 
-    def _parse_trigger_events(self) -> t.List[exp.TriggerEvent]:
+    def _parse_trigger_events(self) -> list[exp.TriggerEvent]:
         events = []
 
         while True:
@@ -2614,7 +2614,7 @@ class Parser:
 
     def _parse_trigger_deferrable(
         self,
-    ) -> t.Tuple[t.Optional[str], t.Optional[str]]:
+    ) -> tuple[t.Optional[str], t.Optional[str]]:
         deferrable_var = self._parse_var_from_options(
             self.TRIGGER_DEFERRABLE, raise_unmatched=False
         )
@@ -2676,7 +2676,7 @@ class Parser:
         func_call = self._parse_function(anonymous=True, optional_parens=False)
         return self.expression(exp.TriggerExecute(this=func_call))
 
-    def _parse_property_before(self) -> exp.Expr | t.List[exp.Expr] | None:
+    def _parse_property_before(self) -> exp.Expr | list[exp.Expr] | None:
         # only used for teradata currently
         self._match(TokenType.COMMA)
 
@@ -2701,10 +2701,10 @@ class Parser:
 
         return None
 
-    def _parse_wrapped_properties(self) -> t.List[exp.Expr | t.List[exp.Expr]]:
+    def _parse_wrapped_properties(self) -> list[exp.Expr | list[exp.Expr]]:
         return self._parse_wrapped_csv(self._parse_property)
 
-    def _parse_property(self) -> exp.Expr | t.List[exp.Expr] | None:
+    def _parse_property(self) -> exp.Expr | list[exp.Expr] | None:
         if self._match_texts(self.PROPERTY_PARSERS):
             return self.PROPERTY_PARSERS[self._prev.text.upper()](self)
 
@@ -2772,7 +2772,7 @@ class Parser:
 
         return field
 
-    def _parse_property_assignment(self, exp_class: t.Type[E], **kwargs: t.Any) -> E:
+    def _parse_property_assignment(self, exp_class: type[E], **kwargs: t.Any) -> E:
         self._match(TokenType.EQ)
         self._match(TokenType.ALIAS)
 
@@ -2872,7 +2872,7 @@ class Parser:
 
     def _parse_distributed_property(self) -> exp.DistributedByProperty:
         kind = "HASH"
-        expressions: t.Optional[t.List[exp.Expr]] = None
+        expressions: t.Optional[list[exp.Expr]] = None
         if self._match_text_seq("BY", "HASH"):
             expressions = self._parse_wrapped_csv(self._parse_id_var)
         elif self._match_text_seq("BY", "RANDOM"):
@@ -2889,19 +2889,19 @@ class Parser:
             )
         )
 
-    def _parse_composite_key_property(self, expr_type: t.Type[E]) -> E:
+    def _parse_composite_key_property(self, expr_type: type[E]) -> E:
         self._match_text_seq("KEY")
         expressions = self._parse_wrapped_id_vars()
         return self.expression(expr_type(expressions=expressions))
 
-    def _parse_with_property(self) -> t.Optional[exp.Expr] | t.List[exp.Expr]:
+    def _parse_with_property(self) -> t.Optional[exp.Expr] | list[exp.Expr]:
         if self._match_text_seq("(", "SYSTEM_VERSIONING"):
             prop = self._parse_system_versioning_property(with_=True)
             self._match_r_paren()
             return prop
 
         if self._match(TokenType.L_PAREN, advance=False):
-            result: t.List[exp.Expr] = []
+            result: list[exp.Expr] = []
             for i in self._parse_wrapped_properties():
                 result.extend(i) if isinstance(i, list) else result.append(i)
             return result
@@ -3140,7 +3140,7 @@ class Parser:
             )
         )
 
-    def _parse_partition_by(self) -> t.List[exp.Expr]:
+    def _parse_partition_by(self) -> list[exp.Expr]:
         if self._match(TokenType.PARTITION_BY):
             return self._parse_csv(self._parse_disjunction)
         return []
@@ -3153,7 +3153,7 @@ class Parser:
                 return exp.var("MAXVALUE")
             return self._parse_bitwise()
 
-        this: t.Optional[exp.Expr | t.List[exp.Expr]] = None
+        this: t.Optional[exp.Expr | list[exp.Expr]] = None
         expression = None
         from_expressions = None
         to_expressions = None
@@ -3335,7 +3335,7 @@ class Parser:
             )
         )
 
-    def _parse_multitable_inserts(self, comments: t.Optional[t.List[str]]) -> exp.MultitableInserts:
+    def _parse_multitable_inserts(self, comments: t.Optional[list[str]]) -> exp.MultitableInserts:
         kind = self._prev.text.upper()
         expressions = []
 
@@ -3586,7 +3586,7 @@ class Parser:
         )
 
     def _parse_update(self) -> exp.Update:
-        kwargs: t.Dict[str, object] = {
+        kwargs: dict[str, object] = {
             "this": self._parse_table(joins=True, alias_tokens=self.UPDATE_ALIAS_TOKENS),
         }
         while self._curr:
@@ -3679,7 +3679,7 @@ class Parser:
 
     def _parse_projections(
         self,
-    ) -> t.Tuple[t.List[exp.Expr], t.Optional[t.List[exp.Expr]]]:
+    ) -> tuple[list[exp.Expr], t.Optional[list[exp.Expr]]]:
         return self._parse_expressions(), None
 
     def _parse_wrapped_select(self, table: bool = False) -> t.Optional[exp.Expr]:
@@ -4308,14 +4308,14 @@ class Parser:
 
     def _parse_join_parts(
         self,
-    ) -> t.Tuple[t.Optional[Token], t.Optional[Token], t.Optional[Token]]:
+    ) -> tuple[t.Optional[Token], t.Optional[Token], t.Optional[Token]]:
         return (
             self._prev if self._match_set(self.JOIN_METHODS) else None,
             self._prev if self._match_set(self.JOIN_SIDES) else None,
             self._prev if self._match_set(self.JOIN_KINDS) else None,
         )
 
-    def _parse_using_identifiers(self) -> t.List[exp.Expr]:
+    def _parse_using_identifiers(self) -> list[exp.Expr]:
         def _parse_column_as_identifier() -> t.Optional[exp.Expr]:
             this = self._parse_column()
             if isinstance(this, exp.Column):
@@ -4355,7 +4355,7 @@ class Parser:
         if not skip_join_token and not join and not outer_apply and not cross_apply:
             return None
 
-        kwargs: t.Dict[str, t.Any] = {"this": self._parse_table(parse_bracket=parse_bracket)}
+        kwargs: dict[str, t.Any] = {"this": self._parse_table(parse_bracket=parse_bracket)}
         if kind and kind.token_type == TokenType.ARRAY and self._match(TokenType.COMMA):
             kwargs["expressions"] = self._parse_csv(
                 lambda: self._parse_table(parse_bracket=parse_bracket)
@@ -4489,8 +4489,8 @@ class Parser:
             )
         )
 
-    def _parse_table_hints(self) -> t.Optional[t.List[exp.Expr]]:
-        hints: t.List[exp.Expr] = []
+    def _parse_table_hints(self) -> t.Optional[list[exp.Expr]]:
+        hints: list[exp.Expr] = []
         if self._match_pair(TokenType.WITH, TokenType.L_PAREN):
             # https://learn.microsoft.com/en-us/sql/t-sql/queries/hints-transact-sql-table?view=sql-server-ver16
             hints.append(
@@ -4527,8 +4527,8 @@ class Parser:
 
     def _parse_table_parts_fast(self) -> t.Optional[exp.Table]:
         index = self._index
-        parts: t.Optional[t.List[exp.Identifier]] = None
-        all_comments: t.Optional[t.List[str]] = None
+        parts: t.Optional[list[exp.Identifier]] = None
+        all_comments: t.Optional[list[str]] = None
 
         while self._match_set(self.IDENTIFIER_TOKENS):
             token = self._prev
@@ -4973,7 +4973,7 @@ class Parser:
             )
         )
 
-    def _parse_pivots(self) -> t.Optional[t.List[exp.Pivot]]:
+    def _parse_pivots(self) -> t.Optional[list[exp.Pivot]]:
         return list(iter(self._parse_pivot, None)) or None
 
     def _parse_joins(self) -> t.Iterator[exp.Join]:
@@ -5043,7 +5043,7 @@ class Parser:
 
         if self._match(TokenType.L_PAREN):
             if self._match(TokenType.ANY):
-                exprs: t.List[exp.Expr] = ensure_list(exp.PivotAny(this=self._parse_order()))
+                exprs: list[exp.Expr] = ensure_list(exp.PivotAny(this=self._parse_order()))
             else:
                 exprs = self._parse_csv(_parse_aliased_expression)
             self._match_r_paren()
@@ -5124,9 +5124,9 @@ class Parser:
             pivot.set("alias", self._parse_table_alias())
 
         if not unpivot:
-            names = self._pivot_column_names(t.cast(t.List[exp.Expr], expressions))
+            names = self._pivot_column_names(t.cast(list[exp.Expr], expressions))
 
-            columns: t.List[exp.Expr] = []
+            columns: list[exp.Expr] = []
             all_fields = []
             for pivot_field in pivot.fields:
                 pivot_field_expressions = pivot_field.expressions
@@ -5162,7 +5162,7 @@ class Parser:
 
         return pivot
 
-    def _pivot_column_names(self, aggregations: t.List[exp.Expr]) -> t.List[str]:
+    def _pivot_column_names(self, aggregations: list[exp.Expr]) -> list[str]:
         return [agg.alias for agg in aggregations if agg.alias]
 
     def _parse_prewhere(self, skip_where_token: bool = False) -> t.Optional[exp.PreWhere]:
@@ -5190,7 +5190,7 @@ class Parser:
             return None
         comments = self._prev_comments
 
-        elements: t.Dict[str, t.Any] = defaultdict(list)
+        elements: dict[str, t.Any] = defaultdict(list)
 
         if self._match(TokenType.ALL):
             elements["all"] = True
@@ -5235,7 +5235,7 @@ class Parser:
 
     def _parse_cube_or_rollup(self, with_prefix: bool = False) -> t.Optional[exp.Cube | exp.Rollup]:
         if self._match(TokenType.CUBE):
-            kind: t.Type[exp.Cube | exp.Rollup] = exp.Cube
+            kind: type[exp.Cube | exp.Rollup] = exp.Cube
         elif self._match(TokenType.ROLLUP):
             kind = exp.Rollup
         else:
@@ -5300,7 +5300,7 @@ class Parser:
             this = self.expression(exp.Alias(alias=this, this=self._parse_disjunction()))
         return this
 
-    def _parse_interpolate(self) -> t.Optional[t.List[exp.Expr]]:
+    def _parse_interpolate(self) -> t.Optional[list[exp.Expr]]:
         if self._match_text_seq("INTERPOLATE"):
             return self._parse_wrapped_csv(self._parse_name_as_expression)
         return None
@@ -5325,7 +5325,7 @@ class Parser:
             comments=comments,
         )
 
-    def _parse_sort(self, exp_class: t.Type[E], token: TokenType) -> t.Optional[E]:
+    def _parse_sort(self, exp_class: type[E], token: TokenType) -> t.Optional[E]:
         if not self._match(token):
             return None
         return self.expression(exp_class(expressions=self._parse_csv(self._parse_ordered)))
@@ -5478,10 +5478,10 @@ class Parser:
 
         return result
 
-    def _parse_limit_by(self) -> t.Optional[t.List[exp.Expr]]:
+    def _parse_limit_by(self) -> t.Optional[list[exp.Expr]]:
         return self._parse_csv(self._parse_bitwise) if self._match_text_seq("BY") else None
 
-    def _parse_locks(self) -> t.List[exp.Lock]:
+    def _parse_locks(self) -> list[exp.Lock]:
         locks = []
         while True:
             update, key = None, None
@@ -5534,7 +5534,7 @@ class Parser:
         token_type = self._prev.token_type
 
         if token_type == TokenType.UNION:
-            operation: t.Type[exp.SetOperation] = exp.Union
+            operation: type[exp.SetOperation] = exp.Union
         elif token_type == TokenType.EXCEPT:
             operation = exp.Except
         else:
@@ -6163,7 +6163,7 @@ class Parser:
 
             maybe_func = True
 
-        values: t.Optional[t.List[exp.Expr]] = None
+        values: t.Optional[list[exp.Expr]] = None
 
         if nested and self._match(TokenType.LT):
             if is_struct:
@@ -6320,7 +6320,7 @@ class Parser:
         kind = self._parse_types(check_func=False, allow_identifiers=False)
         return self.expression(exp.ColumnDef(this=col, kind=kind))
 
-    def _parse_vector_expressions(self, expressions: t.List[exp.Expr]) -> t.List[exp.Expr]:
+    def _parse_vector_expressions(self, expressions: list[exp.Expr]) -> list[exp.Expr]:
         return [exp.DataType.build(expressions[0].name, dialect=self.dialect), *expressions[1:]]
 
     def _parse_struct_types(self, type_required: bool = False) -> t.Optional[exp.Expr]:
@@ -6409,8 +6409,8 @@ class Parser:
         the slow path can handle it. For >4 parts, wraps in exp.Dot nodes.
         """
         index = self._index
-        parts: t.Optional[t.List[exp.Identifier]] = None
-        all_comments: t.Optional[t.List[str]] = None
+        parts: t.Optional[list[exp.Identifier]] = None
+        all_comments: t.Optional[list[str]] = None
 
         while self._match_set(self.IDENTIFIER_TOKENS):
             token = self._prev
@@ -6493,9 +6493,9 @@ class Parser:
     def _build_json_extract(
         self,
         this: t.Optional[exp.Expr],
-        path_parts: t.List[exp.JSONPathPart],
+        path_parts: list[exp.JSONPathPart],
         escape: t.Optional[bool],
-    ) -> t.Tuple[t.Optional[exp.Expr], t.List[exp.JSONPathPart]]:
+    ) -> tuple[t.Optional[exp.Expr], list[exp.JSONPathPart]]:
         if len(path_parts) > 1:
             this = self.expression(
                 exp.JSONExtract(
@@ -6510,7 +6510,7 @@ class Parser:
         return this, path_parts
 
     def _parse_colon_as_variant_extract(self, this: t.Optional[exp.Expr]) -> t.Optional[exp.Expr]:
-        path_parts: t.List[exp.JSONPathPart] = [exp.JSONPathRoot()]
+        path_parts: list[exp.JSONPathPart] = [exp.JSONPathRoot()]
         escape = None
 
         while self._match(TokenType.COLON):
@@ -6711,7 +6711,7 @@ class Parser:
 
     def _parse_function(
         self,
-        functions: t.Optional[t.Dict[str, t.Callable]] = None,
+        functions: t.Optional[dict[str, t.Callable]] = None,
         anonymous: bool = False,
         optional_parens: bool = True,
         any_token: bool = False,
@@ -6739,12 +6739,12 @@ class Parser:
 
         return func
 
-    def _parse_function_args(self, alias: bool = False) -> t.List[exp.Expr]:
+    def _parse_function_args(self, alias: bool = False) -> list[exp.Expr]:
         return self._parse_csv(lambda: self._parse_lambda(alias=alias))
 
     def _parse_function_call(
         self,
-        functions: t.Optional[t.Dict[str, t.Callable]] = None,
+        functions: t.Optional[dict[str, t.Callable]] = None,
         anonymous: bool = False,
         optional_parens: bool = True,
         any_token: bool = False,
@@ -6857,8 +6857,8 @@ class Parser:
         return expression
 
     def _kv_to_prop_eq(
-        self, expressions: t.List[exp.Expr], parse_map: bool = False
-    ) -> t.List[exp.Expr]:
+        self, expressions: list[exp.Expr], parse_map: bool = False
+    ) -> list[exp.Expr]:
         transformed = []
 
         for index, e in enumerate(expressions):
@@ -6940,7 +6940,7 @@ class Parser:
 
         if self._match(TokenType.L_PAREN):
             expressions = t.cast(
-                t.List[t.Optional[exp.Expr]], self._parse_csv(self._parse_lambda_arg)
+                list[t.Optional[exp.Expr]], self._parse_csv(self._parse_lambda_arg)
             )
 
             if not self._match(TokenType.R_PAREN):
@@ -7004,7 +7004,7 @@ class Parser:
         if self._match_text_seq("FOR", "ORDINALITY"):
             return self.expression(exp.ColumnDef(this=this, ordinality=True))
 
-        constraints: t.List[exp.Expr] = []
+        constraints: list[exp.Expr] = []
 
         if (not kind and self._match(TokenType.ALIAS)) or self._match_texts(
             ("ALIAS", "MATERIALIZED")
@@ -7207,7 +7207,7 @@ class Parser:
             exp.Constraint(this=self._parse_id_var(), expressions=self._parse_unnamed_constraints())
         )
 
-    def _parse_unnamed_constraints(self) -> t.List[exp.Expr]:
+    def _parse_unnamed_constraints(self) -> list[exp.Expr]:
         constraints = []
         while True:
             constraint = self._parse_unnamed_constraint() or self._parse_function()
@@ -7254,7 +7254,7 @@ class Parser:
             )
         )
 
-    def _parse_key_constraint_options(self) -> t.List[str]:
+    def _parse_key_constraint_options(self) -> list[str]:
         options = []
         while True:
             if not self._curr:
@@ -7292,7 +7292,7 @@ class Parser:
         if match and not self._match(TokenType.REFERENCES):
             return None
 
-        expressions: t.Optional[t.List] = None
+        expressions: t.Optional[list] = None
         this = self._parse_table(schema=True)
         options = self._parse_key_constraint_options()
         return self.expression(exp.Reference(this=this, expressions=expressions, options=options))
@@ -7637,7 +7637,7 @@ class Parser:
 
     def _parse_string_agg(self) -> exp.GroupConcat:
         if self._match(TokenType.DISTINCT):
-            args: t.List[t.Optional[exp.Expr]] = [
+            args: list[t.Optional[exp.Expr]] = [
                 self.expression(exp.Distinct(expressions=[self._parse_disjunction()]))
             ]
             if self._match(TokenType.COMMA):
@@ -7747,7 +7747,7 @@ class Parser:
             )
         )
 
-    def _parse_xml_namespace(self) -> t.List[exp.XMLNamespace]:
+    def _parse_xml_namespace(self) -> list[exp.XMLNamespace]:
         namespaces = []
 
         while True:
@@ -7981,7 +7981,7 @@ class Parser:
         # (despite being undocumented, the reverse order also works)
         # https://www.postgresql.org/docs/9.1/functions-string.html @ Table 9-6
 
-        args = t.cast(t.List[t.Optional[exp.Expr]], self._parse_csv(self._parse_bitwise))
+        args = t.cast(list[t.Optional[exp.Expr]], self._parse_csv(self._parse_bitwise))
 
         start, length = None, None
 
@@ -8028,7 +8028,7 @@ class Parser:
             exp.Trim(this=this, position=position, expression=expression, collation=collation)
         )
 
-    def _parse_window_clause(self) -> t.Optional[t.List[exp.Expr]]:
+    def _parse_window_clause(self) -> t.Optional[list[exp.Expr]]:
         return self._parse_csv(self._parse_named_window) if self._match(TokenType.WINDOW) else None
 
     def _parse_named_window(self) -> t.Optional[exp.Expr]:
@@ -8169,10 +8169,10 @@ class Parser:
 
     def _parse_partition_and_order(
         self,
-    ) -> t.Tuple[t.List[exp.Expr], t.Optional[exp.Expr]]:
+    ) -> tuple[list[exp.Expr], t.Optional[exp.Expr]]:
         return self._parse_partition_by(), self._parse_order()
 
-    def _parse_window_spec(self) -> t.Dict[str, t.Optional[str | exp.Expr]]:
+    def _parse_window_spec(self) -> dict[str, t.Optional[str | exp.Expr]]:
         self._match(TokenType.BETWEEN)
 
         return {
@@ -8317,7 +8317,7 @@ class Parser:
             self._advance(-1)
         return None
 
-    def _parse_star_op(self, *keywords: str) -> t.Optional[t.List[exp.Expr]]:
+    def _parse_star_op(self, *keywords: str) -> t.Optional[list[exp.Expr]]:
         if not self._match_texts(keywords):
             return None
         if self._match(TokenType.L_PAREN, advance=False):
@@ -8328,7 +8328,7 @@ class Parser:
 
     def _parse_csv(
         self, parse_method: t.Callable[[], t.Optional[T]], sep: TokenType = TokenType.COMMA
-    ) -> t.List[T]:
+    ) -> list[T]:
         parse_result = parse_method()
         items = [parse_result] if parse_result is not None else []
 
@@ -8341,7 +8341,7 @@ class Parser:
 
         return items
 
-    def _parse_wrapped_id_vars(self, optional: bool = False) -> t.List[exp.Expr]:
+    def _parse_wrapped_id_vars(self, optional: bool = False) -> list[exp.Expr]:
         return self._parse_wrapped_csv(self._parse_id_var, optional=optional)
 
     def _parse_wrapped_csv(
@@ -8349,7 +8349,7 @@ class Parser:
         parse_method: t.Callable[[], t.Optional[T]],
         sep: TokenType = TokenType.COMMA,
         optional: bool = False,
-    ) -> t.List[T]:
+    ) -> list[T]:
         return self._parse_wrapped(
             lambda: self._parse_csv(parse_method, sep=sep), optional=optional
         )
@@ -8363,7 +8363,7 @@ class Parser:
             self._match_r_paren()
         return parse_result
 
-    def _parse_expressions(self) -> t.List[exp.Expr]:
+    def _parse_expressions(self) -> list[exp.Expr]:
         return self._parse_csv(self._parse_expression)
 
     def _parse_select_or_expression(self, alias: bool = False) -> t.Optional[exp.Expr]:
@@ -8480,7 +8480,7 @@ class Parser:
             exp.DropPartition(expressions=self._parse_csv(self._parse_partition), exists=exists)
         )
 
-    def _parse_alter_table_add(self) -> t.List[exp.Expr]:
+    def _parse_alter_table_add(self) -> list[exp.Expr]:
         def _parse_add_alteration() -> t.Optional[exp.Expr]:
             self._match_text_seq("ADD")
             if self._match_set(self.ADD_CONSTRAINT_TOKENS, advance=False):
@@ -8576,7 +8576,7 @@ class Parser:
             exp.AlterSortKey(this=exp.var(self._prev.text.upper()), compound=compound)
         )
 
-    def _parse_alter_table_drop(self) -> t.List[exp.Expr]:
+    def _parse_alter_table_drop(self) -> list[exp.Expr]:
         index = self._index - 1
 
         partition_exists = self._parse_exists()
@@ -9129,7 +9129,7 @@ class Parser:
         return None
 
     def _find_parser(
-        self, parsers: t.Dict[str, t.Callable], trie: t.Dict
+        self, parsers: dict[str, t.Callable], trie: dict
     ) -> t.Optional[t.Callable]:
         if not self._curr:
             return None
@@ -9163,7 +9163,7 @@ class Parser:
             self.raise_error("Expecting )")
 
     def _replace_lambda(
-        self, node: t.Optional[exp.Expr], expressions: t.List[exp.Expr]
+        self, node: t.Optional[exp.Expr], expressions: list[exp.Expr]
     ) -> t.Optional[exp.Expr]:
         if not node:
             return node
@@ -9274,7 +9274,7 @@ class Parser:
 
         return opts
 
-    def _parse_copy_parameters(self) -> t.List[exp.CopyParameter]:
+    def _parse_copy_parameters(self) -> list[exp.CopyParameter]:
         sep = TokenType.COMMA if self.dialect.COPY_PARAMS_ARE_CSV else None
 
         options = []
@@ -9381,7 +9381,7 @@ class Parser:
             )
         )
 
-    def _parse_ceil_floor(self, expr_type: t.Type[TCeilFloor]) -> TCeilFloor:
+    def _parse_ceil_floor(self, expr_type: type[TCeilFloor]) -> TCeilFloor:
         args = self._parse_csv(lambda: self._parse_lambda())
 
         this = seq_get(args, 0)
@@ -9439,7 +9439,7 @@ class Parser:
 
     def _parse_grant_revoke_common(
         self,
-    ) -> t.Tuple[t.Optional[t.List], t.Optional[str], t.Optional[exp.Expr]]:
+    ) -> tuple[t.Optional[list], t.Optional[str], t.Optional[exp.Expr]]:
         privileges = self._parse_csv(self._parse_grant_privilege)
 
         self._match(TokenType.ON)
@@ -9532,8 +9532,8 @@ class Parser:
             )
         )
 
-    def _parse_max_min_by(self, expr_type: t.Type[exp.AggFunc]) -> exp.AggFunc:
-        args: t.List[exp.Expr] = []
+    def _parse_max_min_by(self, expr_type: type[exp.AggFunc]) -> exp.AggFunc:
+        args: list[exp.Expr] = []
 
         if self._match(TokenType.DISTINCT):
             args.append(self.expression(exp.Distinct(expressions=[self._parse_lambda()])))
@@ -9554,7 +9554,7 @@ class Parser:
     def _build_pipe_cte(
         self,
         query: exp.Query,
-        expressions: t.List[exp.Expr],
+        expressions: list[exp.Expr],
         alias_cte: t.Optional[exp.TableAlias] = None,
     ) -> exp.Select:
         new_cte: t.Optional[t.Union[str, exp.TableAlias]]
@@ -9793,7 +9793,7 @@ class Parser:
         )
 
     def _parse_group_concat(self) -> t.Optional[exp.Expr]:
-        def concat_exprs(node: t.Optional[exp.Expr], exprs: t.List[exp.Expr]) -> exp.Expr:
+        def concat_exprs(node: t.Optional[exp.Expr], exprs: list[exp.Expr]) -> exp.Expr:
             if isinstance(node, exp.Distinct) and len(node.expressions) > 1:
                 concat_exprs = [
                     self.expression(

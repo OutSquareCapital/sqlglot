@@ -33,7 +33,7 @@ def _has_time_specifier(date_format: str) -> bool:
     return False
 
 
-def _str_to_date(args: t.List) -> exp.StrToDate | exp.StrToTime:
+def _str_to_date(args: list) -> exp.StrToDate | exp.StrToTime:
     mysql_date_format = seq_get(args, 1)
     date_format = Dialect["mysql"].format_time(mysql_date_format)
     this = seq_get(args, 0)
@@ -459,7 +459,7 @@ class MySQLParser(parser.Parser):
 
     def _parse_oldstyle_limit(
         self,
-    ) -> t.Tuple[t.Optional[exp.Expr], t.Optional[exp.Expr]]:
+    ) -> tuple[t.Optional[exp.Expr], t.Optional[exp.Expr]]:
         limit = None
         offset = None
         if self._match_text_seq("LIMIT"):
@@ -514,8 +514,8 @@ class MySQLParser(parser.Parser):
 
     def _parse_partition_property(
         self,
-    ) -> t.Optional[exp.Expr] | t.List[exp.Expr]:
-        partition_cls: t.Optional[t.Type[exp.Expr]] = None
+    ) -> t.Optional[exp.Expr] | list[exp.Expr]:
+        partition_cls: t.Optional[type[exp.Expr]] = None
         value_parser = None
 
         if self._match_text_seq("RANGE"):

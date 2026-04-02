@@ -38,7 +38,7 @@ class ParseError(SqlglotError):
     def __init__(
         self,
         message: str,
-        errors: t.Optional[t.List[t.Dict[str, t.Any]]] = None,
+        errors: t.Optional[list[dict[str, t.Any]]] = None,
     ):
         super().__init__(message)
         self.errors = errors or []
@@ -89,9 +89,9 @@ class ExecuteError(SqlglotError):
 
 def highlight_sql(
     sql: str,
-    positions: t.List[t.Tuple[int, int]],
+    positions: list[tuple[int, int]],
     context_length: int = ERROR_MESSAGE_CONTEXT_DEFAULT,
-) -> t.Tuple[str, str, str, str]:
+) -> tuple[str, str, str, str]:
     """
     Highlight a SQL string using ANSI codes at the given positions.
 

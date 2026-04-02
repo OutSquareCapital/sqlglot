@@ -169,7 +169,7 @@ class TeradataParser(parser.Parser):
 
     def _parse_function(
         self,
-        functions: t.Optional[t.Dict[str, t.Callable]] = None,
+        functions: t.Optional[dict[str, t.Callable]] = None,
         anonymous: bool = False,
         optional_parens: bool = True,
         any_token: bool = False,

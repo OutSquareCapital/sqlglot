@@ -105,7 +105,7 @@ class RedshiftParser(PostgresParser):
         self._retreat(index)
         return None
 
-    def _parse_projections(self) -> t.Tuple[t.List[exp.Expr], t.Optional[t.List[exp.Expr]]]:
+    def _parse_projections(self) -> tuple[list[exp.Expr], t.Optional[list[exp.Expr]]]:
         projections, _ = super()._parse_projections()
         if self._prev.text.upper() == "EXCLUDE" and self._curr:
             self._retreat(self._index - 1)

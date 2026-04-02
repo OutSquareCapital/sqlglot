@@ -13,7 +13,7 @@ from sqlglot.parsers.hive import HiveParser
 from sqlglot.parser import build_trim
 
 
-def build_as_cast(to_type: str) -> t.Callable[[t.List], exp.Expr]:
+def build_as_cast(to_type: str) -> t.Callable[[list], exp.Expr]:
     return lambda args: exp.Cast(this=seq_get(args, 0), to=exp.DataType.build(to_type))
 
 
@@ -97,7 +97,7 @@ class Spark2Parser(HiveParser):
             else None
         )
 
-    def _pivot_column_names(self, aggregations: t.List[exp.Expr]) -> t.List[str]:
+    def _pivot_column_names(self, aggregations: list[exp.Expr]) -> list[str]:
         if len(aggregations) == 1:
             return []
         return pivot_column_names(aggregations, dialect="spark")

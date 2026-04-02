@@ -184,7 +184,7 @@ def while_changing(expression: E, func: t.Callable[[E], E]) -> E:
     return expression
 
 
-def tsort(dag: t.Dict[T, t.Set[T]]) -> t.List[T]:
+def tsort(dag: dict[T, set[T]]) -> list[T]:
     """
     Sorts a given directed acyclic graph in topological order.
 
@@ -263,7 +263,7 @@ def name_sequence(prefix: str) -> t.Callable[[], str]:
     return lambda: f"{prefix}{next(sequence)}"
 
 
-def object_to_dict(obj: t.Any, **kwargs) -> t.Dict:
+def object_to_dict(obj: t.Any, **kwargs) -> dict:
     """Returns a dictionary created from an object's attributes."""
     return {
         **{k: v.copy() if hasattr(v, "copy") else copy(v) for k, v in vars(obj).items()},
@@ -273,7 +273,7 @@ def object_to_dict(obj: t.Any, **kwargs) -> t.Dict:
 
 def split_num_words(
     value: str, sep: str, min_num_words: int, fill_from_start: bool = True
-) -> t.List[t.Optional[str]]:
+) -> list[t.Optional[str]]:
     """
     Perform a split on a value and return N words as a result with `None` used for words that don't exist.
 
@@ -402,7 +402,7 @@ def to_bool(value: t.Optional[str | bool]) -> t.Optional[str | bool]:
     return value
 
 
-def merge_ranges(ranges: t.List[t.Tuple[t.Any, t.Any]]) -> t.List[t.Tuple[t.Any, t.Any]]:
+def merge_ranges(ranges: list[tuple[t.Any, t.Any]]) -> list[tuple[t.Any, t.Any]]:
     """
     Merges a sequence of ranges, represented as tuples (low, high) whose values
     belong to some totally-ordered set.

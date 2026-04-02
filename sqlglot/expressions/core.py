@@ -41,7 +41,7 @@ SQLGLOT_META: str = "sqlglot.meta"
 SQLGLOT_ANONYMOUS = "sqlglot.anonymous"
 TABLE_PARTS = ("this", "db", "catalog")
 COLUMN_PARTS = ("this", "table", "db", "catalog")
-POSITION_META_KEYS: t.Tuple[str, ...] = ("line", "col", "start", "end")
+POSITION_META_KEYS: tuple[str, ...] = ("line", "col", "start", "end")
 UNITTEST: bool = "unittest" in sys.modules or "pytest" in sys.modules
 
 
@@ -79,20 +79,20 @@ class Expr:
     """
 
     key: t.ClassVar[str] = "expression"
-    arg_types: t.ClassVar[t.Dict[str, bool]] = {"this": True}
+    arg_types: t.ClassVar[dict[str, bool]] = {"this": True}
     required_args: t.ClassVar[t.Set[str]] = {"this"}
     is_var_len_args: t.ClassVar[bool] = False
     _hash_raw_args: t.ClassVar[bool] = False
     is_subquery: t.ClassVar[bool] = False
     is_cast: t.ClassVar[bool] = False
 
-    args: t.Dict[str, t.Any]
+    args: dict[str, t.Any]
     parent: t.Optional[Expr]
     arg_key: t.Optional[str]
     index: t.Optional[int]
-    comments: t.Optional[t.List[str]]
+    comments: t.Optional[list[str]]
     _type: t.Optional[DataType]
-    _meta: t.Optional[t.Dict[str, t.Any]]
+    _meta: t.Optional[dict[str, t.Any]]
     _hash: t.Optional[int]
 
     @classmethod
@@ -108,13 +108,13 @@ class Expr:
     is_primitive: t.ClassVar[bool] = False
 
     def __init__(self, **args: object) -> None:
-        self.args: t.Dict[str, t.Any] = args
+        self.args: dict[str, t.Any] = args
         self.parent: t.Optional[Expr] = None
         self.arg_key: t.Optional[str] = None
         self.index: t.Optional[int] = None
-        self.comments: t.Optional[t.List[str]] = None
+        self.comments: t.Optional[list[str]] = None
         self._type: t.Optional[DataType] = None
-        self._meta: t.Optional[t.Dict[str, t.Any]] = None
+        self._meta: t.Optional[dict[str, t.Any]] = None
         self._hash: t.Optional[int] = None
 
         if not self.is_primitive:
@@ -130,7 +130,7 @@ class Expr:
         raise NotImplementedError
 
     @property
-    def expressions(self) -> t.List[t.Any]:
+    def expressions(self) -> list[t.Any]:
         raise NotImplementedError
 
     def text(self, key: str) -> str:
@@ -160,7 +160,7 @@ class Expr:
         raise NotImplementedError
 
     @property
-    def alias_column_names(self) -> t.List[str]:
+    def alias_column_names(self) -> list[str]:
         raise NotImplementedError
 
     @property
@@ -190,7 +190,7 @@ class Expr:
         raise NotImplementedError
 
     @property
-    def meta(self) -> t.Dict[str, t.Any]:
+    def meta(self) -> dict[str, t.Any]:
         raise NotImplementedError
 
     def __deepcopy__(self, memo: t.Any) -> Expr:
@@ -199,10 +199,10 @@ class Expr:
     def copy(self: E) -> E:
         raise NotImplementedError
 
-    def add_comments(self, comments: t.Optional[t.List[str]] = None, prepend: bool = False) -> None:
+    def add_comments(self, comments: t.Optional[list[str]] = None, prepend: bool = False) -> None:
         raise NotImplementedError
 
-    def pop_comments(self) -> t.List[str]:
+    def pop_comments(self) -> list[str]:
         raise NotImplementedError
 
     def append(self, arg_key: str, value: t.Any) -> None:
@@ -264,7 +264,7 @@ class Expr:
     def unalias(self) -> Expr:
         raise NotImplementedError
 
-    def unnest_operands(self) -> t.Tuple[Expr, ...]:
+    def unnest_operands(self) -> tuple[Expr, ...]:
         raise NotImplementedError
 
     def flatten(self, unnest: bool = True) -> Iterator[Expr]:
@@ -503,8 +503,8 @@ class Expression(Expr):
 
     def __hash__(self) -> int:
         if self._hash is None:
-            nodes: t.List[Expr] = []
-            queue: t.Deque[Expr] = deque()
+            nodes: list[Expr] = []
+            queue: deque[Expr] = deque()
             queue.append(self)
 
             while queue:
@@ -564,7 +564,7 @@ class Expression(Expr):
         return self.args.get("expression")
 
     @property
-    def expressions(self) -> t.List[t.Any]:
+    def expressions(self) -> list[t.Any]:
         """
         Retrieves the argument with key "expressions".
         """
@@ -629,7 +629,7 @@ class Expression(Expr):
         return self.text("alias")
 
     @property
-    def alias_column_names(self) -> t.List[str]:
+    def alias_column_names(self) -> list[str]:
         table_alias = self.args.get("alias")
         if not table_alias:
             return []
@@ -683,14 +683,14 @@ class Expression(Expr):
         return not any((isinstance(v, Expr) or type(v) is list) and v for v in self.args.values())
 
     @property
-    def meta(self) -> t.Dict[str, t.Any]:
+    def meta(self) -> dict[str, t.Any]:
         if self._meta is None:
             self._meta = {}
         return self._meta
 
     def __deepcopy__(self, memo: t.Any) -> Expr:
         root = self.__class__()
-        stack: t.List[t.Tuple[Expr, Expr]] = [(self, root)]
+        stack: list[tuple[Expr, Expr]] = [(self, root)]
 
         while stack:
             node, copy = stack.pop()
@@ -728,7 +728,7 @@ class Expression(Expr):
         """
         return deepcopy(self)
 
-    def add_comments(self, comments: t.Optional[t.List[str]] = None, prepend: bool = False) -> None:
+    def add_comments(self, comments: t.Optional[list[str]] = None, prepend: bool = False) -> None:
         if self.comments is None:
             self.comments = []
 
@@ -746,7 +746,7 @@ class Expression(Expr):
             if prepend:
                 self.comments = comments + self.comments
 
-    def pop_comments(self) -> t.List[str]:
+    def pop_comments(self) -> list[str]:
         comments = self.comments or []
         self.comments = None
         return comments
@@ -976,7 +976,7 @@ class Expression(Expr):
         Returns:
             The generator object.
         """
-        queue: t.Deque[Expr] = deque()
+        queue: deque[Expr] = deque()
         queue.append(self)
 
         while queue:
@@ -1004,7 +1004,7 @@ class Expression(Expr):
             return self.this
         return self
 
-    def unnest_operands(self) -> t.Tuple[Expr, ...]:
+    def unnest_operands(self) -> tuple[Expr, ...]:
         """
         Returns unnested operands as a tuple.
         """
@@ -1550,7 +1550,7 @@ class Any(Expression, SubqueryPredicate):
 
 @trait
 class Binary(Condition):
-    arg_types: t.ClassVar[t.Dict[str, bool]] = {"this": True, "expression": True}
+    arg_types: t.ClassVar[dict[str, bool]] = {"this": True, "expression": True}
 
     @property
     def left(self) -> Expr:
@@ -1644,7 +1644,7 @@ class Column(Expression, Condition):
         return self.name
 
     @property
-    def parts(self) -> t.List[Identifier | Star]:
+    def parts(self) -> list[Identifier | Star]:
         """Return the parts of a column in order catalog, db, table, name."""
         return [
             self.args[part] for part in ("catalog", "db", "table", "this") if self.args.get(part)
@@ -1803,7 +1803,7 @@ class Dot(Expression, Binary):
         return t.cast(Dot, reduce(lambda x, y: Dot(this=x, expression=y), expressions))
 
     @property
-    def parts(self) -> t.List[Expr]:
+    def parts(self) -> list[Expr]:
         """Return the parts of a table / column in order catalog, db, table."""
         this, *parts = self.flatten()
 
@@ -1843,7 +1843,7 @@ class Aliases(Expression):
     arg_types = {"this": True, "expressions": True}
 
     @property
-    def aliases(self) -> t.List[Expr]:
+    def aliases(self) -> list[Expr]:
         return self.expressions
 
 
@@ -1939,7 +1939,7 @@ class Slice(Expression):
 class TimeUnit(Expr):
     """Automatically converts unit arg into a var."""
 
-    UNABBREVIATED_UNIT_NAME: t.ClassVar[t.Dict[str, str]] = {
+    UNABBREVIATED_UNIT_NAME: t.ClassVar[dict[str, str]] = {
         "D": "DAY",
         "H": "HOUR",
         "M": "MINUTE",
@@ -1952,7 +1952,7 @@ class TimeUnit(Expr):
         "Y": "YEAR",
     }
 
-    VAR_LIKE: t.ClassVar[t.Tuple[Type[Expr], ...]] = (Column, Literal, Var)
+    VAR_LIKE: t.ClassVar[tuple[Type[Expr], ...]] = (Column, Literal, Var)
 
     def __init__(self, **args: object) -> None:
         super().__init__(**args)

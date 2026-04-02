@@ -84,7 +84,7 @@ class Resolver:
         return exp.to_identifier(table_name)
 
     @property
-    def all_columns(self) -> t.Set[str]:
+    def all_columns(self) -> set[str]:
         """All available columns of all sources in this scope"""
         if self._all_columns is None:
             self._all_columns = {
@@ -92,7 +92,7 @@ class Resolver:
             }
         return self._all_columns
 
-    def get_source_columns_from_set_op(self, expression: exp.Expr) -> t.List[str]:
+    def get_source_columns_from_set_op(self, expression: exp.Expr) -> list[str]:
         if isinstance(expression, exp.Select):
             return expression.named_selects
         if isinstance(expression, exp.Subquery) and isinstance(expression.this, exp.SetOperation):
@@ -307,7 +307,7 @@ class Resolver:
         # For BigQuery UNNEST_COLUMN_ONLY, build a mapping of original UNNEST aliases
         # from alias.columns[0] to their source names. This is used to resolve shadowing
         # where an UNNEST alias shadows a column name from another table.
-        unnest_original_aliases: t.Dict[str, str] = {}
+        unnest_original_aliases: dict[str, str] = {}
         if self.dialect.UNNEST_COLUMN_ONLY:
             unnest_original_aliases = {
                 alias_arg.columns[0].name: source_name

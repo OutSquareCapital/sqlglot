@@ -12,7 +12,7 @@ if t.TYPE_CHECKING:
     from sqlglot._typing import E
 
 
-def _build_to_timestamp(args: t.List) -> exp.StrToTime | exp.Anonymous:
+def _build_to_timestamp(args: list) -> exp.StrToTime | exp.Anonymous:
     if len(args) == 1:
         return exp.Anonymous(this="TO_TIMESTAMP", expressions=args)
 
@@ -122,7 +122,7 @@ class OracleParser(parser.Parser):
             order=self._parse_order(),
         )
 
-    def _parse_json_array(self, expr_type: t.Type[E], **kwargs) -> E:
+    def _parse_json_array(self, expr_type: type[E], **kwargs) -> E:
         return self.expression(
             expr_type(
                 null_handling=self._parse_on_handling("NULL", "NULL", "ABSENT"),

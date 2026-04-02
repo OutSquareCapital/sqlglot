@@ -9,7 +9,7 @@ from sqlglot.tokens import TokenType
 
 
 # Accept both DATE_TRUNC(datetime, unit) and DATE_TRUNC(unit, datetime)
-def _build_date_trunc(args: t.List[exp.Expr]) -> exp.Expr:
+def _build_date_trunc(args: list[exp.Expr]) -> exp.Expr:
     a0, a1 = seq_get(args, 0), seq_get(args, 1)
 
     def _is_unit_like(e: exp.Expr | None) -> bool:
@@ -55,7 +55,7 @@ class DorisParser(MySQLParser):
 
     def _parse_partition_property(
         self,
-    ) -> t.Optional[exp.Expr] | t.List[exp.Expr]:
+    ) -> t.Optional[exp.Expr] | list[exp.Expr]:
         expr = super()._parse_partition_property()
 
         if not expr:

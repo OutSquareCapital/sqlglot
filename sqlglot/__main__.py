@@ -74,7 +74,7 @@ error_level = sqlglot.ErrorLevel[args.error_level.upper()]
 sql = sys.stdin.read() if args.sql == "-" else args.sql
 
 if args.parse:
-    objs: t.Union[t.List[str], t.List[sqlglot.tokens.Token]] = [
+    objs: t.Union[list[str], list[sqlglot.tokens.Token]] = [
         repr(expression)
         for expression in sqlglot.parse(
             sql,

@@ -18,20 +18,20 @@ from sqlglot.tokens import TokenType
 from collections.abc import Collection
 
 
-def _build_sort_array_desc(args: t.List) -> exp.Expr:
+def _build_sort_array_desc(args: list) -> exp.Expr:
     return exp.SortArray(this=seq_get(args, 0), asc=exp.false())
 
 
-def _build_array_prepend(args: t.List) -> exp.Expr:
+def _build_array_prepend(args: list) -> exp.Expr:
     return exp.ArrayPrepend(this=seq_get(args, 1), expression=seq_get(args, 0))
 
 
-def _build_date_diff(args: t.List) -> exp.Expr:
+def _build_date_diff(args: list) -> exp.Expr:
     return exp.DateDiff(this=seq_get(args, 2), expression=seq_get(args, 1), unit=seq_get(args, 0))
 
 
-def _build_generate_series(end_exclusive: bool = False) -> t.Callable[[t.List], exp.GenerateSeries]:
-    def _builder(args: t.List) -> exp.GenerateSeries:
+def _build_generate_series(end_exclusive: bool = False) -> t.Callable[[list], exp.GenerateSeries]:
+    def _builder(args: list) -> exp.GenerateSeries:
         # Check https://duckdb.org/docs/sql/functions/nested.html#range-functions
         if len(args) == 1:
             # DuckDB uses 0 as a default for the series' start when it's omitted
@@ -45,7 +45,7 @@ def _build_generate_series(end_exclusive: bool = False) -> t.Callable[[t.List], 
     return _builder
 
 
-def _build_make_timestamp(args: t.List) -> exp.Expr:
+def _build_make_timestamp(args: list) -> exp.Expr:
     if len(args) == 1:
         return exp.UnixToTime(this=seq_get(args, 0), scale=exp.UnixToTime.MICROS)
 
@@ -332,7 +332,7 @@ class DuckDBParser(parser.Parser):
     def _parse_struct_types(self, type_required: bool = False) -> t.Optional[exp.Expr]:
         return self._parse_field_def()
 
-    def _pivot_column_names(self, aggregations: t.List[exp.Expr]) -> t.List[str]:
+    def _pivot_column_names(self, aggregations: list[exp.Expr]) -> list[str]:
         if len(aggregations) == 1:
             return super()._pivot_column_names(aggregations)
         return pivot_column_names(aggregations, dialect="duckdb")

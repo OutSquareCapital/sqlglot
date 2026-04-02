@@ -8,8 +8,8 @@ from sqlglot.helper import find_new_name
 from sqlglot.optimizer.scope import Scope, build_scope
 
 if t.TYPE_CHECKING:
-    ExistingCTEsMapping = t.Dict[exp.Expr, str]
-    TakenNameMapping = t.Dict[str, t.Union[Scope, exp.Expr]]
+    ExistingCTEsMapping = dict[exp.Expr, str]
+    TakenNameMapping = dict[str, t.Union[Scope, exp.Expr]]
 
 
 def eliminate_subqueries(expression: exp.Expr) -> exp.Expr:
@@ -170,7 +170,7 @@ def _eliminate_cte(
 
 def _new_cte(
     scope: Scope, existing_ctes: ExistingCTEsMapping, taken: TakenNameMapping
-) -> t.Tuple[str, t.Optional[exp.Expr]]:
+) -> tuple[str, t.Optional[exp.Expr]]:
     """
     Returns:
         tuple of (name, cte)

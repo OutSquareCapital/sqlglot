@@ -106,7 +106,7 @@ def qualify_tables(
 
     for scope in traverse_scope(expression):
         local_columns = scope.local_columns
-        canonical_aliases: t.Dict[str, str] = {}
+        canonical_aliases: dict[str, str] = {}
 
         for query in scope.subqueries:
             subquery = query.parent

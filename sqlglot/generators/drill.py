@@ -26,7 +26,7 @@ def _str_to_date(self: DrillGenerator, expression: exp.StrToDate) -> str:
 
 
 class DrillGenerator(generator.Generator):
-    SELECT_KINDS: t.Tuple[str, ...] = ()
+    SELECT_KINDS: tuple[str, ...] = ()
     TRY_SUPPORTED = False
     SUPPORTS_UESCAPE = False
     SUPPORTS_DECODE_CASE = False

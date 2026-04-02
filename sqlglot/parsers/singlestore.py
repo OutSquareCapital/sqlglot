@@ -243,7 +243,7 @@ class SingleStoreParser(MySQLParser):
         ),
     }
 
-    def _parse_vector_expressions(self, expressions: t.List[exp.Expr]) -> t.List[exp.Expr]:
+    def _parse_vector_expressions(self, expressions: list[exp.Expr]) -> list[exp.Expr]:
         type_name = expressions[1].name.upper()
         if type_name in self.dialect.VECTOR_TYPE_ALIASES:
             type_name = self.dialect.VECTOR_TYPE_ALIASES[type_name]
