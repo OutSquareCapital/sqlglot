@@ -14,9 +14,7 @@ from sqlglot.parsers.mysql import MySQLParser, _show_parser
 from sqlglot.tokens import TokenType
 
 
-def cast_to_time6(
-    expression: exp.Expr | None, time_type: exp.DType = exp.DType.TIME
-) -> exp.Cast:
+def cast_to_time6(expression: exp.Expr | None, time_type: exp.DType = exp.DType.TIME) -> exp.Cast:
     return exp.Cast(
         this=expression,
         to=time_type.into_expr(expressions=[exp.DataTypeParam(this=exp.Literal.number(6))]),

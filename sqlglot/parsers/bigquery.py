@@ -97,9 +97,7 @@ def _build_parse_timestamp(args: list) -> exp.StrToTime:
     return this
 
 
-def _build_regexp_extract(
-    expr_type: type[E], default_group: exp.Expr | None = None
-) -> t.Callable:
+def _build_regexp_extract(expr_type: type[E], default_group: exp.Expr | None = None) -> t.Callable:
     def _builder(args: list, dialect: t.Any) -> E:
         try:
             group = re.compile(args[1].name).groups == 1

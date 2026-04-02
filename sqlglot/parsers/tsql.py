@@ -609,9 +609,7 @@ class TSQLParser(parser.Parser):
             this.set("output", self._prev.text)
         return this
 
-    def _parse_user_defined_function(
-        self, kind: TokenType | None = None
-    ) -> exp.Expr | None:
+    def _parse_user_defined_function(self, kind: TokenType | None = None) -> exp.Expr | None:
         this = super()._parse_user_defined_function(kind=kind)
 
         if kind == TokenType.FUNCTION or isinstance(this, exp.UserDefinedFunction):

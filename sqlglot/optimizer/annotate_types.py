@@ -808,9 +808,7 @@ class TypeAnnotator:
         self._set_type(expression, exp.DType.UNKNOWN)
         return expression
 
-    def _annotate_struct_value(
-        self, expression: exp.Expr
-    ) -> exp.DataType | None | exp.ColumnDef:
+    def _annotate_struct_value(self, expression: exp.Expr) -> exp.DataType | None | exp.ColumnDef:
         # Case: STRUCT(key AS value)
         this: exp.Expr | None = None
         kind = expression.type

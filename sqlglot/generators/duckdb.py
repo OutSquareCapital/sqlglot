@@ -2960,9 +2960,7 @@ class DuckDBGenerator(generator.Generator):
             arg = exp.cast(arg, exp.DType.INT)
         return self.func("CHR", arg)
 
-    def _validate_regexp_flags(
-        self, flags: exp.Expr | None, supported_flags: str
-    ) -> str | None:
+    def _validate_regexp_flags(self, flags: exp.Expr | None, supported_flags: str) -> str | None:
         """
         Validate and filter regexp flags for DuckDB compatibility.
 

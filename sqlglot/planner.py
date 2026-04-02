@@ -43,9 +43,7 @@ class Plan:
 
 class Step:
     @classmethod
-    def from_expression(
-        cls, expression: exp.Expr, ctes: dict[str, Step] | None = None
-    ) -> Step:
+    def from_expression(cls, expression: exp.Expr, ctes: dict[str, Step] | None = None) -> Step:
         """
         Builds a DAG of Steps from a SQL expression so that it's easier to execute in an engine.
         Note: the expression's tables and subqueries must be aliased for this method to work. For
@@ -305,9 +303,7 @@ class Step:
 
 class Scan(Step):
     @classmethod
-    def from_expression(
-        cls, expression: exp.Expr, ctes: dict[str, Step] | None = None
-    ) -> Step:
+    def from_expression(cls, expression: exp.Expr, ctes: dict[str, Step] | None = None) -> Step:
         table = expression
         alias_ = expression.alias_or_name
 
@@ -335,9 +331,7 @@ class Scan(Step):
 
 class Join(Step):
     @classmethod
-    def from_joins(
-        cls, joins: Iterable[exp.Join], ctes: dict[str, Step] | None = None
-    ) -> Join:
+    def from_joins(cls, joins: Iterable[exp.Join], ctes: dict[str, Step] | None = None) -> Join:
         step = Join()
 
         for join in joins:

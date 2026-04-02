@@ -1248,9 +1248,7 @@ class SnowflakeParser(parser.Parser):
                     expr.set("kind", "VARIABLE")
         return set
 
-    def _parse_window(
-        self, this: exp.Expr | None, alias: bool = False
-    ) -> exp.Expr | None:
+    def _parse_window(self, this: exp.Expr | None, alias: bool = False) -> exp.Expr | None:
         if isinstance(this, exp.NthValue):
             if self._match_text_seq("FROM"):
                 if self._match_texts(("FIRST", "LAST")):

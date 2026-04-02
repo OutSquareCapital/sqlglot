@@ -6890,9 +6890,7 @@ class Parser:
     def _parse_function_parameter(self) -> exp.Expr | None:
         return self._parse_column_def(this=self._parse_id_var(), computed_column=False)
 
-    def _parse_user_defined_function(
-        self, kind: TokenType | None = None
-    ) -> exp.Expr | None:
+    def _parse_user_defined_function(self, kind: TokenType | None = None) -> exp.Expr | None:
         this = self._parse_table_parts(schema=True)
 
         if not self._match(TokenType.L_PAREN):
@@ -8050,9 +8048,7 @@ class Parser:
 
         return this
 
-    def _parse_window(
-        self, this: exp.Expr | None, alias: bool = False
-    ) -> exp.Expr | None:
+    def _parse_window(self, this: exp.Expr | None, alias: bool = False) -> exp.Expr | None:
         func = this
         comments = func.comments if isinstance(func, exp.Expr) else None
 
@@ -8182,9 +8178,7 @@ class Parser:
             "side": self._prev.text if self._match_texts(self.WINDOW_SIDES) else None,
         }
 
-    def _parse_alias(
-        self, this: exp.Expr | None, explicit: bool = False
-    ) -> exp.Expr | None:
+    def _parse_alias(self, this: exp.Expr | None, explicit: bool = False) -> exp.Expr | None:
         # In some dialects, LIMIT and OFFSET can act as both identifiers and keywords (clauses)
         # so this section tries to parse the clause version and if it fails, it treats the token
         # as an identifier (alias)

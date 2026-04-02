@@ -125,9 +125,7 @@ class PRQLParser(parser.Parser):
         num = self._parse_number()  # TODO: TAKE for ranges a..b
         return query.limit(num) if num else None
 
-    def _parse_ordered(
-        self, parse_method: t.Callable | None = None
-    ) -> exp.Ordered | None:
+    def _parse_ordered(self, parse_method: t.Callable | None = None) -> exp.Ordered | None:
         asc = self._match(TokenType.PLUS)
         desc = self._match(TokenType.DASH) or (asc and False)
         term = term = super()._parse_ordered(parse_method=parse_method)

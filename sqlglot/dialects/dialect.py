@@ -2003,9 +2003,7 @@ def map_date_part(part: exp.Expr, dialect: DialectType = Dialect) -> exp.Expr:
 
 
 @t.overload
-def map_date_part(
-    part: exp.Expr | None, dialect: DialectType = Dialect
-) -> exp.Expr | None:
+def map_date_part(part: exp.Expr | None, dialect: DialectType = Dialect) -> exp.Expr | None:
     pass
 
 

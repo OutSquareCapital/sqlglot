@@ -833,9 +833,7 @@ class ClickHouseParser(parser.Parser):
     def _parse_constraint(self) -> exp.Expr | None:
         return super()._parse_constraint() or self._parse_projection_def()
 
-    def _parse_alias(
-        self, this: exp.Expr | None, explicit: bool = False
-    ) -> exp.Expr | None:
+    def _parse_alias(self, this: exp.Expr | None, explicit: bool = False) -> exp.Expr | None:
         # In clickhouse "SELECT <expr> APPLY(...)" is a query modifier,
         # so "APPLY" shouldn't be parsed as <expr>'s alias. However, "SELECT <expr> apply" is a valid alias
         if self._match_pair(TokenType.APPLY, TokenType.L_PAREN, advance=False):

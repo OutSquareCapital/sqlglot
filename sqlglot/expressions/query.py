@@ -1526,9 +1526,7 @@ class Select(Expression, Query):
             **opts,
         )
 
-    def distinct(
-        self, *ons: ExpOrStr | None, distinct: bool = True, copy: bool = True
-    ) -> Select:
+    def distinct(self, *ons: ExpOrStr | None, distinct: bool = True, copy: bool = True) -> Select:
         """
         Set the OFFSET expression.
 

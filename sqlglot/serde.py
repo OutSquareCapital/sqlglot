@@ -22,9 +22,7 @@ def dump(expression: exp.Expr) -> list[dict[str, t.Any]]:
     """
     i = 0
     payloads = []
-    stack: list[tuple[t.Any, int | None, str | None, bool]] = [
-        (expression, None, None, False)
-    ]
+    stack: list[tuple[t.Any, int | None, str | None, bool]] = [(expression, None, None, False)]
 
     while stack:
         node, index, arg_key, is_array = stack.pop()

@@ -72,9 +72,7 @@ def parse(path: str, dialect: DialectType = None) -> exp.JSONPath:
         pass
 
     @t.overload
-    def _match(
-        token_type: TokenType, raise_unmatched: t.Literal[False] = False
-    ) -> Token | None:
+    def _match(token_type: TokenType, raise_unmatched: t.Literal[False] = False) -> Token | None:
         pass
 
     def _match(token_type, raise_unmatched=False):
