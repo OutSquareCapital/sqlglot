@@ -80,7 +80,7 @@ class Expr:
 
     key: t.ClassVar[str] = "expression"
     arg_types: t.ClassVar[dict[str, bool]] = {"this": True}
-    required_args: t.ClassVar[t.Set[str]] = {"this"}
+    required_args: t.ClassVar[set[str]] = {"this"}
     is_var_len_args: t.ClassVar[bool] = False
     _hash_raw_args: t.ClassVar[bool] = False
     is_subquery: t.ClassVar[bool] = False
