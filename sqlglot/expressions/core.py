@@ -1982,7 +1982,7 @@ class _TimeUnit(Expression, TimeUnit):
 
 @trait
 class IntervalOp(TimeUnit):
-    def interval(self) -> "Interval":
+    def interval(self) -> Interval:
         from sqlglot.expressions.datatypes import Interval
 
         expr = self.expression
@@ -2267,7 +2267,7 @@ def not_(
     return Not(this=_wrap(this, Connector))
 
 
-def _lazy_unnest(**kwargs: object) -> "Expr":
+def _lazy_unnest(**kwargs: object) -> Expr:
     from sqlglot.expressions.array import Unnest
 
     return Unnest(**kwargs)

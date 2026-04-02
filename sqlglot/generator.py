@@ -71,11 +71,11 @@ AFTER_HAVING_MODIFIER_TRANSFORMS: t.Dict[str, t.Any] = {
 }
 
 
-_DISPATCH_CACHE: t.Dict[t.Type["Generator"], t.Dict[t.Type[exp.Expr], t.Callable[..., str]]] = {}
+_DISPATCH_CACHE: t.Dict[t.Type[Generator], t.Dict[t.Type[exp.Expr], t.Callable[..., str]]] = {}
 
 
 def _build_dispatch(
-    cls: t.Type["Generator"],
+    cls: t.Type[Generator],
 ) -> t.Dict[t.Type[exp.Expr], t.Callable[..., str]]:
     dispatch: t.Dict[t.Type[exp.Expr], t.Callable[..., str]] = dict(cls.TRANSFORMS)
 

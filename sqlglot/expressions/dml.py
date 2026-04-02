@@ -38,7 +38,7 @@ class DML(Expr):
         dialect: DialectType = None,
         copy: bool = True,
         **opts: Unpack[ParserNoDialectArgs],
-    ) -> "Self":
+    ) -> Self:
         """
         Set the RETURNING expression. Not supported by all dialects.
 
