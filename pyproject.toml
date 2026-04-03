@@ -51,7 +51,10 @@ ignore = ["E721", "E741"]
 
 [dependency-groups]
 dev = [
+    "duckdb>=1.4.4",
     "mypy>=1.19.1",
+    "pandas>=2.3.3",
     "python-dateutil>=2.9.0.post0",
     "pytz>=2026.1.post1",
+    "types-python-dateutil>=2.9.0.20260124",
 ]
