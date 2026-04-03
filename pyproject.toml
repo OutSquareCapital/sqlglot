@@ -48,3 +48,10 @@ line-length = 100
 
 [tool.ruff.lint]
 ignore = ["E721", "E741"]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.19.1",
+    "python-dateutil>=2.9.0.post0",
+    "pytz>=2026.1.post1",
+]
