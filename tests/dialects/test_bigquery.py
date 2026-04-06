@@ -2229,6 +2229,9 @@ WHERE
                     "presto": "a[1]",
                 },
             )
+            self.validate_identity(
+                "WITH foo AS (SELECT [1, 2, 3] AS array_col) SELECT array_col[offset] FROM foo CROSS JOIN UNNEST(array_col) WITH OFFSET AS offset",
+            )
 
         with self.assertLogs(parser_logger) as cm:
             for_in_stmts = parse(
@@ -2409,6 +2412,13 @@ OPTIONS (
         )
         self.validate_identity(
             "SELECT * FROM ML.FORECAST(MODEL `mydataset.mymodel`, (SELECT * FROM mydataset.query_table), STRUCT())"
+        )
+
+        self.validate_identity(
+            "SELECT * FROM AI.FORECAST(TABLE citibike_trips, data_col => 'num_trips', timestamp_col => 'date', horizon => 30)"
+        )
+        self.validate_identity(
+            "SELECT * FROM AI.FORECAST((SELECT * FROM citibike_trips), data_col => 'num_trips', timestamp_col => 'date', horizon => 30)"
         )
 
         for name in ("GENERATE_EMBEDDING", "GENERATE_TEXT_EMBEDDING"):

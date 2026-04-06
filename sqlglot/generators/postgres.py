@@ -61,7 +61,9 @@ def _date_add_sql(kind: str) -> t.Callable[[PostgresGenerator, DATE_ADD_OR_SUB],
         unit = expression.args.get("unit")
 
         e = self._simplify_unless_literal(expression.expression)
-        if isinstance(e, exp.Literal):
+        if isinstance(e, exp.Interval):
+            return f"{this} {kind} {self.sql(e)}"
+        elif isinstance(e, exp.Literal):
             e.set("is_string", True)
         elif e.is_number:
             e = exp.Literal.string(e.to_py())
@@ -221,7 +223,7 @@ def _round_sql(self: PostgresGenerator, expression: exp.Round) -> str:
 
 
 class PostgresGenerator(generator.Generator):
-    SELECT_KINDS: t.Tuple[str, ...] = ()
+    SELECT_KINDS: tuple[str, ...] = ()
     TRY_SUPPORTED = False
     SUPPORTS_UESCAPE = False
     SUPPORTS_DECODE_CASE = False
@@ -249,7 +251,7 @@ class PostgresGenerator(generator.Generator):
     COPY_HAS_INTO_KEYWORD = False
     ARRAY_CONCAT_IS_VAR_LEN = False
     SUPPORTS_MEDIAN = False
-    ARRAY_SIZE_DIM_REQUIRED: t.Optional[bool] = True
+    ARRAY_SIZE_DIM_REQUIRED: bool | None = True
     SUPPORTS_BETWEEN_FLAGS = True
     INOUT_SEPARATOR = ""  # PostgreSQL uses "INOUT" (no space)
 
@@ -485,7 +487,7 @@ class PostgresGenerator(generator.Generator):
 
         return super().datatype_sql(expression)
 
-    def cast_sql(self, expression: exp.Cast, safe_prefix: t.Optional[str] = None) -> str:
+    def cast_sql(self, expression: exp.Cast, safe_prefix: str | None = None) -> str:
         this = expression.this
 
         # Postgres casts DIV() to decimal for transpilation but when roundtripping it's superfluous
