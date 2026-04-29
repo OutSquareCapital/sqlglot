@@ -7,6 +7,7 @@ import typing as t
 from sqlglot.errors import ParseError
 from sqlglot.helper import trait, ensure_list
 from sqlglot.expressions.core import (
+    ExprTyped,
     Aliases,
     Condition,
     Distinct,
@@ -450,7 +451,7 @@ class With(Expression):
         return bool(self.args.get("recursive"))
 
 
-class CTE(Expression, DerivedTable):
+class CTE(ExprTyped[Query, None], DerivedTable):
     arg_types = {
         "this": True,
         "alias": True,
@@ -472,21 +473,21 @@ class TableAlias(Expression):
         return self.args.get("columns") or []
 
 
-class BitString(Expression, Condition):
+class BitString(ExprTyped[str, None], Condition):
     is_primitive = True
 
 
-class HexString(Expression, Condition):
+class HexString(ExprTyped[str, None], Condition):
     arg_types = {"this": True, "is_integer": False}
     is_primitive = True
 
 
-class ByteString(Expression, Condition):
+class ByteString(ExprTyped[str, None], Condition):
     arg_types = {"this": True, "is_bytes": False}
     is_primitive = True
 
 
-class RawString(Expression, Condition):
+class RawString(ExprTyped[str, None], Condition):
     is_primitive = True
 
 
@@ -540,7 +541,7 @@ class Into(Expression):
     }
 
 
-class From(Expression):
+class From(ExprTyped[Expr, None]):
     @property
     def name(self) -> str:
         return self.this.name
@@ -581,7 +582,7 @@ class Introducer(Expression):
     arg_types = {"this": True, "expression": True}
 
 
-class National(Expression):
+class National(ExprTyped[str, None]):
     is_primitive = True
 
 
@@ -642,7 +643,7 @@ class GroupingSets(Expression):
     arg_types = {"expressions": True}
 
 
-class Lambda(Expression):
+class Lambda(ExprTyped[Expr, None]):
     arg_types = {"this": True, "expressions": True, "colon": False}
 
 
@@ -664,7 +665,7 @@ class LimitOptions(Expression):
     }
 
 
-class Join(Expression):
+class Join(ExprTyped[Expr, None]):
     arg_types = {
         "this": True,
         "on": False,
@@ -792,7 +793,7 @@ class Join(Expression):
         return join
 
 
-class Lateral(Expression, UDTF):
+class Lateral(ExprTyped[Expr, None], UDTF):
     arg_types = {
         "this": True,
         "view": False,
@@ -1658,7 +1659,7 @@ class Select(Expression, Query):
         return self.expressions
 
 
-class Subquery(Expression, DerivedTable, Query):
+class Subquery(ExprTyped[Query, None], DerivedTable, Query):
     is_subquery: t.ClassVar[bool] = True
     arg_types = {
         "this": True,

@@ -501,7 +501,7 @@ class Simplifier:
     UTINYINT_MIN: t.ClassVar = 0
     UTINYINT_MAX: t.ClassVar = 255
 
-    COMPLEMENT_COMPARISONS: t.ClassVar = {
+    COMPLEMENT_COMPARISONS: t.ClassVar[dict[type[exp.Expr], type[exp.Expr]]] = {
         exp.LT: exp.GTE,
         exp.GT: exp.LTE,
         exp.LTE: exp.GT,

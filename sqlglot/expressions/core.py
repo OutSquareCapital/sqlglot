@@ -30,7 +30,7 @@ from builtins import type as Type
 from sqlglot._typing import GeneratorNoDialectArgs, ParserNoDialectArgs
 
 if t.TYPE_CHECKING:
-    from typing_extensions import Self, Unpack, Concatenate
+    from typing_extensions import Self, Unpack, Concatenate, override
     from sqlglot.dialects.dialect import DialectType
     from sqlglot.expressions.datatypes import DATA_TYPE, DataType, DType, Interval
     from sqlglot.expressions.query import Select
@@ -1190,7 +1190,7 @@ class Expression(Expr):
                 queue.append(v)
 
     def unnest(self) -> Expr:
-        expression = self
+        expression: Expr = self
         while type(expression) is Paren:
             expression = expression.this
         return expression
@@ -1543,6 +1543,24 @@ class Expression(Expr):
 
 IntoType = t.Union[Type[Expr], Collection[Type[Expr]]]
 ExpOrStr = t.Union[int, str, Expr]
+StrOrId = t.Union[str, "Identifier"]
+StarOrId = t.Union["Star", "Identifier"]
+ET = t.TypeVar("ET")
+EE = t.TypeVar("EE")
+
+
+class ExprTyped(Expression, t.Generic[ET, EE]):
+    """Expression with typed "this" (ET) and "expression" (EE) args."""
+
+    @property
+    @override
+    def this(self) -> ET:
+        return super().this
+
+    @property
+    @override
+    def expression(self) -> EE:
+        return super().this
 
 
 @trait
@@ -1690,7 +1708,7 @@ class Column(Expression, Condition):
         return self.name
 
     @property
-    def parts(self) -> list[Identifier | Star]:
+    def parts(self) -> list[StarOrId]:
         """Return the parts of a column in order catalog, db, table, name."""
         return [
             self.args[part] for part in ("catalog", "db", "table", "this") if self.args.get(part)
@@ -1709,7 +1727,7 @@ class Column(Expression, Condition):
         return Dot.build(deepcopy(parts)) if len(parts) > 1 else parts[0]
 
 
-class Literal(Expression, Condition):
+class Literal(ExprTyped[str, None], Condition):
     arg_types = {"this": True, "is_string": True}
     _hash_raw_args = True
     is_primitive = True
@@ -1743,11 +1761,11 @@ class Literal(Expression, Condition):
         return self.this
 
 
-class Var(Expression):
+class Var(ExprTyped[str, None]):
     is_primitive = True
 
 
-class WithinGroup(Expression):
+class WithinGroup(ExprTyped[Expr, t.Optional[Expr]]):
     arg_types = {"this": True, "expression": False}
 
 
@@ -1763,7 +1781,7 @@ class JoinHint(Expression):
     arg_types = {"this": True, "expressions": True}
 
 
-class Identifier(Expression):
+class Identifier(ExprTyped[str, None]):
     arg_types = {"this": True, "quoted": False, "global_": False, "temporary": False}
     is_primitive = True
     _hash_raw_args = True
@@ -1793,7 +1811,7 @@ class Star(Expression):
         return self.name
 
 
-class Parameter(Expression, Condition):
+class Parameter(ExprTyped[Expr, t.Optional[Expr]], Condition):
     arg_types = {"this": True, "expression": False}
 
 
@@ -1869,7 +1887,7 @@ class Kwarg(Expression, Binary):
     """Kwarg in special functions like func(kwarg => y)."""
 
 
-class Alias(Expression):
+class Alias(ExprTyped[Expr, None]):
     arg_types = {"this": True, "alias": False}
 
     @property
@@ -1949,7 +1967,7 @@ class Anonymous(Expression, Func):
         return self.this if isinstance(self.this, str) else self.this.name
 
 
-class AnonymousAggFunc(Expression, AggFunc):
+class AnonymousAggFunc(ExprTyped[StrOrId, None], AggFunc):
     arg_types = {"this": True, "expressions": False}
     is_var_len_args = True
 
@@ -2046,7 +2064,7 @@ class Check(Expression):
     pass
 
 
-class Ordered(Expression):
+class Ordered(ExprTyped[Expr, None]):
     arg_types = {"this": True, "desc": False, "nulls_first": True, "with_fill": False}
 
     @property
@@ -2194,7 +2212,7 @@ class Adjacent(Expression, Binary):
     pass
 
 
-class Unary(Expression, Condition):
+class Unary(ExprTyped[Expr, None], Condition):
     pass
 
 
@@ -2219,15 +2237,15 @@ class Neg(Unary):
         return super().to_py()
 
 
-class AtIndex(Expression):
+class AtIndex(ExprTyped[Expr, Expr]):
     arg_types = {"this": True, "expression": True}
 
 
-class AtTimeZone(Expression):
+class AtTimeZone(ExprTyped[Expr, None]):
     arg_types = {"this": True, "zone": True}
 
 
-class FromTimeZone(Expression):
+class FromTimeZone(ExprTyped[Expr, None]):
     arg_types = {"this": True, "zone": True}
 
 
@@ -2241,7 +2259,7 @@ class FormatPhrase(Expression):
     arg_types = {"this": True, "format": True}
 
 
-class Between(Expression, Predicate):
+class Between(ExprTyped[Expr, None], Predicate):
     arg_types = {"this": True, "low": True, "high": True, "symmetric": False}
 
 
@@ -2249,7 +2267,7 @@ class Distinct(Expression):
     arg_types = {"expressions": False, "on": False}
 
 
-class In(Expression, Predicate):
+class In(ExprTyped[Expr, None], Predicate):
     arg_types = {
         "this": True,
         "expressions": False,
