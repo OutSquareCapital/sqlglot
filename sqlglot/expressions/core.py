@@ -1765,7 +1765,7 @@ class Var(ExprTyped[str, None]):
     is_primitive = True
 
 
-class WithinGroup(ExprTyped[Expr, t.Optional[Expr]]):
+class WithinGroup(ExprTyped[Expr, Expr]):
     arg_types = {"this": True, "expression": False}
 
 
