@@ -1558,7 +1558,7 @@ class ExprTyped(Expression, t.Generic[ET, EE]):
 
     @property
     def expression(self) -> EE:
-        return super().this
+        return super().expression
 
 
 @trait
