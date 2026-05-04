@@ -1581,6 +1581,7 @@ class DuckDBGenerator(generator.Generator):
             f"CAST(STRFTIME({self.sql(e, 'this')}, {self.dialect.DATEINT_FORMAT}) AS INT)"
         ),
         exp.Decode: lambda self, e: encode_decode_sql(self, e, "DECODE", replace=False),
+        exp.HexDecodeString: lambda self, e: self.sql(exp.Decode(this=exp.Unhex(this=e.this))),
         exp.DiToDate: lambda self, e: (
             f"CAST(STRPTIME(CAST({self.sql(e, 'this')} AS TEXT), {self.dialect.DATEINT_FORMAT}) AS DATE)"
         ),
