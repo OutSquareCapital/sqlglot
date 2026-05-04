@@ -87,7 +87,7 @@ class DateBin(ExprTyped[Expr, Expr], Func, IntervalOp):
     arg_types = {"this": True, "expression": True, "unit": False, "zone": False, "origin": False}
 
 
-class DateDiff(ExprTyped[Expr, Expr], Func, TimeUnit):
+class DateDiff(Expression, Func, TimeUnit):
     _sql_names = ["DATEDIFF", "DATE_DIFF"]
     arg_types = {
         "this": True,
@@ -164,7 +164,7 @@ class DatetimeTrunc(ExprTyped[Expr, None], Func, TimeUnit):
     arg_types = {"this": True, "unit": True, "zone": False}
 
 
-class DateTrunc(ExprTyped[Expr, None], Func):
+class DateTrunc(Expression, Func):
     arg_types = {"unit": True, "this": True, "zone": False, "input_type_preserved": False}
 
     def __init__(self, **args):
@@ -301,7 +301,7 @@ class DateFromUnixDate(Expression, Func):
     pass
 
 
-class Datetime(ExprTyped[Expr, t.Optional[Expr]], Func):
+class Datetime(Expression, Func):
     arg_types = {"this": True, "expression": False}
 
 

@@ -201,10 +201,10 @@ class SQLiteGenerator(generator.Generator):
 
     def dateadd_sql(self, expression: exp.DateAdd) -> str:
         modifier = expression.expression
-        modifier = modifier.name if modifier.is_string else self.sql(modifier)
-        unit = expression.args.get("unit")
-        modifier = f"'{modifier} {unit.name}'" if unit else f"'{modifier}'"
-        return self.func("DATE", expression.this, modifier)
+        modifier_name = modifier.name if modifier.is_string else self.sql(modifier)
+        unit: exp.Expr | None = expression.args.get("unit")
+        modifier_name = f"'{modifier_name} {unit.name}'" if unit else f"'{modifier}'"
+        return self.func("DATE", expression.this, modifier_name)
 
     def cast_sql(self, expression: exp.Cast, safe_prefix: str | None = None) -> str:
         if expression.is_type("date"):

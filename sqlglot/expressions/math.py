@@ -162,7 +162,7 @@ class Ln(Expression, Func):
     pass
 
 
-class Log(ExprTyped[Expr, t.Optional[Expr]], Func):
+class Log(Expression, Func):
     arg_types = {"this": True, "expression": False}
 
 

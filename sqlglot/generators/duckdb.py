@@ -1012,7 +1012,9 @@ def _day_navigation_sql(self: DuckDBGenerator, expression: exp.NextDay | exp.Pre
     if isinstance(expression, exp.NextDay):
         # NEXT_DAY: (target_dow - current_dow + 6) % 7 + 1
         days_offset = exp.paren(target_dow - isodow_call + 6, copy=False) % 7 + 1
-        date_with_offset = date_expr + exp.Interval(this=days_offset, unit=exp.var("DAY"))
+        date_with_offset: exp.Binary = date_expr + exp.Interval(
+            this=days_offset, unit=exp.var("DAY")
+        )
     else:  # exp.PreviousDay
         # PREVIOUS_DAY: (current_dow - target_dow + 6) % 7 + 1
         days_offset = exp.paren(isodow_call - target_dow + 6, copy=False) % 7 + 1
