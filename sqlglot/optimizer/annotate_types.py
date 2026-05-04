@@ -66,6 +66,7 @@ def annotate_types(
         schema: Database schema.
         expression_metadata: Maps expression type to corresponding annotation function.
         coerces_to: Maps expression type to set of types that it can be coerced into.
+        dialect: The dialect to consult when constructing a Schema object, if needed.
         overwrite_types: Re-annotate the existing AST types.
 
     Returns:
