@@ -1660,7 +1660,7 @@ class Select(Expression, Query):
         return self.expressions
 
 
-class Subquery(ExprTyped[Query, None], DerivedTable, Query):
+class Subquery(ExprTyped[Selectable, None], DerivedTable, Query):
     is_subquery: t.ClassVar[bool] = True
     arg_types = {
         "this": True,
