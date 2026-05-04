@@ -452,7 +452,7 @@ class With(Expression):
         return bool(self.args.get("recursive"))
 
 
-class CTE(ExprTyped[t.Union[Query, "Values"], None], DerivedTable):
+class CTE(ExprTyped[Selectable, None], DerivedTable):
     arg_types = {
         "this": True,
         "alias": True,
