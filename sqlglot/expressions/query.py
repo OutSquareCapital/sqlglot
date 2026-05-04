@@ -452,7 +452,7 @@ class With(Expression):
         return bool(self.args.get("recursive"))
 
 
-class CTE(ExprTyped[Selectable, None], DerivedTable):
+class CTE(Expression, DerivedTable):
     arg_types = {
         "this": True,
         "alias": True,
