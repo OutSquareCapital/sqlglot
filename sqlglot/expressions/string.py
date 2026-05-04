@@ -64,7 +64,7 @@ class IsAscii(Expression, Func):
     pass
 
 
-class Left(ExprTyped[Expr, Expr], Func):
+class Left(Expression, Func):
     arg_types = {"this": True, "expression": True, "negative_length_returns_empty": False}
 
 
@@ -120,7 +120,7 @@ class Reverse(Expression, Func):
     pass
 
 
-class Right(ExprTyped[Expr, Expr], Func):
+class Right(Expression, Func):
     arg_types = {"this": True, "expression": True, "negative_length_returns_empty": False}
 
 
