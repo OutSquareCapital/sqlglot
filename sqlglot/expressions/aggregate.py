@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
-from sqlglot.expressions.core import Expression, Func, AggFunc, Binary
+import typing as t
+
+from sqlglot.expressions.core import Expression, Expr, ExprTyped, Func, AggFunc, Binary
 
 
-class AIAgg(Expression, AggFunc):
+class AIAgg(ExprTyped[Expr, Expr], AggFunc):
     arg_types = {"this": True, "expression": True}
     _sql_names = ["AI_AGG"]
 
@@ -34,41 +36,41 @@ class ApproxPercentileEstimate(Expression, Func):
     arg_types = {"this": True, "percentile": True}
 
 
-class ApproxQuantiles(Expression, AggFunc):
+class ApproxQuantiles(ExprTyped[Expr, t.Optional[Expr]], AggFunc):
     arg_types = {"this": True, "expression": False}
 
 
-class ApproxTopK(Expression, AggFunc):
+class ApproxTopK(ExprTyped[Expr, t.Optional[Expr]], AggFunc):
     arg_types = {"this": True, "expression": False, "counters": False}
 
 
-class ApproxTopKAccumulate(Expression, AggFunc):
+class ApproxTopKAccumulate(ExprTyped[Expr, t.Optional[Expr]], AggFunc):
     arg_types = {"this": True, "expression": False}
 
 
-class ApproxTopKCombine(Expression, AggFunc):
+class ApproxTopKCombine(ExprTyped[Expr, t.Optional[Expr]], AggFunc):
     arg_types = {"this": True, "expression": False}
 
 
-class ApproxTopKEstimate(Expression, Func):
+class ApproxTopKEstimate(ExprTyped[Expr, t.Optional[Expr]], Func):
     arg_types = {"this": True, "expression": False}
 
 
-class ApproxTopSum(Expression, AggFunc):
+class ApproxTopSum(ExprTyped[Expr, Expr], AggFunc):
     arg_types = {"this": True, "expression": True, "count": True}
 
 
-class ArgMax(Expression, AggFunc):
+class ArgMax(ExprTyped[Expr, Expr], AggFunc):
     arg_types = {"this": True, "expression": True, "count": False}
     _sql_names = ["ARG_MAX", "ARGMAX", "MAX_BY"]
 
 
-class ArgMin(Expression, AggFunc):
+class ArgMin(ExprTyped[Expr, Expr], AggFunc):
     arg_types = {"this": True, "expression": True, "count": False}
     _sql_names = ["ARG_MIN", "ARGMIN", "MIN_BY"]
 
 
-class ArrayAgg(Expression, AggFunc):
+class ArrayAgg(ExprTyped[Expr, None], AggFunc):
     arg_types = {"this": True, "nulls_excluded": False}
 
 
@@ -104,11 +106,11 @@ class CountIf(Expression, AggFunc):
     _sql_names = ["COUNT_IF", "COUNTIF"]
 
 
-class CovarPop(Expression, AggFunc):
+class CovarPop(ExprTyped[Expr, Expr], AggFunc):
     arg_types = {"this": True, "expression": True}
 
 
-class CovarSamp(Expression, AggFunc):
+class CovarSamp(ExprTyped[Expr, Expr], AggFunc):
     arg_types = {"this": True, "expression": True}
 
 
@@ -122,7 +124,7 @@ class DenseRank(Expression, AggFunc):
     is_var_len_args = True
 
 
-class First(Expression, AggFunc):
+class First(ExprTyped[Expr, t.Optional[Expr]], AggFunc):
     arg_types = {"this": True, "expression": False}
 
 
@@ -130,7 +132,7 @@ class FirstValue(Expression, AggFunc):
     pass
 
 
-class GroupConcat(Expression, AggFunc):
+class GroupConcat(ExprTyped[Expr, None], AggFunc):
     arg_types = {"this": True, "separator": False, "on_overflow": False}
 
 
@@ -148,11 +150,11 @@ class Kurtosis(Expression, AggFunc):
     pass
 
 
-class Lag(Expression, AggFunc):
+class Lag(ExprTyped[Expr, None], AggFunc):
     arg_types = {"this": True, "offset": False, "default": False}
 
 
-class Last(Expression, AggFunc):
+class Last(ExprTyped[Expr, t.Optional[Expr]], AggFunc):
     arg_types = {"this": True, "expression": False}
 
 
@@ -160,7 +162,7 @@ class LastValue(Expression, AggFunc):
     pass
 
 
-class Lead(Expression, AggFunc):
+class Lead(ExprTyped[Expr, None], AggFunc):
     arg_types = {"this": True, "offset": False, "default": False}
 
 
@@ -172,7 +174,7 @@ class LogicalOr(Expression, AggFunc):
     _sql_names = ["LOGICAL_OR", "BOOL_OR", "BOOLOR_AGG"]
 
 
-class Max(Expression, AggFunc):
+class Max(ExprTyped[Expr, None], AggFunc):
     arg_types = {"this": True, "expressions": False}
     is_var_len_args = True
 
@@ -181,12 +183,12 @@ class Median(Expression, AggFunc):
     pass
 
 
-class Min(Expression, AggFunc):
+class Min(ExprTyped[Expr, None], AggFunc):
     arg_types = {"this": True, "expressions": False}
     is_var_len_args = True
 
 
-class Minhash(Expression, AggFunc):
+class Minhash(ExprTyped[Expr, None], AggFunc):
     arg_types = {"this": True, "expressions": True}
     is_var_len_args = True
 
@@ -203,19 +205,19 @@ class Ntile(Expression, AggFunc):
     arg_types = {"this": False}
 
 
-class NthValue(Expression, AggFunc):
+class NthValue(ExprTyped[Expr, None], AggFunc):
     arg_types = {"this": True, "offset": True, "from_first": False}
 
 
-class ObjectAgg(Expression, AggFunc):
+class ObjectAgg(ExprTyped[Expr, Expr], AggFunc):
     arg_types = {"this": True, "expression": True}
 
 
-class PercentileCont(Expression, AggFunc):
+class PercentileCont(ExprTyped[Expr, t.Optional[Expr]], AggFunc):
     arg_types = {"this": True, "expression": False}
 
 
-class PercentileDisc(Expression, AggFunc):
+class PercentileDisc(ExprTyped[Expr, t.Optional[Expr]], AggFunc):
     arg_types = {"this": True, "expression": False}
 
 
@@ -227,7 +229,7 @@ class PercentRank(Expression, AggFunc):
     is_var_len_args = True
 
 
-class Quantile(Expression, AggFunc):
+class Quantile(ExprTyped[Expr, None], AggFunc):
     arg_types = {"this": True, "quantile": True}
 
 
@@ -246,47 +248,47 @@ class Rank(Expression, AggFunc):
     is_var_len_args = True
 
 
-class RegrAvgx(Expression, AggFunc):
+class RegrAvgx(ExprTyped[Expr, Expr], AggFunc):
     arg_types = {"this": True, "expression": True}
 
 
-class RegrAvgy(Expression, AggFunc):
+class RegrAvgy(ExprTyped[Expr, Expr], AggFunc):
     arg_types = {"this": True, "expression": True}
 
 
-class RegrCount(Expression, AggFunc):
+class RegrCount(ExprTyped[Expr, Expr], AggFunc):
     arg_types = {"this": True, "expression": True}
 
 
-class RegrIntercept(Expression, AggFunc):
+class RegrIntercept(ExprTyped[Expr, Expr], AggFunc):
     arg_types = {"this": True, "expression": True}
 
 
-class RegrR2(Expression, AggFunc):
+class RegrR2(ExprTyped[Expr, Expr], AggFunc):
     arg_types = {"this": True, "expression": True}
 
 
-class RegrSlope(Expression, AggFunc):
+class RegrSlope(ExprTyped[Expr, Expr], AggFunc):
     arg_types = {"this": True, "expression": True}
 
 
-class RegrSxx(Expression, AggFunc):
+class RegrSxx(ExprTyped[Expr, Expr], AggFunc):
     arg_types = {"this": True, "expression": True}
 
 
-class RegrSxy(Expression, AggFunc):
+class RegrSxy(ExprTyped[Expr, Expr], AggFunc):
     arg_types = {"this": True, "expression": True}
 
 
-class RegrSyy(Expression, AggFunc):
+class RegrSyy(ExprTyped[Expr, Expr], AggFunc):
     arg_types = {"this": True, "expression": True}
 
 
-class RegrValx(Expression, AggFunc):
+class RegrValx(ExprTyped[Expr, Expr], AggFunc):
     arg_types = {"this": True, "expression": True}
 
 
-class RegrValy(Expression, AggFunc):
+class RegrValy(ExprTyped[Expr, Expr], AggFunc):
     arg_types = {"this": True, "expression": True}
 
 

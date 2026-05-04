@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from sqlglot.expressions.core import Expression, Func, Binary
+import typing as t
+
+from sqlglot.expressions.core import Expression, Expr, ExprTyped, Func, Binary
 
 
 # String basics
@@ -35,26 +37,26 @@ class ConcatWs(Concat):
     _sql_names = ["CONCAT_WS"]
 
 
-class Contains(Expression, Func):
+class Contains(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True, "json_scope": False}
 
 
-class Elt(Expression, Func):
+class Elt(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "expressions": True}
     is_var_len_args = True
 
 
-class EndsWith(Expression, Func):
+class EndsWith(ExprTyped[Expr, Expr], Func):
     _sql_names = ["ENDS_WITH", "ENDSWITH"]
     arg_types = {"this": True, "expression": True}
 
 
-class Format(Expression, Func):
+class Format(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "expressions": False}
     is_var_len_args = True
 
 
-class Initcap(Expression, Func):
+class Initcap(ExprTyped[Expr, t.Optional[Expr]], Func):
     arg_types = {"this": True, "expression": False}
 
 
@@ -62,11 +64,11 @@ class IsAscii(Expression, Func):
     pass
 
 
-class Left(Expression, Func):
+class Left(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True, "negative_length_returns_empty": False}
 
 
-class Length(Expression, Func):
+class Length(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "binary": False, "encoding": False}
     _sql_names = ["LENGTH", "LEN", "CHAR_LENGTH", "CHARACTER_LENGTH"]
 
@@ -90,27 +92,27 @@ class MatchAgainst(Expression, Func):
     arg_types = {"this": True, "expressions": True, "modifier": False}
 
 
-class Normalize(Expression, Func):
+class Normalize(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "form": False, "is_casefold": False}
 
 
-class NumberToStr(Expression, Func):
+class NumberToStr(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "format": True, "culture": False}
 
 
-class Overlay(Expression, Func):
+class Overlay(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True, "from_": True, "for_": False}
 
 
-class Pad(Expression, Func):
+class Pad(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True, "fill_pattern": False, "is_left": True}
 
 
-class Repeat(Expression, Func):
+class Repeat(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "times": True}
 
 
-class Replace(Expression, Func):
+class Replace(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True, "replacement": False}
 
 
@@ -118,7 +120,7 @@ class Reverse(Expression, Func):
     pass
 
 
-class Right(Expression, Func):
+class Right(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True, "negative_length_returns_empty": False}
 
 
@@ -126,7 +128,7 @@ class RtrimmedLength(Expression, Func):
     pass
 
 
-class Search(Expression, Func):
+class Search(ExprTyped[Expr, Expr], Func):
     arg_types = {
         "this": True,  # data_to_search / search_data
         "expression": True,  # search_query / search_string
@@ -137,7 +139,7 @@ class Search(Expression, Func):
     }
 
 
-class SearchIp(Expression, Func):
+class SearchIp(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
@@ -157,7 +159,7 @@ class Space(Expression, Func):
     pass
 
 
-class Split(Expression, Func):
+class Split(ExprTyped[Expr, Expr], Func):
     arg_types = {
         "this": True,
         "expression": True,
@@ -185,12 +187,12 @@ class Strtok(Expression, Func):
     }
 
 
-class StartsWith(Expression, Func):
+class StartsWith(ExprTyped[Expr, Expr], Func):
     _sql_names = ["STARTS_WITH", "STARTSWITH"]
     arg_types = {"this": True, "expression": True}
 
 
-class StrPosition(Expression, Func):
+class StrPosition(ExprTyped[Expr, None], Func):
     arg_types = {
         "this": True,
         "substr": True,
@@ -209,21 +211,21 @@ class StrToMap(Expression, Func):
     }
 
 
-class String(Expression, Func):
+class String(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "zone": False}
 
 
-class Stuff(Expression, Func):
+class Stuff(ExprTyped[Expr, Expr], Func):
     _sql_names = ["STUFF", "INSERT"]
     arg_types = {"this": True, "start": True, "length": True, "expression": True}
 
 
-class Substring(Expression, Func):
+class Substring(ExprTyped[Expr, None], Func):
     _sql_names = ["SUBSTRING", "SUBSTR"]
     arg_types = {"this": True, "start": False, "length": False, "zero_start": False}
 
 
-class SubstringIndex(Expression, Func):
+class SubstringIndex(ExprTyped[Expr, None], Func):
     """
     SUBSTRING_INDEX(str, delim, count)
 
@@ -234,11 +236,11 @@ class SubstringIndex(Expression, Func):
     arg_types = {"this": True, "delimiter": True, "count": True}
 
 
-class Translate(Expression, Func):
+class Translate(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "from_": True, "to": True}
 
 
-class Trim(Expression, Func):
+class Trim(ExprTyped[Expr, t.Optional[Expr]], Func):
     arg_types = {
         "this": True,
         "expression": False,
@@ -247,7 +249,7 @@ class Trim(Expression, Func):
     }
 
 
-class Unicode(Expression, Func):
+class Unicode(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "empty_is_zero": False}
 
 
@@ -290,7 +292,7 @@ class Encode(Expression, Func):
     arg_types = {"this": True, "charset": True}
 
 
-class FromBase(Expression, Func):
+class FromBase(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
@@ -370,7 +372,7 @@ class ToFile(Expression, Func):
     }
 
 
-class ToNumber(Expression, Func):
+class ToNumber(ExprTyped[Expr, None], Func):
     arg_types = {
         "this": True,
         "format": False,
@@ -405,14 +407,14 @@ class TryToDecfloat(Expression, Func):
     }
 
 
-class Unhex(Expression, Func):
+class Unhex(ExprTyped[Expr, t.Optional[Expr]], Func):
     arg_types = {"this": True, "expression": False}
 
 
 # Regex
 
 
-class RegexpCount(Expression, Func):
+class RegexpCount(ExprTyped[Expr, Expr], Func):
     arg_types = {
         "this": True,
         "expression": True,
@@ -421,7 +423,7 @@ class RegexpCount(Expression, Func):
     }
 
 
-class RegexpExtract(Expression, Func):
+class RegexpExtract(ExprTyped[Expr, Expr], Func):
     arg_types = {
         "this": True,
         "expression": True,
@@ -433,7 +435,7 @@ class RegexpExtract(Expression, Func):
     }
 
 
-class RegexpExtractAll(Expression, Func):
+class RegexpExtractAll(ExprTyped[Expr, Expr], Func):
     arg_types = {
         "this": True,
         "expression": True,
@@ -452,7 +454,7 @@ class RegexpILike(Expression, Binary, Func):
     arg_types = {"this": True, "expression": True, "flag": False}
 
 
-class RegexpInstr(Expression, Func):
+class RegexpInstr(ExprTyped[Expr, Expr], Func):
     arg_types = {
         "this": True,
         "expression": True,
@@ -464,7 +466,7 @@ class RegexpInstr(Expression, Func):
     }
 
 
-class RegexpReplace(Expression, Func):
+class RegexpReplace(ExprTyped[Expr, Expr], Func):
     arg_types = {
         "this": True,
         "expression": True,
@@ -476,7 +478,7 @@ class RegexpReplace(Expression, Func):
     }
 
 
-class RegexpSplit(Expression, Func):
+class RegexpSplit(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True, "limit": False}
 
 
@@ -487,7 +489,7 @@ class Compress(Expression, Func):
     arg_types = {"this": True, "method": False}
 
 
-class Decrypt(Expression, Func):
+class Decrypt(ExprTyped[Expr, None], Func):
     arg_types = {
         "this": True,
         "passphrase": True,
@@ -497,7 +499,7 @@ class Decrypt(Expression, Func):
     }
 
 
-class DecryptRaw(Expression, Func):
+class DecryptRaw(ExprTyped[Expr, None], Func):
     arg_types = {
         "this": True,
         "key": True,
@@ -509,11 +511,11 @@ class DecryptRaw(Expression, Func):
     }
 
 
-class DecompressBinary(Expression, Func):
+class DecompressBinary(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "method": True}
 
 
-class DecompressString(Expression, Func):
+class DecompressString(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "method": True}
 
 

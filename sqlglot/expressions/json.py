@@ -2,10 +2,20 @@
 
 from __future__ import annotations
 
-from sqlglot.expressions.core import Expression, Func, AggFunc, Binary, Predicate
+import typing as t
+
+from sqlglot.expressions.core import (
+    Expression,
+    Expr,
+    ExprTyped,
+    Func,
+    AggFunc,
+    Binary,
+    Predicate,
+)
 
 
-class CheckJson(Expression, Func):
+class CheckJson(ExprTyped[Expr, None], Func):
     arg_types = {"this": True}
 
 
@@ -19,7 +29,7 @@ class JSONArray(Expression, Func):
     is_var_len_args = True
 
 
-class JSONArrayAgg(Expression, AggFunc):
+class JSONArrayAgg(ExprTyped[Expr, None], AggFunc):
     arg_types = {
         "this": True,
         "order": False,
@@ -29,7 +39,7 @@ class JSONArrayAgg(Expression, AggFunc):
     }
 
 
-class JSONArrayAppend(Expression, Func):
+class JSONArrayAppend(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "expressions": True}
     is_var_len_args = True
     _sql_names = ["JSON_ARRAY_APPEND"]
@@ -62,7 +72,7 @@ class JSONBDeleteAtPath(Expression, Binary, Func):
     pass
 
 
-class JSONBExists(Expression, Func):
+class JSONBExists(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "path": True}
     _sql_names = ["JSONB_EXISTS"]
 
@@ -84,7 +94,7 @@ class JSONBool(Expression, Func):
     pass
 
 
-class JSONExists(Expression, Func):
+class JSONExists(ExprTyped[Expr, None], Func):
     arg_types = {
         "this": True,
         "path": True,
@@ -143,13 +153,13 @@ class JSONFormat(Expression, Func):
     _sql_names = ["JSON_FORMAT"]
 
 
-class JSONKeys(Expression, Func):
+class JSONKeys(ExprTyped[Expr, t.Optional[Expr]], Func):
     arg_types = {"this": True, "expression": False, "expressions": False}
     is_var_len_args = True
     _sql_names = ["JSON_KEYS"]
 
 
-class JSONKeysAtDepth(Expression, Func):
+class JSONKeysAtDepth(ExprTyped[Expr, t.Optional[Expr]], Func):
     arg_types = {"this": True, "expression": False, "mode": False}
 
 
@@ -173,19 +183,19 @@ class JSONObjectAgg(Expression, AggFunc):
     }
 
 
-class JSONRemove(Expression, Func):
+class JSONRemove(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "expressions": True}
     is_var_len_args = True
     _sql_names = ["JSON_REMOVE"]
 
 
-class JSONSet(Expression, Func):
+class JSONSet(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "expressions": True}
     is_var_len_args = True
     _sql_names = ["JSON_SET"]
 
 
-class JSONStripNulls(Expression, Func):
+class JSONStripNulls(ExprTyped[Expr, t.Optional[Expr]], Func):
     arg_types = {
         "this": True,
         "expression": False,
@@ -209,16 +219,16 @@ class JSONTable(Expression, Func):
     }
 
 
-class JSONType(Expression, Func):
+class JSONType(ExprTyped[Expr, t.Optional[Expr]], Func):
     arg_types = {"this": True, "expression": False}
     _sql_names = ["JSON_TYPE"]
 
 
-class ObjectId(Expression, Func):
+class ObjectId(ExprTyped[Expr, t.Optional[Expr]], Func):
     arg_types = {"this": True, "expression": False}
 
 
-class ObjectInsert(Expression, Func):
+class ObjectInsert(ExprTyped[Expr, None], Func):
     arg_types = {
         "this": True,
         "key": True,

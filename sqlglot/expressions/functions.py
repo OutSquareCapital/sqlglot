@@ -6,6 +6,8 @@ import typing as t
 
 from sqlglot.expressions.core import (
     Expression,
+    Expr,
+    ExprTyped,
     Func,
     Binary,
     SubqueryPredicate,
@@ -31,7 +33,7 @@ if t.TYPE_CHECKING:
 # Cast / type conversion
 
 
-class Cast(Expression, Func):
+class Cast(ExprTyped[Expr, None], Func):
     is_cast: t.ClassVar[bool] = True
     arg_types = {
         "this": True,
@@ -81,14 +83,14 @@ class CastToStrType(Expression, Func):
     arg_types = {"this": True, "to": True}
 
 
-class Convert(Expression, Func):
+class Convert(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True, "style": False, "safe": False}
 
 
 # Conditional
 
 
-class If(Expression, Func):
+class If(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "true": True, "false": False}
     _sql_names = ["IF", "IIF"]
 
@@ -119,7 +121,7 @@ class Case(Expression, Func):
         return instance
 
 
-class Coalesce(Expression, Func):
+class Coalesce(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "expressions": False, "is_nvl": False, "is_null": False}
     is_var_len_args = True
     _sql_names = ["COALESCE", "IFNULL", "NVL"]
@@ -134,17 +136,17 @@ class EqualNull(Expression, Func):
     arg_types = {"this": True, "expression": True}
 
 
-class Greatest(Expression, Func):
+class Greatest(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "expressions": False, "ignore_nulls": True}
     is_var_len_args = True
 
 
-class Least(Expression, Func):
+class Least(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "expressions": False, "ignore_nulls": True}
     is_var_len_args = True
 
 
-class Nullif(Expression, Func):
+class Nullif(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
@@ -175,14 +177,14 @@ class CheckXml(Expression, Func):
     arg_types = {"this": True, "disable_auto_convert": False}
 
 
-class Exists(Expression, Func, SubqueryPredicate):
+class Exists(ExprTyped[Expr, t.Optional[Expr]], Func, SubqueryPredicate):
     arg_types = {"this": True, "expression": False}
 
 
 # Type coercions / lax types
 
 
-class Float64(Expression, Func):
+class Float64(ExprTyped[Expr, t.Optional[Expr]], Func):
     arg_types = {"this": True, "expression": False}
 
 

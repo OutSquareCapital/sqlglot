@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from sqlglot.expressions.core import Expression, Func, AggFunc
+import typing as t
+
+from sqlglot.expressions.core import Expression, Expr, ExprTyped, Func, AggFunc
 
 
 # Trigonometric
@@ -24,7 +26,7 @@ class Asinh(Expression, Func):
     pass
 
 
-class Atan(Expression, Func):
+class Atan(ExprTyped[Expr, t.Optional[Expr]], Func):
     arg_types = {"this": True, "expression": False}
 
 
@@ -32,7 +34,7 @@ class Atanh(Expression, Func):
     pass
 
 
-class Atan2(Expression, Func):
+class Atan2(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
@@ -95,19 +97,19 @@ class Tanh(Expression, Func):
 # Geometric distance / similarity
 
 
-class CosineDistance(Expression, Func):
+class CosineDistance(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
-class DotProduct(Expression, Func):
+class DotProduct(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
-class EuclideanDistance(Expression, Func):
+class EuclideanDistance(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
-class JarowinklerSimilarity(Expression, Func):
+class JarowinklerSimilarity(ExprTyped[Expr, Expr], Func):
     arg_types = {
         "this": True,
         "expression": True,
@@ -116,7 +118,7 @@ class JarowinklerSimilarity(Expression, Func):
     }
 
 
-class ManhattanDistance(Expression, Func):
+class ManhattanDistance(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
@@ -131,7 +133,7 @@ class Cbrt(Expression, Func):
     pass
 
 
-class Ceil(Expression, Func):
+class Ceil(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "decimals": False, "to": False}
     _sql_names = ["CEIL", "CEILING"]
 
@@ -144,7 +146,7 @@ class Factorial(Expression, Func):
     pass
 
 
-class Floor(Expression, Func):
+class Floor(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "decimals": False, "to": False}
 
 
@@ -160,7 +162,7 @@ class Ln(Expression, Func):
     pass
 
 
-class Log(Expression, Func):
+class Log(ExprTyped[Expr, t.Optional[Expr]], Func):
     arg_types = {"this": True, "expression": False}
 
 
@@ -168,7 +170,7 @@ class Pi(Expression, Func):
     arg_types = {}
 
 
-class Round(Expression, Func):
+class Round(ExprTyped[Expr, None], Func):
     arg_types = {
         "this": True,
         "decimals": False,
@@ -185,7 +187,7 @@ class Sqrt(Expression, Func):
     pass
 
 
-class Trunc(Expression, Func):
+class Trunc(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "decimals": False, "fractions_supported": False}
     _sql_names = ["TRUNC", "TRUNCATE"]
 
@@ -193,15 +195,15 @@ class Trunc(Expression, Func):
 # Safe arithmetic
 
 
-class SafeAdd(Expression, Func):
+class SafeAdd(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
-class SafeDivide(Expression, Func):
+class SafeDivide(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
-class SafeMultiply(Expression, Func):
+class SafeMultiply(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
@@ -209,7 +211,7 @@ class SafeNegate(Expression, Func):
     pass
 
 
-class SafeSubtract(Expression, Func):
+class SafeSubtract(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
@@ -252,15 +254,15 @@ class BitmapOrAgg(Expression, AggFunc):
     pass
 
 
-class Booland(Expression, Func):
+class Booland(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True, "round_input": False}
 
 
-class Boolnot(Expression, Func):
+class Boolnot(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "round_input": False}
 
 
-class Boolor(Expression, Func):
+class Boolor(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True, "round_input": False}
 
 
@@ -268,7 +270,7 @@ class BoolxorAgg(Expression, AggFunc):
     pass
 
 
-class Getbit(Expression, Func):
+class Getbit(ExprTyped[Expr, Expr], Func):
     _sql_names = ["GETBIT", "GET_BIT"]
     # zero_is_msb means the most significant bit is indexed 0
     arg_types = {"this": True, "expression": True, "zero_is_msb": False}

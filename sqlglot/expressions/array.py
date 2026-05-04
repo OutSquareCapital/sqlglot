@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import typing as t
 
 from sqlglot.expressions.core import (
     Expression,
     Expr,
+    ExprTyped,
     Func,
     Binary,
     to_identifier,
@@ -43,7 +45,7 @@ class ToArray(Expression, Func):
 # Array manipulation
 
 
-class ArrayAppend(Expression, Func):
+class ArrayAppend(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True, "null_propagation": False}
 
 
@@ -57,7 +59,7 @@ class ArrayConcat(Expression, Func):
     is_var_len_args = True
 
 
-class ArrayFilter(Expression, Func):
+class ArrayFilter(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
     _sql_names = ["FILTER", "ARRAY_FILTER"]
 
@@ -66,15 +68,15 @@ class ArrayInsert(Expression, Func):
     arg_types = {"this": True, "position": True, "expression": True, "offset": False}
 
 
-class ArrayPrepend(Expression, Func):
+class ArrayPrepend(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True, "null_propagation": False}
 
 
-class ArrayRemove(Expression, Func):
+class ArrayRemove(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True, "null_propagation": False}
 
 
-class ArrayRemoveAt(Expression, Func):
+class ArrayRemoveAt(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "position": True}
 
 
@@ -86,7 +88,7 @@ class ArraySlice(Expression, Func):
     arg_types = {"this": True, "start": True, "end": False, "step": False, "zero_based": False}
 
 
-class ArraySort(Expression, Func):
+class ArraySort(ExprTyped[Expr, t.Optional[Expr]], Func):
     arg_types = {"this": True, "expression": False}
 
 
@@ -97,11 +99,11 @@ class SortArray(Expression, Func):
 # Array predicates / search
 
 
-class ArrayAll(Expression, Func):
+class ArrayAll(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
-class ArrayAny(Expression, Func):
+class ArrayAny(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
@@ -114,7 +116,7 @@ class ArrayContainsAll(Expression, Binary, Func):
     _sql_names = ["ARRAY_CONTAINS_ALL", "ARRAY_HAS_ALL"]
 
 
-class ArrayExcept(Expression, Func):
+class ArrayExcept(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True, "is_multiset": False}
 
 
@@ -135,11 +137,11 @@ class ArrayPosition(Expression, Binary, Func):
 # Array properties
 
 
-class ArrayDistinct(Expression, Func):
+class ArrayDistinct(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "check_null": False}
 
 
-class ArrayFirst(Expression, Func):
+class ArrayFirst(ExprTyped[Expr, t.Optional[Expr]], Func):
     arg_types = {"this": True, "expression": False}
 
 
@@ -155,12 +157,12 @@ class ArrayMin(Expression, Func):
     pass
 
 
-class ArraySize(Expression, Func):
+class ArraySize(ExprTyped[Expr, t.Optional[Expr]], Func):
     arg_types = {"this": True, "expression": False}
     _sql_names = ["ARRAY_SIZE", "ARRAY_LENGTH"]
 
 
-class ArraySum(Expression, Func):
+class ArraySum(ExprTyped[Expr, t.Optional[Expr]], Func):
     arg_types = {"this": True, "expression": False}
 
 
@@ -172,7 +174,7 @@ class ArraysZip(Expression, Func):
     is_var_len_args = True
 
 
-class ArrayToString(Expression, Func):
+class ArrayToString(ExprTyped[Expr, Expr], Func):
     arg_types = {
         "this": True,
         "expression": True,
@@ -187,19 +189,19 @@ class Flatten(Expression, Func):
     pass
 
 
-class StringToArray(Expression, Func):
+class StringToArray(ExprTyped[Expr, t.Optional[Expr]], Func):
     arg_types = {"this": True, "expression": False, "null": False}
     _sql_names = ["STRING_TO_ARRAY", "SPLIT_BY_STRING"]
 
 
-class StrtokToArray(Expression, Func):
+class StrtokToArray(ExprTyped[Expr, t.Optional[Expr]], Func):
     arg_types = {"this": True, "expression": False}
 
 
 # Higher-order / lambda
 
 
-class Apply(Expression, Func):
+class Apply(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
@@ -207,7 +209,7 @@ class Reduce(Expression, Func):
     arg_types = {"this": True, "initial": True, "merge": True, "finish": False}
 
 
-class Transform(Expression, Func):
+class Transform(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
@@ -290,7 +292,7 @@ class Map(Expression, Func):
         return values.expressions if values else []
 
 
-class MapCat(Expression, Func):
+class MapCat(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
@@ -307,7 +309,7 @@ class MapFromEntries(Expression, Func):
     pass
 
 
-class MapInsert(Expression, Func):
+class MapInsert(ExprTyped[Expr, None], Func):
     arg_types = {"this": True, "key": False, "value": True, "update_flag": False}
 
 
@@ -353,17 +355,17 @@ class Struct(Expression, Func):
     is_var_len_args = True
 
 
-class StructExtract(Expression, Func):
+class StructExtract(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
 # Geospatial
 
 
-class StDistance(Expression, Func):
+class StDistance(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True, "use_spheroid": False}
 
 
-class StPoint(Expression, Func):
+class StPoint(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True, "null": False}
     _sql_names = ["ST_POINT", "ST_MAKEPOINT"]

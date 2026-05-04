@@ -6,6 +6,8 @@ import typing as t
 
 from sqlglot.expressions.core import (
     Expression,
+    Expr,
+    ExprTyped,
     Func,
     TimeUnit,
     IntervalOp,
@@ -16,7 +18,7 @@ from sqlglot.expressions.core import (
 from sqlglot.expressions.datatypes import DataType, DType
 
 if t.TYPE_CHECKING:
-    from sqlglot.expressions.core import Expr, Neg
+    from sqlglot.expressions.core import Neg
 
 
 # Current date/time
@@ -73,19 +75,19 @@ class UtcTimestamp(Expression, Func):
 # Date arithmetic
 
 
-class AddMonths(Expression, Func):
+class AddMonths(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True, "preserve_end_of_month": False}
 
 
-class DateAdd(Expression, Func, IntervalOp):
+class DateAdd(ExprTyped[Expr, Expr], Func, IntervalOp):
     arg_types = {"this": True, "expression": True, "unit": False}
 
 
-class DateBin(Expression, Func, IntervalOp):
+class DateBin(ExprTyped[Expr, Expr], Func, IntervalOp):
     arg_types = {"this": True, "expression": True, "unit": False, "zone": False, "origin": False}
 
 
-class DateDiff(Expression, Func, TimeUnit):
+class DateDiff(ExprTyped[Expr, Expr], Func, TimeUnit):
     _sql_names = ["DATEDIFF", "DATE_DIFF"]
     arg_types = {
         "this": True,
@@ -97,52 +99,52 @@ class DateDiff(Expression, Func, TimeUnit):
     }
 
 
-class DateSub(Expression, Func, IntervalOp):
+class DateSub(ExprTyped[Expr, Expr], Func, IntervalOp):
     arg_types = {"this": True, "expression": True, "unit": False}
 
 
-class DatetimeAdd(Expression, Func, IntervalOp):
+class DatetimeAdd(ExprTyped[Expr, Expr], Func, IntervalOp):
     arg_types = {"this": True, "expression": True, "unit": False}
 
 
-class DatetimeDiff(Expression, Func, TimeUnit):
+class DatetimeDiff(ExprTyped[Expr, Expr], Func, TimeUnit):
     arg_types = {"this": True, "expression": True, "unit": False}
 
 
-class DatetimeSub(Expression, Func, IntervalOp):
+class DatetimeSub(ExprTyped[Expr, Expr], Func, IntervalOp):
     arg_types = {"this": True, "expression": True, "unit": False}
 
 
-class MonthsBetween(Expression, Func):
+class MonthsBetween(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True, "roundoff": False}
 
 
-class TimeAdd(Expression, Func, TimeUnit):
+class TimeAdd(ExprTyped[Expr, Expr], Func, TimeUnit):
     arg_types = {"this": True, "expression": True, "unit": False}
 
 
-class TimeDiff(Expression, Func, TimeUnit):
+class TimeDiff(ExprTyped[Expr, Expr], Func, TimeUnit):
     arg_types = {"this": True, "expression": True, "unit": False}
 
 
-class TimeSub(Expression, Func, TimeUnit):
+class TimeSub(ExprTyped[Expr, Expr], Func, TimeUnit):
     arg_types = {"this": True, "expression": True, "unit": False}
 
 
-class TimestampAdd(Expression, Func, TimeUnit):
+class TimestampAdd(ExprTyped[Expr, Expr], Func, TimeUnit):
     arg_types = {"this": True, "expression": True, "unit": False}
 
 
-class TimestampDiff(Expression, Func, TimeUnit):
+class TimestampDiff(ExprTyped[Expr, Expr], Func, TimeUnit):
     _sql_names = ["TIMESTAMPDIFF", "TIMESTAMP_DIFF"]
     arg_types = {"this": True, "expression": True, "unit": False}
 
 
-class TimestampSub(Expression, Func, TimeUnit):
+class TimestampSub(ExprTyped[Expr, Expr], Func, TimeUnit):
     arg_types = {"this": True, "expression": True, "unit": False}
 
 
-class TsOrDsAdd(Expression, Func, TimeUnit):
+class TsOrDsAdd(ExprTyped[Expr, Expr], Func, TimeUnit):
     # return_type is used to correctly cast the arguments of this expression when transpiling it
     arg_types = {"this": True, "expression": True, "unit": False, "return_type": False}
 
@@ -151,18 +153,18 @@ class TsOrDsAdd(Expression, Func, TimeUnit):
         return DataType.build(self.args.get("return_type") or DType.DATE)
 
 
-class TsOrDsDiff(Expression, Func, TimeUnit):
+class TsOrDsDiff(ExprTyped[Expr, Expr], Func, TimeUnit):
     arg_types = {"this": True, "expression": True, "unit": False}
 
 
 # Truncation
 
 
-class DatetimeTrunc(Expression, Func, TimeUnit):
+class DatetimeTrunc(ExprTyped[Expr, None], Func, TimeUnit):
     arg_types = {"this": True, "unit": True, "zone": False}
 
 
-class DateTrunc(Expression, Func):
+class DateTrunc(ExprTyped[Expr, None], Func):
     arg_types = {"unit": True, "this": True, "zone": False, "input_type_preserved": False}
 
     def __init__(self, **args):
@@ -187,15 +189,15 @@ class DateTrunc(Expression, Func):
         return self.args["unit"]
 
 
-class TimestampTrunc(Expression, Func, TimeUnit):
+class TimestampTrunc(ExprTyped[Expr, None], Func, TimeUnit):
     arg_types = {"this": True, "unit": True, "zone": False, "input_type_preserved": False}
 
 
-class TimeSlice(Expression, Func, TimeUnit):
+class TimeSlice(ExprTyped[Expr, Expr], Func, TimeUnit):
     arg_types = {"this": True, "expression": True, "unit": True, "kind": False}
 
 
-class TimeTrunc(Expression, Func, TimeUnit):
+class TimeTrunc(ExprTyped[Expr, None], Func, TimeUnit):
     arg_types = {"this": True, "unit": True, "zone": False}
 
 
@@ -226,11 +228,11 @@ class Dayname(Expression, Func):
     arg_types = {"this": True, "abbreviated": False}
 
 
-class Extract(Expression, Func):
+class Extract(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
-class GetExtract(Expression, Func):
+class GetExtract(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
@@ -299,7 +301,7 @@ class DateFromUnixDate(Expression, Func):
     pass
 
 
-class Datetime(Expression, Func):
+class Datetime(ExprTyped[Expr, t.Optional[Expr]], Func):
     arg_types = {"this": True, "expression": False}
 
 
@@ -352,11 +354,11 @@ class MakeInterval(Expression, Func):
     }
 
 
-class NextDay(Expression, Func):
+class NextDay(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
-class PreviousDay(Expression, Func):
+class PreviousDay(ExprTyped[Expr, Expr], Func):
     arg_types = {"this": True, "expression": True}
 
 
