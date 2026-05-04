@@ -1885,7 +1885,7 @@ class Kwarg(Expression, Binary):
     """Kwarg in special functions like func(kwarg => y)."""
 
 
-class Alias(ExprTyped[Expr, None]):
+class Alias(Expression):
     arg_types = {"this": True, "alias": False}
 
     @property
