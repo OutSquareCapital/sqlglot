@@ -626,7 +626,7 @@ class TypeAnnotator:
 
             if isinstance(first, exp.PivotAlias) and (alias_node := first.args.get("alias")):
                 new_types[field_col.name] = alias_node.type
-                in_src = first.this
+                in_src: exp.PivotAlias | t.Any | None = first.this
             else:
                 new_types[field_col.name] = exp.DType.VARCHAR.into_expr()
                 in_src = first
