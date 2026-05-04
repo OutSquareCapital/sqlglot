@@ -33,7 +33,7 @@ if t.TYPE_CHECKING:
 # Cast / type conversion
 
 
-class Cast(ExprTyped[Expr, None], Func):
+class Cast(Expression, Func):
     is_cast: t.ClassVar[bool] = True
     arg_types = {
         "this": True,
