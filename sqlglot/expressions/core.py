@@ -30,7 +30,7 @@ from builtins import type as Type
 from sqlglot._typing import GeneratorNoDialectArgs, ParserNoDialectArgs
 
 if t.TYPE_CHECKING:
-    from typing_extensions import Self, Unpack, Concatenate, override
+    from typing_extensions import Self, Unpack, Concatenate
     from sqlglot.dialects.dialect import DialectType
     from sqlglot.expressions.datatypes import DATA_TYPE, DataType, DType, Interval
     from sqlglot.expressions.query import Select
@@ -1553,12 +1553,10 @@ class ExprTyped(Expression, t.Generic[ET, EE]):
     """Expression with typed "this" (ET) and "expression" (EE) args."""
 
     @property
-    @override
     def this(self) -> ET:
         return super().this
 
     @property
-    @override
     def expression(self) -> EE:
         return super().this
 
