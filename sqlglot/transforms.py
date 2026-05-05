@@ -348,23 +348,23 @@ def unnest_to_explode(
 
             is_lateral = isinstance(join_expr, exp.Lateral)
 
-            unnest = join_expr.this if is_lateral else join_expr
+            unnest_join = join_expr.this if is_lateral else join_expr
 
-            if isinstance(unnest, exp.Unnest):
+            if isinstance(unnest_join, exp.Unnest):
                 if is_lateral:
                     alias = join_expr.args.get("alias")
                 else:
-                    alias = unnest.args.get("alias")
+                    alias = unnest_join.args.get("alias")
 
                 if alias is None:
                     raise UnsupportedError(
                         "CROSS JOIN UNNEST to LATERAL VIEW EXPLODE transformation requires an alias"
                     )
 
-                exprs = unnest.expressions
+                exprs = unnest_join.expressions
                 # The number of unnest.expressions will be changed by _unnest_zip_exprs, we need to record it here
                 has_multi_expr = len(exprs) > 1
-                exprs = _unnest_zip_exprs(unnest, exprs, has_multi_expr)
+                exprs = _unnest_zip_exprs(unnest_join, exprs, has_multi_expr)
 
                 joins.remove(join)
 
@@ -379,7 +379,7 @@ def unnest_to_explode(
                         "CROSS JOIN UNNEST to LATERAL VIEW EXPLODE transformation requires explicit column aliases"
                     )
 
-                offset = unnest.args.get("offset")
+                offset = unnest_join.args.get("offset")
                 if offset:
                     alias_cols.insert(
                         0,
@@ -390,7 +390,7 @@ def unnest_to_explode(
                     expression.append(
                         "laterals",
                         exp.Lateral(
-                            this=_udtf_type(unnest, has_multi_expr)(this=e),
+                            this=_udtf_type(unnest_join, has_multi_expr)(this=e),
                             view=True,
                             alias=exp.TableAlias(this=alias.this, columns=alias_cols),
                         ),
