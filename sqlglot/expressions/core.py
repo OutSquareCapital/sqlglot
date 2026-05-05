@@ -1836,14 +1836,14 @@ class Null(Expression, Condition):
         return None
 
 
-class Boolean(Expression, Condition):
+class Boolean(ExprTyped[bool, t.Any], Condition):
     is_primitive = True
 
     def to_py(self) -> bool:
         return self.this
 
 
-class Dot(Expression, Binary):
+class Dot(ExprTyped[Expr, t.Union[Identifier, Star]], Binary):
     @property
     def is_star(self) -> bool:
         return self.expression.is_star
