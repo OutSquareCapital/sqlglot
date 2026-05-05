@@ -1843,7 +1843,7 @@ class Boolean(ExprTyped[bool, t.Any], Condition):
         return self.this
 
 
-class Dot(ExprTyped[Expr, t.Union[Identifier, Star]], Binary):
+class Dot(ExprTyped[Expr, t.Any], Binary):
     @property
     def is_star(self) -> bool:
         return self.expression.is_star
