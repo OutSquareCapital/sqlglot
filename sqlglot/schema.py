@@ -344,7 +344,7 @@ class MappingSchema(AbstractMappingSchema, Schema):
     def find(
         self, table: exp.Table, raise_on_missing: bool = True, ensure_data_types: bool = False
     ) -> t.Any | None:
-        schema: exp.Table | dict[str, object] | None = super().find(
+        schema: dict[str, object] | None = super().find(
             table, raise_on_missing=raise_on_missing, ensure_data_types=ensure_data_types
         )
         if ensure_data_types and isinstance(schema, dict):
@@ -417,7 +417,7 @@ class MappingSchema(AbstractMappingSchema, Schema):
     ) -> list[str]:
         normalized_table = self._normalize_table(table, dialect=dialect, normalize=normalize)
 
-        schema: exp.Table | dict[str, object] | None = self.find(normalized_table)
+        schema: dict[str, object] | None = self.find(normalized_table)
         if schema is None:
             return []
 
