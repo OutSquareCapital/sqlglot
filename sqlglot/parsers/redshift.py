@@ -99,7 +99,7 @@ class RedshiftParser(PostgresParser):
         to = self._parse_types()
         self._match(TokenType.COMMA)
         this = self._parse_bitwise()
-        return self.expression(exp.TryCast(this=this, to=to, safe=safe))
+        return self.expression(exp.Convert(this=to, expression=this))
 
     def _parse_object_transform(self) -> exp.ObjectTransform:
         this = self._parse_column()

@@ -270,6 +270,9 @@ class RedshiftGenerator(PostgresGenerator):
         "without",
     }
 
+    def convert_sql(self, expression: exp.Convert) -> str:
+        return self.func("CONVERT", expression.this, expression.expression)
+
     def objecttransform_sql(self, expression: exp.ObjectTransform) -> str:
         this = self.sql(expression, "this")
         keep = self.expressions(expression, key="keep", flat=True)
