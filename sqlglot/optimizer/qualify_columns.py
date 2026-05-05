@@ -14,6 +14,7 @@ from sqlglot.optimizer.simplify import simplify_parens
 from sqlglot.schema import Schema, ensure_schema
 
 if t.TYPE_CHECKING:
+    from sqlglot.expressions.core import ExpOrStr
     from sqlglot._typing import E
     from collections.abc import Iterable
 
@@ -116,7 +117,7 @@ def qualify_columns(
 
 def validate_qualify_columns(expression: E, sql: str | None = None) -> E:
     """Raise an `OptimizeError` if any columns aren't qualified"""
-    all_unqualified_columns = []
+    all_unqualified_columns: list[exp.Column] = []
     for scope in traverse_scope(expression):
         if isinstance(scope.expression, exp.Select):
             unqualified_columns = scope.unqualified_columns
@@ -124,10 +125,11 @@ def validate_qualify_columns(expression: E, sql: str | None = None) -> E:
             if scope.external_columns and not scope.is_correlated_subquery and not scope.pivots:
                 column = scope.external_columns[0]
                 for_table = f" for table: '{column.table}'" if column.table else ""
-                line = column.this.meta.get("line")
-                col = column.this.meta.get("col")
-                start = column.this.meta.get("start")
-                end = column.this.meta.get("end")
+                this: exp.Expr = column.this
+                line = this.meta.get("line")
+                col = this.meta.get("col")
+                start = this.meta.get("start")
+                end = this.meta.get("end")
 
                 error_msg = f"Column '{column.name}' could not be resolved{for_table}."
                 if line and col:
@@ -142,10 +144,11 @@ def validate_qualify_columns(expression: E, sql: str | None = None) -> E:
 
     if all_unqualified_columns:
         first_column = all_unqualified_columns[0]
-        line = first_column.this.meta.get("line")
-        col = first_column.this.meta.get("col")
-        start = first_column.this.meta.get("start")
-        end = first_column.this.meta.get("end")
+        col_this: exp.Expr = first_column.this
+        line = col_this.meta.get("line")
+        col = col_this.meta.get("col")
+        start = col_this.meta.get("start")
+        end = col_this.meta.get("end")
 
         error_msg = f"Ambiguous column '{first_column.name}'"
         if line and col:
@@ -190,13 +193,13 @@ def _pop_table_column_aliases(derived_tables: Iterable[exp.Expr]) -> None:
     for derived_table in derived_tables:
         if isinstance(derived_table.parent, exp.With) and derived_table.parent.recursive:
             continue
-        table_alias = derived_table.args.get("alias")
+        table_alias: exp.TableAlias | None = derived_table.args.get("alias")
         if table_alias:
             table_alias.set("columns", None)
 
 
-def _expand_using(scope: Scope, resolver: Resolver) -> dict[str, t.Any]:
-    columns = {}
+def _expand_using(scope: Scope, resolver: Resolver) -> dict[str, dict[str, t.Any]]:
+    columns: dict[str, str] = {}
 
     def _update_source_columns(source_name: str) -> None:
         for column_name in resolver.get_source_columns(source_name):
@@ -224,42 +227,42 @@ def _expand_using(scope: Scope, resolver: Resolver) -> dict[str, t.Any]:
         join_table = join.alias_or_name
         ordered.append(join_table)
 
-        using = join.args.get("using")
+        using: list[exp.Expr] | None = join.args.get("using")
         if not using:
             continue
 
         join_columns = resolver.get_source_columns(join_table)
-        conditions = []
+        conditions: list[exp.Expr] = []
         using_identifier_count = len(using)
         is_semi_or_anti_join = join.is_semi_or_anti_join
 
         for identifier in using:
-            identifier = identifier.name
-            table = columns.get(identifier)
+            identifier_name = identifier.name
+            table = columns.get(identifier_name)
 
-            if not table or identifier not in join_columns:
+            if not table or identifier_name not in join_columns:
                 if (columns and "*" not in columns) and join_columns:
-                    raise OptimizeError(f"Cannot automatically join: {identifier}")
+                    raise OptimizeError(f"Cannot automatically join: {identifier_name}")
 
             table = table or source_table
 
             if i == 0 or using_identifier_count == 1:
-                lhs: exp.Expr = exp.column(identifier, table=table)
+                lhs: exp.Expr = exp.column(identifier_name, table=table)
             else:
                 coalesce_columns = [
-                    exp.column(identifier, table=t)
+                    exp.column(identifier_name, table=t)
                     for t in ordered[:-1]
-                    if identifier in resolver.get_source_columns(t)
+                    if identifier_name in resolver.get_source_columns(t)
                 ]
                 if len(coalesce_columns) > 1:
                     lhs = exp.func("coalesce", *coalesce_columns)
                 else:
-                    lhs = exp.column(identifier, table=table)
+                    lhs = exp.column(identifier_name, table=table)
 
-            conditions.append(lhs.eq(exp.column(identifier, table=join_table)))
+            conditions.append(lhs.eq(exp.column(identifier_name, table=join_table)))
 
             # Set all values in the dict to None, because we only care about the key ordering
-            tables = column_tables.setdefault(identifier, {})
+            tables: dict[str, None] = column_tables.setdefault(identifier_name, {})
 
             # Do not update the dict if this was a SEMI/ANTI join in
             # order to avoid generating COALESCE columns for this join pair
@@ -406,7 +409,8 @@ def _expand_alias_refs(
     replace_columns(expression.args.get("qualify"), resolve_table=True)
 
     if dialect.SUPPORTS_ALIAS_REFS_IN_JOIN_CONDITIONS:
-        for join in expression.args.get("joins") or []:
+        joins: list[exp.Join] = expression.args.get("joins") or []
+        for join in joins:
             replace_columns(join)
 
     if replaced:
@@ -415,7 +419,7 @@ def _expand_alias_refs(
 
 def _expand_group_by(scope: Scope, dialect: Dialect) -> None:
     expression = scope.expression
-    group = expression.args.get("group")
+    group: exp.Group | None = expression.args.get("group")
     if not group:
         return
 
@@ -440,7 +444,7 @@ def _expand_order_by_and_distinct_on(scope: Scope, resolver: Resolver) -> None:
         if not isinstance(modifier, exp.Expr):
             continue
 
-        modifier_expressions = modifier.expressions
+        modifier_expressions: list[exp.Literal] = modifier.expressions
         if modifier_key == "order":
             modifier_expressions = [ordered.this for ordered in modifier_expressions]
 
@@ -669,8 +673,8 @@ def _expand_struct_stars_no_parens(
             # There is no matching field in the struct
             return []
 
-    taken_names = set()
-    new_selections = []
+    taken_names: set[str] = set()
+    new_selections: list[exp.Alias] = []
 
     for field in t.cast(exp.DataType, starting_struct.kind).expressions:
         name = field.name
@@ -758,7 +762,7 @@ def _expand_struct_stars_with_parens(expression: exp.Dot) -> list[exp.Alias]:
 def _expand_stars(
     scope: Scope,
     resolver: Resolver,
-    using_column_tables: dict[str, t.Any],
+    using_column_tables: dict[str, dict[str, t.Any]],
     pseudocolumns: set[str],
     annotator: TypeAnnotator,
 ) -> None:
@@ -769,10 +773,10 @@ def _expand_stars(
     replace_columns: dict[int, dict[str, exp.Alias]] = {}
     rename_columns: dict[int, dict[str, str]] = {}
 
-    coalesced_columns = set()
+    coalesced_columns: set[str] = set()
     dialect = resolver.dialect
 
-    pivot = t.cast(t.Optional[exp.Pivot], seq_get(scope.pivots, 0))
+    pivot = seq_get(scope.pivots, 0)
 
     if dialect.SUPPORTS_STRUCT_STAR_EXPANSION and any(
         isinstance(col, exp.Dot) for col in scope.stars
@@ -795,9 +799,10 @@ def _expand_stars(
         elif expression.is_star:
             if isinstance(expression, exp.Column):
                 tables.append(expression.table)
-                _add_except_columns(expression.this, tables, except_columns)
-                _add_replace_columns(expression.this, tables, replace_columns)
-                _add_rename_columns(expression.this, tables, rename_columns)
+                this: exp.Expr = expression.this
+                _add_except_columns(this, tables, except_columns)
+                _add_replace_columns(this, tables, replace_columns)
+                _add_rename_columns(this, tables, rename_columns)
             elif isinstance(expression, exp.Dot):
                 if (
                     dialect.SUPPORTS_STRUCT_STAR_EXPANSION
@@ -872,41 +877,43 @@ def _expand_stars(
         scope_expression.set("expressions", new_selections)
 
 
-def _add_except_columns(expression: exp.Expr, tables, except_columns: dict[int, set[str]]) -> None:
-    except_ = expression.args.get("except_")
+def _add_except_columns(
+    expression: exp.Expr, tables: Iterable[object], except_columns: dict[int, set[str]]
+) -> None:
+    except_: Iterable[exp.Expr] | None = expression.args.get("except_")
 
     if not except_:
         return
 
-    columns = {e.name for e in except_}
+    columns: set[str] = {e.name for e in except_}
 
     for table in tables:
         except_columns[id(table)] = columns
 
 
 def _add_rename_columns(
-    expression: exp.Expr, tables, rename_columns: dict[int, dict[str, str]]
+    expression: exp.Expr, tables: Iterable[object], rename_columns: dict[int, dict[str, str]]
 ) -> None:
-    rename = expression.args.get("rename")
+    rename: Iterable[exp.Expr] | None = expression.args.get("rename")
 
     if not rename:
         return
 
-    columns = {e.this.name: e.alias for e in rename}
+    columns: dict[str, str] = {e.this.name: e.alias for e in rename}
 
     for table in tables:
         rename_columns[id(table)] = columns
 
 
 def _add_replace_columns(
-    expression: exp.Expr, tables, replace_columns: dict[int, dict[str, exp.Alias]]
+    expression: exp.Expr, tables: Iterable[object], replace_columns: dict[int, dict[str, exp.Alias]]
 ) -> None:
-    replace = expression.args.get("replace")
+    replace: Iterable[exp.Alias] | None = expression.args.get("replace")
 
     if not replace:
         return
 
-    columns = {e.alias: e for e in replace}
+    columns: dict[str, exp.Alias] = {e.alias: e for e in replace}
 
     for table in tables:
         replace_columns[id(table)] = columns
@@ -926,7 +933,7 @@ def qualify_outputs(scope_or_expression: Scope | exp.Expr) -> None:
     if not isinstance(expression, exp.Selectable):
         return
 
-    new_selections = []
+    new_selections: list[exp.Expr] = []
 
     for i, (selection, aliased_column) in enumerate(
         itertools.zip_longest(expression.selects, scope.outer_columns)
@@ -970,8 +977,9 @@ def pushdown_cte_alias_columns(scope: Scope) -> None:
     """
     for cte in scope.ctes:
         if cte.alias_column_names and isinstance(cte.this, exp.Select):
-            new_expressions = []
-            for _alias, projection in zip(cte.alias_column_names, cte.this.expressions):
+            new_expressions: list[exp.Expr] = []
+            projections: list[ExpOrStr] = cte.this.expressions
+            for _alias, projection in zip(cte.alias_column_names, projections):
                 if isinstance(projection, exp.Alias):
                     projection.set("alias", exp.to_identifier(_alias))
                 else:
