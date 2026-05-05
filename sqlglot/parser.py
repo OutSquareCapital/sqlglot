@@ -7011,6 +7011,7 @@ class Parser:
                 exp.Distinct(expressions=self._parse_csv(self._parse_disjunction))
             )
         else:
+            self._match(TokenType.ALL)  # ALL is the default/no-op aggregate modifier (SQL-92)
             this = self._parse_select_or_expression(alias=alias)
 
         return self._parse_limit(
