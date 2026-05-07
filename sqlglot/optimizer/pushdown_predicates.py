@@ -13,7 +13,7 @@ if t.TYPE_CHECKING:
     from sqlglot._typing import E
     from sqlglot.dialects.dialect import DialectType
 
-    Sources = Mapping[str, tuple[exp.Expr, t.Union[exp.Expr, Scope]]]
+    Sources = Mapping[str, tuple[exp.Selectable, t.Union[exp.Table, Scope]]]
 
 
 def pushdown_predicates(expression: E, dialect: DialectType = None) -> E:
@@ -207,6 +207,7 @@ def nodes_for_predicate(
     where_condition = isinstance(predicate.find_ancestor(exp.Join, exp.Where), exp.Where)
 
     for table in sorted(tables):
+        node: exp.Expr | None
         node, source = sources.get(table) or (None, None)
 
         # if the predicate is in a where statement we can try to push it down
