@@ -644,6 +644,7 @@ class Parser:
         TokenType.INDEX,
         TokenType.PROCEDURE,
         TokenType.TRIGGER,
+        TokenType.TYPE,
         *DB_CREATABLES,
     }
 
@@ -2485,6 +2486,20 @@ class Parser:
 
             this = trigger_name
             extend_props(exp.Properties(expressions=[trigger_props] if trigger_props else []))
+        elif create_token_type == TokenType.TYPE:
+            this = self._parse_table_parts(schema=True)
+            if not this or not self._match(TokenType.ALIAS):
+                return self._parse_as_command(start)
+
+            if self._match(TokenType.ENUM):
+                expression = exp.DataType(
+                    this=exp.DType.ENUM,
+                    expressions=self._parse_wrapped_csv(self._parse_string),
+                )
+            elif self._match(TokenType.L_PAREN, advance=False):
+                expression = self._parse_schema()
+            else:
+                return self._parse_as_command(start)
         elif create_token_type in self.DB_CREATABLES:
             table_parts = self._parse_table_parts(
                 schema=True, is_db_reference=create_token_type == TokenType.SCHEMA

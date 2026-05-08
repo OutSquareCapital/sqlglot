@@ -1090,6 +1090,28 @@ FROM json_data, field_ids""",
             exp.DataType
         )
 
+        create_type = self.validate_identity(
+            "CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy')"
+        ).assert_is(exp.Create)
+        self.assertTrue(create_type.expression.assert_is(exp.DataType).is_type(exp.DType.ENUM))
+
+        self.validate_identity("CREATE TYPE mood AS ENUM ()").assert_is(exp.Create)
+
+        create_type = self.validate_identity(
+            "CREATE TYPE inventory_item AS (name TEXT, supplier_id INT, price DECIMAL)"
+        ).assert_is(exp.Create)
+        create_type.expression.assert_is(exp.Schema)
+
+        self.validate_identity("CREATE TYPE public.mood AS ENUM ('sad', 'ok')").assert_is(
+            exp.Create
+        )
+
+        self.validate_identity("CREATE TYPE widget", check_command_warning=True)
+        self.validate_identity(
+            "CREATE TYPE float8range AS RANGE (subtype = float8, subtype_diff = float8mi)",
+            check_command_warning=True,
+        )
+
         # Checks that OID is parsed into a DataType (ObjectIdentifier)
         self.assertIsInstance(
             self.parse_one("CREATE TABLE p.t (c oid)").find(exp.DataType), exp.ObjectIdentifier
